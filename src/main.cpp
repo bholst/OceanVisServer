@@ -1,3 +1,7 @@
+//
+// Copyright 2011      Bastian Holst <bastianholst@gmx.de>
+//
+
 #include <QCoreApplication>
 #include "OceanVisServer.h"
 

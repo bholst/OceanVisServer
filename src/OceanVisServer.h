@@ -1,3 +1,7 @@
+//
+// Copyright 2011      Bastian Holst <bastianholst@gmx.de>
+//
+
 #ifndef OCEANVISSERVER_H
 #define OCEANVISSERVER_H
 
