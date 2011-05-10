@@ -1,0 +1,1 @@
+oceanvis_add_test(TestMapGeometry)
