@@ -18,14 +18,16 @@ public:
      * MapGeometryParser will not take ownership of the QFile.
      */
     void setFile(QFile *file);
-    QFile *file() const;
+    void setTextStream(QTextStream *textStream);
+    
+    QTextStream *textStream() const;
     
     MapGeometry *mapGeometry() const;
     
 private:
     void parse();
     
-    QFile *m_file;
+    QTextStream *m_textStream;
 };
 
 #endif
