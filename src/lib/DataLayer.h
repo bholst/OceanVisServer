@@ -12,11 +12,11 @@ public:
     DataLayer();
     virtual ~DataLayer();
     
-    MapGeometry *geometry() const;
-    void setGeometry(MapGeometry *mapGeometry);
+    MapGeometry geometry() const;
+    void setGeometry(const MapGeometry &mapGeometry);
 
 private:
-    MapGeometry *m_geometry;
+    MapGeometry m_geometry;
 };
 
 #endif

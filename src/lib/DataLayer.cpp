@@ -9,21 +9,19 @@
 #include "DataLayer.h"
 
 DataLayer::DataLayer()
-    : m_geometry(0)
 {
 }
 
 DataLayer::~DataLayer()
 {
-    delete m_geometry;
 }
     
-MapGeometry *DataLayer::geometry() const
+MapGeometry DataLayer::geometry() const
 {
     return m_geometry;
 }
 
-void DataLayer::setGeometry(MapGeometry *mapGeometry)
+void DataLayer::setGeometry(const MapGeometry &mapGeometry)
 {
     m_geometry = mapGeometry;
 }
