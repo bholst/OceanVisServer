@@ -17,6 +17,9 @@ private Q_SLOTS:
     void testMapGeometry();
 
     void testTotalSize();
+    
+    void testCopy();
+    void testAssignment();
 
 private:
     MapGeometry m_geometry;
@@ -58,6 +61,51 @@ void TestMapGeometry::testMapGeometry()
 void TestMapGeometry::testTotalSize()
 {
     QCOMPARE(m_geometry.totalSize(), (long) 21);
+}
+
+void TestMapGeometry::testCopy()
+{
+    MapGeometry other(m_geometry);
+    
+    QCOMPARE(m_geometry.width(), 4);
+    QCOMPARE(other.width(), 4);
+    QCOMPARE(m_geometry.height(), 2);
+    QCOMPARE(other.height(), 2);
+    
+    other.setHeight(5);
+    other.setWidth(3);
+    
+    QCOMPARE(m_geometry.width(), 4);
+    QCOMPARE(other.width(), 3);
+    QCOMPARE(m_geometry.height(), 2);
+    QCOMPARE(other.height(), 5);
+}
+
+void TestMapGeometry::testAssignment()
+{
+    MapGeometry other;
+    other.setWidth(1);
+    other.setHeight(1);
+    
+    QCOMPARE(m_geometry.width(), 4);
+    QCOMPARE(other.width(), 1);
+    QCOMPARE(m_geometry.height(), 2);
+    QCOMPARE(other.height(), 1);
+    
+    other = m_geometry;
+    
+    QCOMPARE(m_geometry.width(), 4);
+    QCOMPARE(other.width(), 4);
+    QCOMPARE(m_geometry.height(), 2);
+    QCOMPARE(other.height(), 2);
+    
+    other.setHeight(5);
+    other.setWidth(3);
+    
+    QCOMPARE(m_geometry.width(), 4);
+    QCOMPARE(other.width(), 3);
+    QCOMPARE(m_geometry.height(), 2);
+    QCOMPARE(other.height(), 5);
 }
 
 QTEST_MAIN( TestMapGeometry )

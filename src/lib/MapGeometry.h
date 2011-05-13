@@ -27,9 +27,11 @@ public:
     long start(int x, int y) const;
     
     MapGeometry& operator=( const MapGeometry &other );
+    
+    void detach();
 
 private:
-    MapGeometryPrivate * const d;
+    MapGeometryPrivate *d;
 };
 
 #endif

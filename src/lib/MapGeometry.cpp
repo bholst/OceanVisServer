@@ -7,6 +7,7 @@
 
 // Qt
 #include <QtCore/QDebug>
+#include <QtCore/QAtomicInt>
 
 // Self
 #include "MapGeometry.h"
@@ -18,7 +19,8 @@ public:
           m_starts(0),
           m_width(0),
           m_height(0),
-          m_totalSize(-1)
+          m_totalSize(-1),
+          ref( 1 )
     {
     }
 
@@ -27,12 +29,31 @@ public:
         delete m_layerCounts;
         delete m_starts;
     }
+    
+    /*
+    * return this instead of &other
+    */
+    MapGeometryPrivate& operator=(const MapGeometryPrivate &other)
+    {
+        m_width = other.m_width;
+        m_height = other.m_height;
+        m_totalSize = other.m_totalSize;
+        delete m_layerCounts;
+        m_layerCounts = new int[m_width * m_height];
+        memcpy(m_layerCounts, other.m_layerCounts, m_width * m_height * sizeof(int));
+        delete m_starts;
+        m_starts = new long[m_width * m_height];
+        memcpy(m_starts, other.m_starts, m_width * m_height * sizeof(long));
+        ref = other.ref;
+        return *this;
+    }
 
     int *m_layerCounts;
     long *m_starts;
     int m_width;
     int m_height;
     int m_totalSize;
+    QAtomicInt ref;
 };
 
 MapGeometry::MapGeometry()
@@ -41,17 +62,25 @@ MapGeometry::MapGeometry()
 }
 
 MapGeometry::MapGeometry(const MapGeometry &other)
-    : d(new MapGeometryPrivate(*other.d))
+    : d(other.d)
 {
+    d->ref.ref();
 }
 
 MapGeometry::~MapGeometry()
 {
-    delete d;
+    if (!d->ref.deref())
+        delete d;
+}
+
+void MapGeometry::detach()
+{
+    qAtomicDetach( d );
 }
 
 void MapGeometry::setWidth(int width)
 {
+    detach();
     d->m_width = width;
 }
 
@@ -62,6 +91,7 @@ int MapGeometry::width() const
 
 void MapGeometry::setHeight(int height)
 {
+    detach();
     d->m_height = height;
 }
 
@@ -72,6 +102,7 @@ int MapGeometry::height() const
 
 void MapGeometry::setLayerCounts(int *layerCounts)
 {
+    detach();
     d->m_layerCounts = new int[d->m_width * d->m_height];
     d->m_starts = new long[d->m_width * d->m_height];
     long currentStart = 0;
@@ -109,6 +140,6 @@ long MapGeometry::totalSize() const
 
 MapGeometry& MapGeometry::operator=( const MapGeometry &other )
 {
-    *d = *other.d;
+    qAtomicAssign(d, other.d);
     return *this;
 }
