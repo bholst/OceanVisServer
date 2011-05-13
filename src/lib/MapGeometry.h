@@ -5,9 +5,12 @@
 #ifndef MAPGEOMETRY_H
 #define MAPGEOMETRY_H
 
+class MapGeometryPrivate;
+
 class MapGeometry {
 public:
     MapGeometry();
+    MapGeometry(const MapGeometry &other);
     virtual ~MapGeometry();
 
     void setWidth(int width);
@@ -22,14 +25,11 @@ public:
 
     int layerCount(int x, int y) const;
     long start(int x, int y) const;
+    
+    MapGeometry& operator=( const MapGeometry &other );
 
 private:
-    int *m_layerCounts;
-    long *m_starts;
-
-    int m_width;
-    int m_height;
-    int m_totalSize;
+    MapGeometryPrivate * const d;
 };
 
 #endif
