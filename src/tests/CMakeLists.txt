@@ -1,2 +1,3 @@
 oceanvis_add_test(TestMapGeometry)
 oceanvis_add_test(TestMapGeometryParser)
+oceanvis_add_test(TestDataLayer)
