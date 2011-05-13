@@ -20,7 +20,8 @@ int main(int argc, char** argv)
         if(file.exists()) {
             MapGeometryParser parser;
             parser.setFile(&file);
-            parser.mapGeometry();
+            MapGeometry *geometry = parser.mapGeometry();
+            qDebug() << "Loaded geometry.";
         }
         else {
             qDebug() << "File does not exist.";
