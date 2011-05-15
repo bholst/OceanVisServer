@@ -1,0 +1,5 @@
+Big endian:
+int VEC_FILE_COOKIE
+int number of rows
+double values
+
