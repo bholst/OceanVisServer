@@ -24,6 +24,7 @@ private:
     MapGeometry m_geometry;
     QFile *m_file;
     qint32 m_fileLength;
+    double *m_dataVector;
 };
 
 #endif

@@ -22,6 +22,7 @@ DataLayer::DataLayer()
 DataLayer::~DataLayer()
 {
     delete m_file;
+    delete m_dataVector;
 }
     
 MapGeometry DataLayer::geometry() const
@@ -49,6 +50,18 @@ void DataLayer::setFileName(const QString& fileName)
         qDebug() << "The magic number is:" << magicNumber;
         stream >> m_fileLength;
         qDebug() << "The length is:" << m_fileLength;
+
+        m_dataVector = new double[m_fileLength];
+        for(int i = 0; i < m_fileLength; ++i) {
+            if(stream.atEnd()) {
+                qDebug() << "ERROR: file too short, missing data.";
+            }
+            stream >> m_dataVector[i];
+            qDebug() << "Read" << m_dataVector[i];
+        }
+        if(!stream.atEnd()) {
+            qDebug() << "ERROR: file to long, too much data.";
+        }
     }
 }
 
