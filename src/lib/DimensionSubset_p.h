@@ -14,6 +14,9 @@
 class DimensionSubsetPrivate {
 public:
     DimensionSubsetPrivate();
+    DimensionSubsetPrivate(const DimensionSubsetPrivate& other);
+
+    virtual ~DimensionSubsetPrivate();
     
     DimensionSubsetPrivate& operator=(const DimensionSubsetPrivate &other);
     bool operator==(const DimensionSubsetPrivate &other);

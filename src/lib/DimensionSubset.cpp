@@ -2,6 +2,9 @@
 // Copyright 2011      Bastian Holst <bastianholst@gmx.de>
 //
 
+// Qt
+#include <QtCore/QDebug>
+
 // Self
 #include "DimensionSubset.h"
 #include "DimensionSubset_p.h"
@@ -9,6 +12,16 @@
 DimensionSubsetPrivate::DimensionSubsetPrivate() 
     : m_dimension(DimensionSubset::Time),
       ref(1)
+{
+}
+
+DimensionSubsetPrivate::DimensionSubsetPrivate(const DimensionSubsetPrivate& other)
+    : m_dimension(other.m_dimension),
+      ref(other.ref)
+{
+}
+
+DimensionSubsetPrivate::~DimensionSubsetPrivate()
 {
 }
 
@@ -34,8 +47,7 @@ DimensionSubset::DimensionSubset()
 
 DimensionSubset::DimensionSubset(const DimensionSubset &other)
 {
-    d = other.d;
-    d->ref.ref();
+    qAtomicAssign(d, other.d);
 }
 
 DimensionSubset::DimensionSubset(DimensionSubsetPrivate *d)

@@ -2,6 +2,9 @@
 // Copyright 2011      Bastian Holst <bastianholst@gmx.de>
 //
 
+// Qt
+#include <QtCore/QDebug>
+
 // Project
 #include "DimensionSubset_p.h"
 
@@ -14,6 +17,17 @@ public:
         : DimensionSubsetPrivate(),
           m_trimLow(0.0),
           m_trimHigh(0.0)
+    {
+    }
+
+    DimensionTrimPrivate(const DimensionTrimPrivate& other)
+        : DimensionSubsetPrivate(other),
+          m_trimLow(other.m_trimLow),
+          m_trimHigh(other.m_trimHigh)
+    {
+    }
+
+    ~DimensionTrimPrivate()
     {
     }
 
