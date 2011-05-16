@@ -11,7 +11,7 @@ DimensionSubsetPrivate::DimensionSubsetPrivate()
       ref(1)
 {
 }
- 
+
 /*
  * Return this instead of other.
  */
@@ -43,7 +43,7 @@ DimensionSubset::DimensionSubset(DimensionSubsetPrivate *d)
     this->d = d;
     d->ref.ref();
 }
-    
+
 DimensionSubset::~DimensionSubset() 
 {
     if (!d->ref.deref())
@@ -60,7 +60,7 @@ DimensionSubset::Dimension DimensionSubset::dimension() const
 {
     return p()->m_dimension;
 }
-    
+
 DimensionSubset& DimensionSubset::operator=(const DimensionSubset &other)
 {
     qAtomicAssign(d, other.d);
@@ -71,7 +71,7 @@ bool DimensionSubset::operator==(const DimensionSubset &other) const
 {
     return p() == other.p();
 }
-    
+
 void DimensionSubset::detach()
 {
     qAtomicDetach(d);
