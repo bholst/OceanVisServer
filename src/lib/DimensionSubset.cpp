@@ -41,7 +41,6 @@ DimensionSubset::DimensionSubset(const DimensionSubset &other)
 DimensionSubset::DimensionSubset(DimensionSubsetPrivate *d)
 {
     this->d = d;
-    d->ref.ref();
 }
 
 DimensionSubset::~DimensionSubset() 

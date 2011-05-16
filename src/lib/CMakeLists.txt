@@ -2,7 +2,8 @@ include_directories(${QT_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR})
 set(OCEANVISSERVER_LIB_SRCS MapGeometry.cpp
                             MapGeometryParser.cpp
                             DataLayer.cpp
-                            DimensionSubset.cpp)
+                            DimensionSubset.cpp
+                            DimensionTrim.cpp)
 qt4_automoc(${OCEANVISSERVER_LIB_SRCS})
 add_library(oceanvis ${OCEANVISSERVER_LIB_SRCS})
 target_link_libraries(oceanvis ${QT_QTCORE_LIBRARY})
