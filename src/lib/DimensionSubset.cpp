@@ -47,7 +47,8 @@ DimensionSubset::DimensionSubset()
 
 DimensionSubset::DimensionSubset(const DimensionSubset &other)
 {
-    qAtomicAssign(d, other.d);
+    this->d = other.d;
+    this->d->ref.ref();
 }
 
 DimensionSubset::DimensionSubset(DimensionSubsetPrivate *d)

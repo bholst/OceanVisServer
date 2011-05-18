@@ -3,7 +3,8 @@ set(OCEANVISSERVER_LIB_SRCS MapGeometry.cpp
                             MapGeometryParser.cpp
                             DataLayer.cpp
                             DimensionSubset.cpp
-                            DimensionTrim.cpp)
+                            DimensionTrim.cpp
+                            DimensionSlice.cpp)
 qt4_automoc(${OCEANVISSERVER_LIB_SRCS})
 add_library(oceanvis ${OCEANVISSERVER_LIB_SRCS})
 target_link_libraries(oceanvis ${QT_QTCORE_LIBRARY})
