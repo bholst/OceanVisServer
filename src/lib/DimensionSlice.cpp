@@ -4,6 +4,7 @@
 
 // Qt
 #include <QtCore/QDebug>
+#include <QtCore/QVariant>
 
 // Project
 #include "DimensionSubset_p.h"
@@ -42,7 +43,7 @@ public:
                && m_slicePoint == other.m_slicePoint;
     }
 
-    double m_slicePoint;
+    QVariant m_slicePoint;
 };
 
 DimensionSlice::DimensionSlice()
@@ -59,13 +60,13 @@ DimensionSlice::~DimensionSlice()
 {
 }
 
-void DimensionSlice::setSlicePoint(double slicePoint)
+void DimensionSlice::setSlicePoint(QVariant slicePoint)
 {
     detach();
     p()->m_slicePoint = slicePoint;
 }
 
-double DimensionSlice::slicePoint() const
+QVariant DimensionSlice::slicePoint() const
 {
     return p()->m_slicePoint;
 }

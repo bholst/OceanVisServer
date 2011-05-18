@@ -24,16 +24,16 @@ void TestDimensionSlice::testCopy()
 
     QCOMPARE(original.dimension(), DimensionSubset::Lat);
     QCOMPARE(other.dimension(), DimensionSubset::Lat);
-    QCOMPARE(original.slicePoint(), -70.0);
-    QCOMPARE(other.slicePoint(), -70.0);
+    QCOMPARE(original.slicePoint().toDouble(), -70.0);
+    QCOMPARE(other.slicePoint().toDouble(), -70.0);
 
     other.setDimension(DimensionSubset::Time);
     other.setSlicePoint(20.0);
 
     QCOMPARE(original.dimension(), DimensionSubset::Lat);
     QCOMPARE(other.dimension(), DimensionSubset::Time);
-    QCOMPARE(original.slicePoint(), -70.0);
-    QCOMPARE(other.slicePoint(), 20.0);
+    QCOMPARE(original.slicePoint().toDouble(), -70.0);
+    QCOMPARE(other.slicePoint().toDouble(), 20.0);
 }
 
 void TestDimensionSlice::testAssignment()
@@ -47,16 +47,16 @@ void TestDimensionSlice::testAssignment()
 
     QCOMPARE(original.dimension(), DimensionSubset::Lat);
     QCOMPARE(other.dimension(), DimensionSubset::Lat);
-    QCOMPARE(original.slicePoint(), -70.0);
-    QCOMPARE(other.slicePoint(), -70.0);
+    QCOMPARE(original.slicePoint().toDouble(), -70.0);
+    QCOMPARE(other.slicePoint().toDouble(), -70.0);
 
     other.setDimension(DimensionSubset::Time);
     other.setSlicePoint(20.0);
 
     QCOMPARE(original.dimension(), DimensionSubset::Lat);
     QCOMPARE(other.dimension(), DimensionSubset::Time);
-    QCOMPARE(original.slicePoint(), -70.0);
-    QCOMPARE(other.slicePoint(), 20.0);
+    QCOMPARE(original.slicePoint().toDouble(), -70.0);
+    QCOMPARE(other.slicePoint().toDouble(), 20.0);
 }
 
 QTEST_MAIN( TestDimensionSlice )

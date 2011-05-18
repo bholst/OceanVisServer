@@ -4,6 +4,7 @@
 
 // Qt
 #include <QtCore/QDebug>
+#include <QtCore/QVariant>
 
 // Project
 #include "DimensionSubset_p.h"
@@ -46,8 +47,8 @@ public:
                && m_trimHigh == other.m_trimHigh;
     }
 
-    double m_trimLow;
-    double m_trimHigh;
+    QVariant m_trimLow;
+    QVariant m_trimHigh;
 };
 
 DimensionTrim::DimensionTrim()
@@ -64,24 +65,24 @@ DimensionTrim::~DimensionTrim()
 {
 }
 
-void DimensionTrim::setTrimLow(double trimLow)
+void DimensionTrim::setTrimLow(QVariant trimLow)
 {
     detach();
     p()->m_trimLow = trimLow;
 }
 
-double DimensionTrim::trimLow() const
+QVariant DimensionTrim::trimLow() const
 {
     return p()->m_trimLow;
 }
 
-void DimensionTrim::setTrimHigh(double trimHigh)
+void DimensionTrim::setTrimHigh(QVariant trimHigh)
 {
     detach();
     p()->m_trimHigh = trimHigh;
 }
 
-double DimensionTrim::trimHigh() const
+QVariant DimensionTrim::trimHigh() const
 {
     return p()->m_trimHigh;
 }

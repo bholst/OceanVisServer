@@ -25,10 +25,10 @@ void TestDimensionTrim::testCopy()
 
     QCOMPARE(original.dimension(), DimensionSubset::Lat);
     QCOMPARE(other.dimension(), DimensionSubset::Lat);
-    QCOMPARE(original.trimLow(), -70.0);
-    QCOMPARE(other.trimLow(), -70.0);
-    QCOMPARE(original.trimHigh(), 88.0);
-    QCOMPARE(other.trimHigh(), 88.0);
+    QCOMPARE(original.trimLow().toDouble(), -70.0);
+    QCOMPARE(other.trimLow().toDouble(), -70.0);
+    QCOMPARE(original.trimHigh().toDouble(), 88.0);
+    QCOMPARE(other.trimHigh().toDouble(), 88.0);
 
     other.setDimension(DimensionSubset::Time);
     other.setTrimLow(20.0);
@@ -36,10 +36,10 @@ void TestDimensionTrim::testCopy()
 
     QCOMPARE(original.dimension(), DimensionSubset::Lat);
     QCOMPARE(other.dimension(), DimensionSubset::Time);
-    QCOMPARE(original.trimLow(), -70.0);
-    QCOMPARE(other.trimLow(), 20.0);
-    QCOMPARE(original.trimHigh(), 88.0);
-    QCOMPARE(other.trimHigh(), 30.0);
+    QCOMPARE(original.trimLow().toDouble(), -70.0);
+    QCOMPARE(other.trimLow().toDouble(), 20.0);
+    QCOMPARE(original.trimHigh().toDouble(), 88.0);
+    QCOMPARE(other.trimHigh().toDouble(), 30.0);
 }
 
 void TestDimensionTrim::testAssignment()
@@ -54,10 +54,10 @@ void TestDimensionTrim::testAssignment()
 
     QCOMPARE(original.dimension(), DimensionSubset::Lat);
     QCOMPARE(other.dimension(), DimensionSubset::Lat);
-    QCOMPARE(original.trimLow(), -70.0);
-    QCOMPARE(other.trimLow(), -70.0);
-    QCOMPARE(original.trimHigh(), 88.0);
-    QCOMPARE(other.trimHigh(), 88.0);
+    QCOMPARE(original.trimLow().toDouble(), -70.0);
+    QCOMPARE(other.trimLow().toDouble(), -70.0);
+    QCOMPARE(original.trimHigh().toDouble(), 88.0);
+    QCOMPARE(other.trimHigh().toDouble(), 88.0);
 
     other.setDimension(DimensionSubset::Time);
     other.setTrimLow(20.0);
@@ -65,10 +65,10 @@ void TestDimensionTrim::testAssignment()
 
     QCOMPARE(original.dimension(), DimensionSubset::Lat);
     QCOMPARE(other.dimension(), DimensionSubset::Time);
-    QCOMPARE(original.trimLow(), -70.0);
-    QCOMPARE(other.trimLow(), 20.0);
-    QCOMPARE(original.trimHigh(), 88.0);
-    QCOMPARE(other.trimHigh(), 30.0);
+    QCOMPARE(original.trimLow().toDouble(), -70.0);
+    QCOMPARE(other.trimLow().toDouble(), 20.0);
+    QCOMPARE(original.trimHigh().toDouble(), 88.0);
+    QCOMPARE(other.trimHigh().toDouble(), 30.0);
 }
 
 QTEST_MAIN( TestDimensionTrim )

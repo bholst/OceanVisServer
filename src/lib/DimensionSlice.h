@@ -9,6 +9,7 @@
 #include "DimensionSubset.h"
 
 class DimensionSlicePrivate;
+class QVariant;
 
 class DimensionSlice : public DimensionSubset
 {
@@ -18,8 +19,8 @@ public:
 
     virtual ~DimensionSlice();
 
-    void setSlicePoint(double slicePoint);
-    double slicePoint() const;
+    void setSlicePoint(QVariant slicePoint);
+    QVariant slicePoint() const;
 
     DimensionSlice& operator=(const DimensionSlice &other);
     bool operator==(const DimensionSlice &other) const;

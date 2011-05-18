@@ -9,6 +9,7 @@
 #include "DimensionSubset.h"
 
 class DimensionTrimPrivate;
+class QVariant;
 
 class DimensionTrim : public DimensionSubset
 {
@@ -18,11 +19,11 @@ public:
 
     virtual ~DimensionTrim();
 
-    void setTrimLow(double trimLow);
-    double trimLow() const;
+    void setTrimLow(QVariant trimLow);
+    QVariant trimLow() const;
 
-    void setTrimHigh(double trimHigh);
-    double trimHigh() const;
+    void setTrimHigh(QVariant trimHigh);
+    QVariant trimHigh() const;
 
     DimensionTrim& operator=(const DimensionTrim &other);
     bool operator==(const DimensionTrim &other) const;
