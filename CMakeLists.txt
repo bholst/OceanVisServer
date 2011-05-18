@@ -2,6 +2,8 @@ project(OceanVisServer)
 cmake_minimum_required(VERSION 2.6)
 find_package(Qt4 REQUIRED)
 
+INCLUDE(CTest)
+
 macro(oceanvis_add_test TEST_NAME)
     set(${TEST_NAME}_SRCS ${TEST_NAME}.cpp ${ARGN})
 
