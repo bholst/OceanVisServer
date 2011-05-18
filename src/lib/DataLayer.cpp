@@ -15,7 +15,8 @@
 #include "DataLayer.h"
 
 DataLayer::DataLayer()
-    : m_file(0)
+    : m_file(0),
+      m_dataVector(0)
 {
 }
 
