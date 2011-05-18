@@ -8,12 +8,12 @@
 // Qt
 #include <QtCore/QAtomicInt>
 
-// Self
-#include "DimensionSubset.h"
+// Project
+#include "global.h"
 
 class DimensionSubsetPrivate {
 public:
-    DimensionSubsetPrivate(DimensionSubset::Dimension dimension);
+    DimensionSubsetPrivate(Dimension dimension);
     DimensionSubsetPrivate(const DimensionSubsetPrivate& other);
 
     virtual ~DimensionSubsetPrivate();
@@ -21,7 +21,7 @@ public:
     DimensionSubsetPrivate& operator=(const DimensionSubsetPrivate &other);
     bool operator==(const DimensionSubsetPrivate &other);
     
-    DimensionSubset::Dimension m_dimension;
+    Dimension m_dimension;
     QAtomicInt ref;
 };
 

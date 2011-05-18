@@ -14,7 +14,7 @@
 
 class DimensionTrimPrivate : public DimensionSubsetPrivate {
 public:
-    DimensionTrimPrivate(DimensionSubset::Dimension dimension)
+    DimensionTrimPrivate(Dimension dimension)
         : DimensionSubsetPrivate(dimension),
           m_trimLow(0.0),
           m_trimHigh(0.0)
@@ -51,7 +51,7 @@ public:
     QVariant m_trimHigh;
 };
 
-DimensionTrim::DimensionTrim(DimensionSubset::Dimension dimension)
+DimensionTrim::DimensionTrim(Dimension dimension)
     : DimensionSubset(new DimensionTrimPrivate(dimension))
 {
 }
@@ -65,8 +65,10 @@ DimensionTrim::~DimensionTrim()
 {
 }
 
-void DimensionTrim::setTrimLow(QVariant trimLow)
+void DimensionTrim::setTrimLow(QVariant trimLow) throw(BadDimensionTypeException)
 {
+    ensureDimensionType(trimLow);
+
     detach();
     p()->m_trimLow = trimLow;
 }
@@ -76,8 +78,10 @@ QVariant DimensionTrim::trimLow() const
     return p()->m_trimLow;
 }
 
-void DimensionTrim::setTrimHigh(QVariant trimHigh)
+void DimensionTrim::setTrimHigh(QVariant trimHigh) throw(BadDimensionTypeException)
 {
+    ensureDimensionType(trimHigh);
+
     detach();
     p()->m_trimHigh = trimHigh;
 }

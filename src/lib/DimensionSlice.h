@@ -7,6 +7,8 @@
 
 // Project
 #include "DimensionSubset.h"
+#include "global.h"
+#include "BadDimensionTypeException.h"
 
 class DimensionSlicePrivate;
 class QVariant;
@@ -14,12 +16,12 @@ class QVariant;
 class DimensionSlice : public DimensionSubset
 {
 public:
-    DimensionSlice(DimensionSubset::Dimension dimension);
+    DimensionSlice(Dimension dimension);
     DimensionSlice(const DimensionSlice &other);
 
     virtual ~DimensionSlice();
 
-    void setSlicePoint(QVariant slicePoint);
+    void setSlicePoint(QVariant slicePoint) throw (BadDimensionTypeException);
     QVariant slicePoint() const;
 
     DimensionSlice& operator=(const DimensionSlice &other);

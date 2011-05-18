@@ -14,7 +14,7 @@
 
 class DimensionSlicePrivate : public DimensionSubsetPrivate {
 public:
-    DimensionSlicePrivate(DimensionSubset::Dimension dimension)
+    DimensionSlicePrivate(Dimension dimension)
         : DimensionSubsetPrivate(dimension),
           m_slicePoint(0.0)
     {
@@ -46,7 +46,7 @@ public:
     QVariant m_slicePoint;
 };
 
-DimensionSlice::DimensionSlice(DimensionSubset::Dimension dimension)
+DimensionSlice::DimensionSlice(Dimension dimension)
     : DimensionSubset(new DimensionSlicePrivate(dimension))
 {
 }
@@ -60,8 +60,10 @@ DimensionSlice::~DimensionSlice()
 {
 }
 
-void DimensionSlice::setSlicePoint(QVariant slicePoint)
+void DimensionSlice::setSlicePoint(QVariant slicePoint) throw(BadDimensionTypeException)
 {
+    ensureDimensionType(slicePoint);
+
     detach();
     p()->m_slicePoint = slicePoint;
 }

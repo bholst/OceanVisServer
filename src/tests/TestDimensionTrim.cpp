@@ -17,13 +17,13 @@ private Q_SLOTS:
 
 void TestDimensionTrim::testCopy()
 {
-    DimensionTrim original(DimensionSubset::Lat);
+    DimensionTrim original(Lat);
     original.setTrimLow(-70.0);
     original.setTrimHigh(88.0);
     DimensionTrim other(original);
 
-    QCOMPARE(original.dimension(), DimensionSubset::Lat);
-    QCOMPARE(other.dimension(), DimensionSubset::Lat);
+    QCOMPARE(original.dimension(), Lat);
+    QCOMPARE(other.dimension(), Lat);
     QCOMPARE(original.trimLow().toDouble(), -70.0);
     QCOMPARE(other.trimLow().toDouble(), -70.0);
     QCOMPARE(original.trimHigh().toDouble(), 88.0);
@@ -32,8 +32,8 @@ void TestDimensionTrim::testCopy()
     other.setTrimLow(20.0);
     other.setTrimHigh(30.0);
 
-    QCOMPARE(original.dimension(), DimensionSubset::Lat);
-    QCOMPARE(other.dimension(), DimensionSubset::Lat);
+    QCOMPARE(original.dimension(), Lat);
+    QCOMPARE(other.dimension(), Lat);
     QCOMPARE(original.trimLow().toDouble(), -70.0);
     QCOMPARE(other.trimLow().toDouble(), 20.0);
     QCOMPARE(original.trimHigh().toDouble(), 88.0);
@@ -42,18 +42,18 @@ void TestDimensionTrim::testCopy()
 
 void TestDimensionTrim::testAssignment()
 {
-    DimensionTrim original(DimensionSubset::Lat);
+    DimensionTrim original(Lat);
     original.setTrimLow(-70.0);
     original.setTrimHigh(88.0);
 
-    DimensionTrim other(DimensionSubset::Lon);
-    QCOMPARE(original.dimension(), DimensionSubset::Lat);
-    QCOMPARE(other.dimension(), DimensionSubset::Lon);
+    DimensionTrim other(Lon);
+    QCOMPARE(original.dimension(), Lat);
+    QCOMPARE(other.dimension(), Lon);
 
     other = original;
 
-    QCOMPARE(original.dimension(), DimensionSubset::Lat);
-    QCOMPARE(other.dimension(), DimensionSubset::Lat);
+    QCOMPARE(original.dimension(), Lat);
+    QCOMPARE(other.dimension(), Lat);
     QCOMPARE(original.trimLow().toDouble(), -70.0);
     QCOMPARE(other.trimLow().toDouble(), -70.0);
     QCOMPARE(original.trimHigh().toDouble(), 88.0);
@@ -62,8 +62,8 @@ void TestDimensionTrim::testAssignment()
     other.setTrimLow(20.0);
     other.setTrimHigh(30.0);
 
-    QCOMPARE(original.dimension(), DimensionSubset::Lat);
-    QCOMPARE(other.dimension(), DimensionSubset::Lat);
+    QCOMPARE(original.dimension(), Lat);
+    QCOMPARE(other.dimension(), Lat);
     QCOMPARE(original.trimLow().toDouble(), -70.0);
     QCOMPARE(other.trimLow().toDouble(), 20.0);
     QCOMPARE(original.trimHigh().toDouble(), 88.0);
