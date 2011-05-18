@@ -13,7 +13,7 @@
 
 class DimensionSubsetPrivate {
 public:
-    DimensionSubsetPrivate();
+    DimensionSubsetPrivate(DimensionSubset::Dimension dimension);
     DimensionSubsetPrivate(const DimensionSubsetPrivate& other);
 
     virtual ~DimensionSubsetPrivate();

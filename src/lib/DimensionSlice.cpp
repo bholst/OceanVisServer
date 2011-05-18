@@ -14,8 +14,8 @@
 
 class DimensionSlicePrivate : public DimensionSubsetPrivate {
 public:
-    DimensionSlicePrivate()
-        : DimensionSubsetPrivate(),
+    DimensionSlicePrivate(DimensionSubset::Dimension dimension)
+        : DimensionSubsetPrivate(dimension),
           m_slicePoint(0.0)
     {
     }
@@ -46,8 +46,8 @@ public:
     QVariant m_slicePoint;
 };
 
-DimensionSlice::DimensionSlice()
-    : DimensionSubset(new DimensionSlicePrivate())
+DimensionSlice::DimensionSlice(DimensionSubset::Dimension dimension)
+    : DimensionSubset(new DimensionSlicePrivate(dimension))
 {
 }
 

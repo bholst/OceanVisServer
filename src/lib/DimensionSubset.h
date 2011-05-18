@@ -17,13 +17,12 @@ public:
         Height
     };
     
-    DimensionSubset();
+    DimensionSubset(Dimension dimension);
     DimensionSubset(const DimensionSubset &other);
     DimensionSubset(DimensionSubsetPrivate *d);
     
     virtual ~DimensionSubset();
     
-    void setDimension(Dimension dimension);
     Dimension dimension() const;
     
     DimensionSubset& operator=(const DimensionSubset &other);

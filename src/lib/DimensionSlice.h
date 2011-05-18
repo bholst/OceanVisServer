@@ -14,7 +14,7 @@ class QVariant;
 class DimensionSlice : public DimensionSubset
 {
 public:
-    DimensionSlice();
+    DimensionSlice(DimensionSubset::Dimension dimension);
     DimensionSlice(const DimensionSlice &other);
 
     virtual ~DimensionSlice();

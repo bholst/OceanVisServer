@@ -17,8 +17,7 @@ private Q_SLOTS:
 
 void TestDimensionSlice::testCopy()
 {
-    DimensionSlice original;
-    original.setDimension(DimensionSubset::Lat);
+    DimensionSlice original(DimensionSubset::Lat);
     original.setSlicePoint(-70.0);
     DimensionSlice other(original);
 
@@ -27,22 +26,23 @@ void TestDimensionSlice::testCopy()
     QCOMPARE(original.slicePoint().toDouble(), -70.0);
     QCOMPARE(other.slicePoint().toDouble(), -70.0);
 
-    other.setDimension(DimensionSubset::Time);
     other.setSlicePoint(20.0);
 
     QCOMPARE(original.dimension(), DimensionSubset::Lat);
-    QCOMPARE(other.dimension(), DimensionSubset::Time);
+    QCOMPARE(other.dimension(), DimensionSubset::Lat);
     QCOMPARE(original.slicePoint().toDouble(), -70.0);
     QCOMPARE(other.slicePoint().toDouble(), 20.0);
 }
 
 void TestDimensionSlice::testAssignment()
 {
-    DimensionSlice original;
-    original.setDimension(DimensionSubset::Lat);
+    DimensionSlice original(DimensionSubset::Lat);
     original.setSlicePoint(-70.0);
 
-    DimensionSlice other;
+    DimensionSlice other(DimensionSubset::Lon);
+    QCOMPARE(original.dimension(), DimensionSubset::Lat);
+    QCOMPARE(other.dimension(), DimensionSubset::Lon);
+
     other = original;
 
     QCOMPARE(original.dimension(), DimensionSubset::Lat);
@@ -50,11 +50,10 @@ void TestDimensionSlice::testAssignment()
     QCOMPARE(original.slicePoint().toDouble(), -70.0);
     QCOMPARE(other.slicePoint().toDouble(), -70.0);
 
-    other.setDimension(DimensionSubset::Time);
     other.setSlicePoint(20.0);
 
     QCOMPARE(original.dimension(), DimensionSubset::Lat);
-    QCOMPARE(other.dimension(), DimensionSubset::Time);
+    QCOMPARE(other.dimension(), DimensionSubset::Lat);
     QCOMPARE(original.slicePoint().toDouble(), -70.0);
     QCOMPARE(other.slicePoint().toDouble(), 20.0);
 }

@@ -14,8 +14,8 @@
 
 class DimensionTrimPrivate : public DimensionSubsetPrivate {
 public:
-    DimensionTrimPrivate()
-        : DimensionSubsetPrivate(),
+    DimensionTrimPrivate(DimensionSubset::Dimension dimension)
+        : DimensionSubsetPrivate(dimension),
           m_trimLow(0.0),
           m_trimHigh(0.0)
     {
@@ -51,8 +51,8 @@ public:
     QVariant m_trimHigh;
 };
 
-DimensionTrim::DimensionTrim()
-    : DimensionSubset(new DimensionTrimPrivate())
+DimensionTrim::DimensionTrim(DimensionSubset::Dimension dimension)
+    : DimensionSubset(new DimensionTrimPrivate(dimension))
 {
 }
 

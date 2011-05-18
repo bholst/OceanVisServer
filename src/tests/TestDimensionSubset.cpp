@@ -17,34 +17,25 @@ private Q_SLOTS:
 
 void TestDimensionSubset::testCopy()
 {
-    DimensionSubset original;
-    original.setDimension(DimensionSubset::Lat);
+    DimensionSubset original(DimensionSubset::Lat);
     DimensionSubset other(original);
 
     QCOMPARE(original.dimension(), DimensionSubset::Lat);
     QCOMPARE(other.dimension(), DimensionSubset::Lat);
-
-    other.setDimension(DimensionSubset::Time);
-
-    QCOMPARE(original.dimension(), DimensionSubset::Lat);
-    QCOMPARE(other.dimension(), DimensionSubset::Time);
 }
 
 void TestDimensionSubset::testAssignment()
 {
-    DimensionSubset original;
-    original.setDimension(DimensionSubset::Lat);
+    DimensionSubset original(DimensionSubset::Lat);
 
-    DimensionSubset other;
+    DimensionSubset other(DimensionSubset::Lon);
+    QCOMPARE(original.dimension(), DimensionSubset::Lat);
+    QCOMPARE(other.dimension(), DimensionSubset::Lon);
+
     other = original;
 
     QCOMPARE(original.dimension(), DimensionSubset::Lat);
     QCOMPARE(other.dimension(), DimensionSubset::Lat);
-
-    other.setDimension(DimensionSubset::Time);
-
-    QCOMPARE(original.dimension(), DimensionSubset::Lat);
-    QCOMPARE(other.dimension(), DimensionSubset::Time);
 }
 
 QTEST_MAIN( TestDimensionSubset )

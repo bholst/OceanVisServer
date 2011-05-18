@@ -9,8 +9,8 @@
 #include "DimensionSubset.h"
 #include "DimensionSubset_p.h"
 
-DimensionSubsetPrivate::DimensionSubsetPrivate() 
-    : m_dimension(DimensionSubset::Time),
+DimensionSubsetPrivate::DimensionSubsetPrivate(DimensionSubset::Dimension dimension) 
+    : m_dimension(dimension),
       ref(1)
 {
 }
@@ -40,9 +40,9 @@ bool DimensionSubsetPrivate::operator==(const DimensionSubsetPrivate &other)
     return m_dimension == other.m_dimension;
 }
 
-DimensionSubset::DimensionSubset()
+DimensionSubset::DimensionSubset(DimensionSubset::Dimension dimension)
 {
-    d = new DimensionSubsetPrivate();
+    d = new DimensionSubsetPrivate(dimension);
 }
 
 DimensionSubset::DimensionSubset(const DimensionSubset &other)
@@ -60,12 +60,6 @@ DimensionSubset::~DimensionSubset()
 {
     if (!d->ref.deref())
         delete d;
-}
-
-void DimensionSubset::setDimension(DimensionSubset::Dimension dimension)
-{
-    detach();
-    p()->m_dimension = dimension;
 }
 
 DimensionSubset::Dimension DimensionSubset::dimension() const

@@ -14,7 +14,7 @@ class QVariant;
 class DimensionTrim : public DimensionSubset
 {
 public:
-    DimensionTrim();
+    DimensionTrim(DimensionSubset::Dimension dimension);
     DimensionTrim(const DimensionTrim &other);
 
     virtual ~DimensionTrim();
