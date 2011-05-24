@@ -7,6 +7,8 @@
 #include <QtCore/QDebug>
 #include <QtCore/QString>
 #include <QtCore/QFile>
+#include <QtCore/QDateTime>
+#include <QtCore/QMap>
 
 // Project
 #include "MapGeometry.h"
@@ -14,22 +16,31 @@
 // Self
 #include "DataLayer.h"
 
+class DataLayerPrivate {
+public:
+    MapGeometry m_geometry;
+    QMap<QDateTime, QFile *> m_files;
+    QMap<QDateTime, double *> m_dataVectors;
+};
+
 DataLayer::DataLayer()
+    : d(new DataLayerPrivate())
 {
 }
 
 DataLayer::~DataLayer()
 {
+    delete d;
 }
 
 MapGeometry DataLayer::geometry() const
 {
-    return m_geometry;
+    return d->m_geometry;
 }
 
 void DataLayer::setGeometry(const MapGeometry &mapGeometry)
 {
-    m_geometry = mapGeometry;
+    d->m_geometry = mapGeometry;
 }
 
 void DataLayer::setFileName(const QDateTime& dateTime, const QString& fileName)
@@ -39,7 +50,7 @@ void DataLayer::setFileName(const QDateTime& dateTime, const QString& fileName)
         qDebug() << "ERROR: File" << fileName << "cannot be opened.";
     }
     else {
-        m_files.insert(dateTime, file);
+        d->m_files.insert(dateTime, file);
         QDataStream stream(file);
         qint32 magicNumber;
         stream >> magicNumber;
@@ -64,7 +75,7 @@ void DataLayer::setFileName(const QDateTime& dateTime, const QString& fileName)
         }
 
         if(!error) {
-            m_dataVectors.insert(dateTime, dataVector);
+            d->m_dataVectors.insert(dateTime, dataVector);
         }
         else {
             delete dataVector;
@@ -74,8 +85,8 @@ void DataLayer::setFileName(const QDateTime& dateTime, const QString& fileName)
 
 QString DataLayer::fileName(const QDateTime& dateTime) const
 {
-    QMap<QDateTime, QFile *>::const_iterator fileIterator = m_files.find(dateTime);
-    if(fileIterator != m_files.end() && fileIterator.key() == dateTime) {
+    QMap<QDateTime, QFile *>::const_iterator fileIterator = d->m_files.find(dateTime);
+    if(fileIterator != d->m_files.end() && fileIterator.key() == dateTime) {
         return fileIterator.value()->fileName();
     }
     return QString();

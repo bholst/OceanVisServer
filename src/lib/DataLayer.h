@@ -5,12 +5,12 @@
 #ifndef DATALAYER_H
 #define DATALAYER_H
 
-#include <QtCore/QDateTime>
-#include <QtCore/QMap>
-
 class MapGeometry;
 class QString;
 class QFile;
+class QDateTime;
+
+class DataLayerPrivate;
 
 class DataLayer {
 public:
@@ -24,9 +24,9 @@ public:
     void setGeometry(const MapGeometry &mapGeometry);
 
 private:
-    MapGeometry m_geometry;
-    QMap<QDateTime, QFile *> m_files;
-    QMap<QDateTime, double *> m_dataVectors;
+    Q_DISABLE_COPY(DataLayer);
+
+    DataLayerPrivate * const d;
 };
 
 #endif
