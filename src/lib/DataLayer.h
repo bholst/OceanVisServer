@@ -16,10 +16,10 @@ class DataLayer {
 public:
     DataLayer();
     virtual ~DataLayer();
-    
+
     void setFileName(const QDateTime& dateTime, const QString& fileName);
     QString fileName(const QDateTime& dateTime) const;
-    
+
     MapGeometry geometry() const;
     void setGeometry(const MapGeometry &mapGeometry);
 
