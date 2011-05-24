@@ -15,17 +15,13 @@
 #include "DataLayer.h"
 
 DataLayer::DataLayer()
-    : m_file(0),
-      m_dataVector(0)
 {
 }
 
 DataLayer::~DataLayer()
 {
-    delete m_file;
-    delete m_dataVector;
 }
-    
+
 MapGeometry DataLayer::geometry() const
 {
     return m_geometry;
@@ -36,40 +32,51 @@ void DataLayer::setGeometry(const MapGeometry &mapGeometry)
     m_geometry = mapGeometry;
 }
 
-void DataLayer::setFileName(const QString& fileName)
+void DataLayer::setFileName(const QDateTime& dateTime, const QString& fileName)
 {
-    m_file = new QFile(fileName);
-    if(!m_file->open(QIODevice::ReadOnly)) {
+    QFile *file = new QFile(fileName);
+    if(!file->open(QIODevice::ReadOnly)) {
         qDebug() << "ERROR: File" << fileName << "cannot be opened.";
-        delete m_file;
-        m_file = 0;
     }
     else {
-        QDataStream stream(m_file);
+        m_files.insert(dateTime, file);
+        QDataStream stream(file);
         qint32 magicNumber;
         stream >> magicNumber;
         qDebug() << "The magic number is:" << magicNumber;
-        stream >> m_fileLength;
-        qDebug() << "The length is:" << m_fileLength;
+        int fileLength;
+        stream >> fileLength;
+        qDebug() << "The length is:" << fileLength;
 
-        m_dataVector = new double[m_fileLength];
-        for(int i = 0; i < m_fileLength; ++i) {
+        double *dataVector = new double[fileLength];
+        bool error = false;
+        for(int i = 0; i < fileLength; ++i) {
             if(stream.atEnd()) {
                 qDebug() << "ERROR: file too short, missing data.";
+                error = true;
             }
-            stream >> m_dataVector[i];
-            qDebug() << "Read" << m_dataVector[i];
+            stream >> dataVector[i];
+            qDebug() << "Read" << dataVector[i];
         }
         if(!stream.atEnd()) {
             qDebug() << "ERROR: file to long, too much data.";
+            error = true;
+        }
+
+        if(!error) {
+            m_dataVectors.insert(dateTime, dataVector);
+        }
+        else {
+            delete dataVector;
         }
     }
 }
 
-QString DataLayer::fileName() const
+QString DataLayer::fileName(const QDateTime& dateTime) const
 {
-    if(m_file) {
-        return m_file->fileName();
+    QMap<QDateTime, QFile *>::const_iterator fileIterator = m_files.find(dateTime);
+    if(fileIterator != m_files.end() && fileIterator.key() == dateTime) {
+        return fileIterator.value()->fileName();
     }
     return QString();
 }

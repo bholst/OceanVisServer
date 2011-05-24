@@ -6,6 +6,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QList>
+#include <QtCore/QDateTime>
 #include <QCoreApplication>
 
 // Project
@@ -36,7 +37,7 @@ int main(int argc, char** argv)
         for(int i = 2; i < argc; ++i) {
             DataLayer * layer = new DataLayer();
             layer->setGeometry(geometry);
-            layer->setFileName(argv[i]);
+            layer->setFileName(QDateTime(), argv[i]);
             layers.append(layer);
         }
         
