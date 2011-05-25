@@ -16,6 +16,7 @@ class CoordinateAxisPrivate;
  * The objects of the class @class CoordinateAxis represent an axis in
  * @class DataMatrix. It will typically be given along with the data
  * subsets to provide semantics for the user of the data.
+ * This class is implicitly shared so it is very cheap to copy it.
  */
 class CoordinateAxis {
 public:
@@ -79,6 +80,8 @@ public:
     int valueCount() const;
 
     CoordinateAxis& operator=(const CoordinateAxis &other);
+
+    bool operator==(const CoordinateAxis &other);
 
     void detach();
 

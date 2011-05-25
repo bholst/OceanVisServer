@@ -7,7 +7,8 @@ set(OCEANVISSERVER_LIB_SRCS MapGeometry.cpp
                             DimensionSlice.cpp
                             BadDimensionTypeException.cpp
                             CoordinateAxis.cpp
-                            Dimension.cpp)
+                            Dimension.cpp
+                            DataMatrix.cpp)
 qt4_automoc(${OCEANVISSERVER_LIB_SRCS})
 add_library(oceanvis ${OCEANVISSERVER_LIB_SRCS})
 target_link_libraries(oceanvis ${QT_QTCORE_LIBRARY})

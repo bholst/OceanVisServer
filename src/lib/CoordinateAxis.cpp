@@ -48,6 +48,14 @@ public:
         return *this;
     }
 
+    bool operator==(const CoordinateAxisPrivate &other)
+    {
+        return m_dimension == other.m_dimension
+               && m_minimumValue == other.m_minimumValue
+               && m_maximumValue == other.m_maximumValue
+               && m_valueCount == other.m_valueCount;
+    }
+
     Dimension m_dimension;
     QVariant m_minimumValue;
     QVariant m_maximumValue;
@@ -116,6 +124,11 @@ CoordinateAxis& CoordinateAxis::operator=(const CoordinateAxis &other)
 {
     qAtomicAssign(d, other.d);
     return *this;
+}
+
+bool CoordinateAxis::operator==(const CoordinateAxis &other)
+{
+    return d == other.d || (*d) == (*other.d);
 }
 
 void CoordinateAxis::detach()
