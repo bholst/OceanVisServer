@@ -5,6 +5,11 @@
 #ifndef DATALAYER_H
 #define DATALAYER_H
 
+// Qt
+#include <QtCore/QList>
+
+class DataMatrix;
+class DimensionSubset;
 class MapGeometry;
 class QString;
 class QFile;
@@ -22,6 +27,8 @@ public:
 
     MapGeometry geometry() const;
     void setGeometry(const MapGeometry &mapGeometry);
+
+    DataMatrix *dataSubset(QList<DimensionSubset*>& subsets);
 
 private:
     Q_DISABLE_COPY(DataLayer);

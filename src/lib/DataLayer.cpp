@@ -2,6 +2,9 @@
 // Copyright 2011      Bastian Holst <bastianholst@gmx.de>
 //
 
+// STD
+#include <typeinfo>
+
 // Qt
 #include <QtCore/QDataStream>
 #include <QtCore/QDebug>
@@ -12,6 +15,11 @@
 
 // Project
 #include "MapGeometry.h"
+#include "CoordinateAxis.h"
+#include "DimensionSubset.h"
+#include "DimensionSlice.h"
+#include "DimensionTrim.h"
+#include "DataMatrix.h"
 
 // Self
 #include "DataLayer.h"
@@ -90,4 +98,66 @@ QString DataLayer::fileName(const QDateTime& dateTime) const
         return fileIterator.value()->fileName();
     }
     return QString();
+}
+
+DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
+{
+    QMap<Dimension,DimensionSlice> dimensionSlices;
+    QMap<Dimension,DimensionTrim> dimensionTrims;
+    for(int i = 0; i < subsets.size(); ++i) {
+        DimensionSubset *subset = subsets[i];
+
+        DimensionSlice *slice = dynamic_cast<DimensionSlice*>(subset);
+        DimensionTrim *trim = dynamic_cast<DimensionTrim*>(subset);
+        if(slice) {
+            qDebug() << "Subset number" << i << "is a slice";
+            dimensionSlices.insert(slice->dimension(), DimensionSlice(*slice));
+        }
+        else if(trim) {
+            qDebug() << "Subset number" << i << "is a trim";
+            dimensionTrims.insert(trim->dimension(), DimensionTrim(*trim));
+        }
+        else {
+            qDebug() << "Subset number" << i << "is nothing.";
+        }
+    }
+    QList<CoordinateAxis> axes;
+
+    int dimensionCount[4] = {0, 0, 0, 0};
+    QMap<Dimension,DimensionSlice>::const_iterator timeSliceIt = dimensionSlices.find(Time);
+    QMap<Dimension,DimensionTrim>::const_iterator timeTrimIt = dimensionTrims.find(Time);
+    QMap<QDateTime,double*>::const_iterator lowTimeTrim;
+    QMap<QDateTime,double*>::const_iterator highTimeTrim;
+    if(timeSliceIt != dimensionSlices.constEnd()) {
+        lowTimeTrim = d->m_dataVectors.lowerBound(timeSliceIt->slicePoint().toDateTime());
+        highTimeTrim = lowTimeTrim + 1;
+        dimensionCount[0] = 1;
+    }
+    else if(timeTrimIt != dimensionTrims.constEnd()) {
+        CoordinateAxis axis(Time);
+        QDateTime trimLow = timeTrimIt->trimLow().toDateTime();
+        QDateTime trimHigh = timeTrimIt->trimHigh().toDateTime();
+
+        lowTimeTrim = d->m_dataVectors.lowerBound(trimLow);
+        axis.setMinimumValue(lowTimeTrim.key());
+
+        highTimeTrim = d->m_dataVectors.upperBound(trimHigh);
+        if(lowTimeTrim == highTimeTrim) {
+            highTimeTrim++;
+        }
+
+        for(QMap<QDateTime, double*>::const_iterator it = lowTimeTrim;
+            it != highTimeTrim;
+            ++it)
+        {
+            dimensionCount[0]++;
+            axis.setMaximumValue(it.key());
+        }
+        axis.setValueCount(dimensionCount[0]);
+    }
+
+    qDebug() << "Low time trim:" << lowTimeTrim.key().toString();
+    if(highTimeTrim != d->m_dataVectors.constEnd()) {
+        qDebug() << "High time trim:" << highTimeTrim.key().toString();
+    }
 }
