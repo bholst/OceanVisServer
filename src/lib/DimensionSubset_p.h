@@ -9,7 +9,7 @@
 #include <QtCore/QAtomicInt>
 
 // Project
-#include "global.h"
+#include "Dimension.h"
 
 class DimensionSubsetPrivate {
 public:

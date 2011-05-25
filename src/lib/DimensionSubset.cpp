@@ -6,6 +6,9 @@
 #include <QtCore/QDebug>
 #include <QtCore/QVariant>
 
+// Project
+#include "Dimension.h"
+
 // Self
 #include "DimensionSubset.h"
 #include "DimensionSubset_p.h"
@@ -81,27 +84,7 @@ bool DimensionSubset::operator==(const DimensionSubset &other) const
 
 void DimensionSubset::ensureDimensionType(const QVariant& value) const throw (BadDimensionTypeException)
 {
-    if(dimension() == Lon
-       || dimension() == Lat
-       || dimension() == Height)
-    {
-        if(!value.canConvert(QVariant::Double)) {
-            BadDimensionTypeException exception;
-            exception.setDimension(dimension());
-            exception.setExpectedType(QVariant::Double);
-            exception.setGivenType(value.type());
-            throw exception;
-        }
-    }
-    else if(dimension() == Time) {
-        if(!value.canConvert(QVariant::DateTime)) {
-            BadDimensionTypeException exception;
-            exception.setDimension(dimension());
-            exception.setExpectedType(QVariant::DateTime);
-            exception.setGivenType(value.type());
-            throw exception;
-        }
-    }
+    checkDimensionType(d->m_dimension, value);
 }
 
 void DimensionSubset::detach()

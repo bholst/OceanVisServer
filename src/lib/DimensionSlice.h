@@ -7,7 +7,7 @@
 
 // Project
 #include "DimensionSubset.h"
-#include "global.h"
+#include "Dimension.h"
 #include "BadDimensionTypeException.h"
 
 class DimensionSlicePrivate;
