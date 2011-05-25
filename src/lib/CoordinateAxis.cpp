@@ -5,6 +5,7 @@
 // Qt
 #include <QtCore/QAtomicInt>
 #include <QtCore/QVariant>
+#include <QtCore/QDebug>
 
 // Project
 #include "Dimension.h"
@@ -26,7 +27,7 @@ public:
           m_minimumValue(other.m_minimumValue),
           m_maximumValue(other.m_maximumValue),
           m_valueCount(other.m_valueCount),
-          ref(other.ref)
+          ref(1)
     {
     }
 

@@ -21,7 +21,7 @@ DimensionSubsetPrivate::DimensionSubsetPrivate(Dimension dimension)
 
 DimensionSubsetPrivate::DimensionSubsetPrivate(const DimensionSubsetPrivate& other)
     : m_dimension(other.m_dimension),
-      ref(other.ref)
+      ref(1)
 {
 }
 
