@@ -4,6 +4,7 @@
 
 // STD
 #include <typeinfo>
+#include <cmath>
 
 // Qt
 #include <QtCore/QDataStream>
@@ -154,10 +155,169 @@ DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
             axis.setMaximumValue(it.key());
         }
         axis.setValueCount(dimensionCount[0]);
+        axes.append(axis);
+    }
+    else {
+        lowTimeTrim = d->m_dataVectors.begin();
+        highTimeTrim = d->m_dataVectors.end();
+        dimensionCount[0] = d->m_dataVectors.size();
+        CoordinateAxis axis(Time);
+        axis.setMinimumValue(lowTimeTrim.key());
+        axis.setMaximumValue((highTimeTrim - 1).key());
+        axis.setValueCount(dimensionCount[0]);
+        axes.append(axis);
     }
 
     qDebug() << "Low time trim:" << lowTimeTrim.key().toString();
     if(highTimeTrim != d->m_dataVectors.constEnd()) {
         qDebug() << "High time trim:" << highTimeTrim.key().toString();
     }
+
+    QMap<Dimension,DimensionSlice>::const_iterator lonSliceIt = dimensionSlices.find(Lon);
+    QMap<Dimension,DimensionTrim>::const_iterator lonTrimIt = dimensionTrims.find(Lon);
+    int lowLonTrim = 0; // The first longitude value which will be in the returned matrix.
+    int highLonTrim = 0; // The first longitude value which will not be in the returned matrix.
+
+    if(lonSliceIt != dimensionSlices.end()) {
+        int slicePoint = round(
+            (lonSliceIt->slicePoint().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width());
+        lowLonTrim = slicePoint;
+        highLonTrim = slicePoint + 1;
+        dimensionCount[1] = 1;
+    }
+    else if(lonTrimIt != dimensionTrims.end()) {
+        lowLonTrim = std::ceil(
+            (lonTrimIt->trimLow().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width());
+        highLonTrim = std::floor(
+            (lonTrimIt->trimHigh().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width()) + 1;
+        dimensionCount[1] = highLonTrim - lowLonTrim;
+
+        CoordinateAxis axis(Lon);
+        axis.setMinimumValue(lowLonTrim * 360.0 / (double) d->m_geometry.width() - 180.0);
+        axis.setMaximumValue((highLonTrim - 1) * 360.0 / (double) d->m_geometry.width() - 180.0);
+        axis.setValueCount(dimensionCount[1]);
+        axes.append(axis);
+    }
+    else {
+        lowLonTrim = 0;
+        highLonTrim = d->m_geometry.width();
+        dimensionCount[1] = highLonTrim - lowLonTrim;
+
+        CoordinateAxis axis(Lon);
+        axis.setMinimumValue(-180.0);
+        axis.setMaximumValue(+180.0);
+        axis.setValueCount(dimensionCount[1]);
+        axes.append(axis);
+    }
+
+    qDebug() << "Low lon trim:" << lowLonTrim;
+    qDebug() << "High lon trim:" << highLonTrim;
+    qDebug() << "Number of lon values:" << dimensionCount[1];
+
+    QMap<Dimension,DimensionSlice>::const_iterator latSliceIt = dimensionSlices.find(Lat);
+    QMap<Dimension,DimensionTrim>::const_iterator latTrimIt = dimensionTrims.find(Lat);
+    int lowLatTrim = 0; // The first latitude value which will be in the returned matrix.
+    int highLatTrim = 0; // The first latitude value which will not be in the returned matrix.
+
+    if(latSliceIt != dimensionSlices.end()) {
+        int slicePoint = round(
+            (latSliceIt->slicePoint().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height());
+        lowLatTrim = slicePoint;
+        highLatTrim = slicePoint + 1;
+        dimensionCount[2] = 1;
+    }
+    else if(latTrimIt != dimensionTrims.end()) {
+        lowLatTrim = std::ceil(
+            (latTrimIt->trimLow().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height());
+        highLatTrim = std::floor(
+            (latTrimIt->trimHigh().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height()) + 1;
+        dimensionCount[2] = highLatTrim - lowLatTrim;
+
+        CoordinateAxis axis(Lat);
+        axis.setMinimumValue(-lowLatTrim * 180.0 / (double) d->m_geometry.height() + 90.0);
+        axis.setMaximumValue(-(highLatTrim - 1) * 180.0 / (double) d->m_geometry.height() + 90.0);
+        axis.setValueCount(dimensionCount[2]);
+        axes.append(axis);
+    }
+    else {
+        lowLatTrim = 0;
+        highLatTrim = d->m_geometry.height();
+        dimensionCount[2] = highLatTrim - lowLatTrim;
+
+        CoordinateAxis axis(Lat);
+        axis.setMinimumValue(-180.0);
+        axis.setMaximumValue(+180.0);
+        axis.setValueCount(dimensionCount[2]);
+        axes.append(axis);
+    }
+
+    qDebug() << "Low lat trim:" << lowLatTrim;
+    qDebug() << "High lat trim:" << highLatTrim;
+    qDebug() << "Number of lat values:" << dimensionCount[2];
+
+    QMap<Dimension,DimensionSlice>::const_iterator heightSliceIt = dimensionSlices.find(Height);
+    QMap<Dimension,DimensionTrim>::const_iterator heightTrimIt = dimensionTrims.find(Height);
+    int lowHeightTrim = 0; // The first latitude value which will be in the returned matrix.
+    int highHeightTrim = 0; // The first latitude value which will not be in the returned matrix.
+
+    if(heightSliceIt != dimensionSlices.end()) {
+        int slicePoint = round(
+            heightSliceIt->slicePoint().toDouble() / d->m_geometry.heightDimension());
+        lowHeightTrim = slicePoint;
+        highHeightTrim = slicePoint + 1;
+        dimensionCount[3] = 1;
+    }
+    else if(latTrimIt != dimensionTrims.end()) {
+        CoordinateAxis axis(Height);
+        if(d->m_geometry.heightDimension() >= 0) {
+            lowHeightTrim = std::ceil(
+                heightTrimIt->trimLow().toDouble() / d->m_geometry.heightDimension());
+            highHeightTrim = std::floor(
+                heightTrimIt->trimHigh().toDouble() / d->m_geometry.heightDimension()) + 1;
+            axis.setMinimumValue(lowHeightTrim * d->m_geometry.heightDimension());
+            axis.setMaximumValue(highHeightTrim * d->m_geometry.heightDimension());
+        }
+        else {
+            lowHeightTrim = std::ceil(
+                heightTrimIt->trimHigh().toDouble() / d->m_geometry.heightDimension());
+            highHeightTrim = std::floor(
+                heightTrimIt->trimLow().toDouble() / d->m_geometry.heightDimension()) + 1;
+            axis.setMinimumValue(highHeightTrim * d->m_geometry.heightDimension());
+            axis.setMaximumValue(lowHeightTrim * d->m_geometry.heightDimension());
+        }
+        dimensionCount[3] = highHeightTrim - lowHeightTrim;
+        axis.setValueCount(dimensionCount[3]);
+        axes.append(axis);
+    }
+    else {
+        lowLatTrim = 0;
+        highLatTrim = d->m_geometry.maximumLayerCount();
+        dimensionCount[3] = highLatTrim;
+
+        CoordinateAxis axis(Height);
+        if(d->m_geometry.heightDimension() >= 0) {
+            axis.setMinimumValue(0.0);
+            axis.setMaximumValue(d->m_geometry.maximumLayerCount() * d->m_geometry.heightDimension());
+        }
+        else {
+            axis.setMinimumValue(d->m_geometry.maximumLayerCount() * d->m_geometry.heightDimension());
+            axis.setMaximumValue(0.0);
+        }
+        axis.setValueCount(dimensionCount[3]);
+        axes.append(axis);
+    }
+
+    qDebug() << "Low height trim:" << lowHeightTrim;
+    qDebug() << "High height trim:" << highHeightTrim;
+    qDebug() << "Number of height values:" << dimensionCount[3];
+
+    // Allocating the memory for the data
+    qDebug() << "Allocation space:" << dimensionCount[0]
+                                       * dimensionCount[1]
+                                       * dimensionCount[2]
+                                       * dimensionCount[3];
+    double *matrix = new double[dimensionCount[0]
+                                * dimensionCount[1]
+                                * dimensionCount[2]
+                                * dimensionCount[3]];
 }

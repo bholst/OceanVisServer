@@ -25,9 +25,24 @@ public:
 
     int layerCount(int x, int y) const;
     long start(int x, int y) const;
-    
+
+    int maximumLayerCount() const;
+
+    /**
+     * Set the dimension of the height.
+     * The real world height of a point is
+     * layerNumber * heightDimension
+     */
+    void setHeightDimension(double heightDimension);
+    /**
+     * Get the dimension of the height.
+     * The real world height of a point is
+     * layerNumber * heightDimension
+     */
+    double heightDimension() const;
+
     MapGeometry& operator=( const MapGeometry &other );
-    
+
     void detach();
 
 private:

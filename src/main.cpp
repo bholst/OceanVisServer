@@ -31,6 +31,8 @@ int main(int argc, char** argv)
             geometry = *parser.mapGeometry();
             qDebug() << "Loaded geometry.";
             qDebug() << "Value count:" << geometry.totalSize();
+            qDebug() << "Width:" << geometry.width();
+            qDebug() << "Height:" << geometry.height();
         }
         else {
             qDebug() << "File does not exist.";

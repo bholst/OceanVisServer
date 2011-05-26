@@ -20,6 +20,8 @@ public:
           m_width(0),
           m_height(0),
           m_totalSize(-1),
+          m_maximumLayerCount(0),
+          m_heightDimension(1.0),
           ref( 1 )
     {
     }
@@ -44,6 +46,8 @@ public:
         delete m_starts;
         m_starts = new long[m_width * m_height];
         memcpy(m_starts, other.m_starts, m_width * m_height * sizeof(long));
+        m_maximumLayerCount = other.m_maximumLayerCount;
+        m_heightDimension = other.m_heightDimension;
         ref = other.ref;
         return *this;
     }
@@ -53,6 +57,8 @@ public:
     int m_width;
     int m_height;
     int m_totalSize;
+    int m_maximumLayerCount;
+    double m_heightDimension;
     QAtomicInt ref;
 };
 
@@ -105,11 +111,15 @@ void MapGeometry::setLayerCounts(int *layerCounts)
     detach();
     d->m_layerCounts = new int[d->m_width * d->m_height];
     d->m_starts = new long[d->m_width * d->m_height];
+    d->m_maximumLayerCount = 0;
     long currentStart = 0;
     for(int i = 0; i < d->m_width * d->m_height; ++i) {
         d->m_layerCounts[i] = layerCounts[i];
         d->m_starts[i] = currentStart;
         currentStart += d->m_layerCounts[i];
+        if(d->m_layerCounts[i] > d->m_maximumLayerCount) {
+            d->m_maximumLayerCount = d->m_layerCounts[i];
+        }
     }
 
     d->m_totalSize = currentStart;
@@ -136,6 +146,21 @@ long MapGeometry::start(int x, int y) const
 long MapGeometry::totalSize() const
 {
     return d->m_totalSize;
+}
+
+int MapGeometry::maximumLayerCount() const
+{
+    return d->m_maximumLayerCount;
+}
+
+void MapGeometry::setHeightDimension(double heightDimension)
+{
+    d->m_heightDimension = heightDimension;
+}
+
+double MapGeometry::heightDimension() const
+{
+    return d->m_heightDimension;
 }
 
 MapGeometry& MapGeometry::operator=( const MapGeometry &other )
