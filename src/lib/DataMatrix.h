@@ -8,6 +8,7 @@
 #include <QtCore/QList>
 
 class CoordinateAxis;
+class QString;
 
 class DataMatrixPrivate;
 
@@ -19,8 +20,14 @@ public:
     void setCoordinateAxes(const QList<CoordinateAxis>& axes);
     QList<CoordinateAxis> coordinateAxes() const;
 
+    /**
+     * Set the value vector.
+     * Data matrix will take the ownership of values.
+     */
     void setValues(double *values);
     double *values();
+
+    QString toString() const;
 
 private:
     Q_DISABLE_COPY(DataMatrix)

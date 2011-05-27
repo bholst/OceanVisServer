@@ -14,6 +14,7 @@
 #include "MapGeometryParser.h"
 #include "MapGeometry.h"
 #include "DataLayer.h"
+#include "DataMatrix.h"
 #include "DimensionSlice.h"
 #include "DimensionSubset.h"
 #include "DimensionTrim.h"
@@ -45,8 +46,8 @@ int main(int argc, char** argv)
         subsets.append(&slice);
 
         DimensionTrim lon(Lon);
-        lon.setTrimLow(0.0);
-        lon.setTrimHigh(12.0);
+        lon.setTrimLow(-10.0);
+        lon.setTrimHigh(0.0);
         subsets.append(&lon);
 
         DimensionTrim lat(Lat);
@@ -65,13 +66,14 @@ int main(int argc, char** argv)
             layer->setFileName(QDateTime::currentDateTime(), argv[i]);
             layers.append(layer);
 
-            layer->dataSubset(subsets);
+            DataMatrix *matrix = layer->dataSubset(subsets);
+            qDebug() << matrix->toString();
         }
-        
+
         foreach(DataLayer *layer, layers) {
             delete layer;
         }
     }
-    OceanVisServer foo;    
+    OceanVisServer foo;
     return app.exec();
 }

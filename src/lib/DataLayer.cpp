@@ -27,10 +27,38 @@
 
 class DataLayerPrivate {
 public:
+    DataLayerPrivate()
+    {
+    }
+    
+    ~DataLayerPrivate(){
+        foreach(QFile *file, m_files) {
+            delete file;
+        }
+        foreach(double *vec, m_dataVectors) {
+            delete vec;
+        }
+    }
+
+    inline double value(double *dataVector,
+                        int x,
+                        int y,
+                        int height) const;
+
     MapGeometry m_geometry;
     QMap<QDateTime, QFile *> m_files;
     QMap<QDateTime, double *> m_dataVectors;
 };
+
+inline double DataLayerPrivate::value(double *dataVector, int x, int y, int height) const
+{
+    if(m_geometry.layerCount(x, y) > height) {
+        return dataVector[m_geometry.start(x, y) + height];
+    }
+    else {
+        return NAN;
+    }
+}
 
 DataLayer::DataLayer()
     : d(new DataLayerPrivate())
@@ -320,4 +348,33 @@ DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
                                 * dimensionCount[1]
                                 * dimensionCount[2]
                                 * dimensionCount[3]];
+
+    // Now write the data into the allocated array.
+    double *writePos = matrix;
+    for(QMap<QDateTime,double*>::const_iterator timeIt = lowTimeTrim;
+        timeIt != highTimeTrim;
+        ++timeIt)
+    {
+        for(int lonIt = lowLonTrim; lonIt != highLonTrim; ++lonIt) {
+            for(int latIt = lowLatTrim; latIt != highLatTrim; ++latIt) {
+                if(d->m_geometry.heightDimension() >= 0) {
+                    for(int heightIt = lowHeightTrim; heightIt != highHeightTrim; ++heightIt) {
+                        *writePos = d->value(timeIt.value(), lonIt, latIt, heightIt);
+                        writePos++;
+                    }
+                }
+                else {
+                    for(int heightIt = highHeightTrim - 1; heightIt >= lowHeightTrim; --heightIt) {
+                        *writePos = d->value(timeIt.value(), lonIt, latIt, heightIt);
+                        writePos++;
+                    }
+                }
+            }
+        }
+    }
+
+    DataMatrix *result = new DataMatrix();
+    result->setValues(matrix);
+    result->setCoordinateAxes(axes);
+    return result;
 }
