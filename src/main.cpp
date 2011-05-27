@@ -48,12 +48,12 @@ int main(int argc, char** argv)
         DimensionTrim lon(Lon);
         lon.setTrimLow(-10.0);
         lon.setTrimHigh(0.0);
-        subsets.append(&lon);
+//         subsets.append(&lon);
 
         DimensionTrim lat(Lat);
         lat.setTrimLow(50.0);
         lat.setTrimHigh(60.0);
-        subsets.append(&lat);
+//         subsets.append(&lat);
 
         DimensionSlice height(Height);
         height.setSlicePoint(0.0);
