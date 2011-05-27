@@ -5,6 +5,7 @@
 // STD
 #include <typeinfo>
 #include <cmath>
+#include <assert.h>
 
 // Qt
 #include <QtCore/QDataStream>
@@ -41,8 +42,8 @@ public:
     }
 
     inline double value(double *dataVector,
-                        int x,
-                        int y,
+                        int lon,
+                        int lat,
                         int height) const;
 
     MapGeometry m_geometry;
@@ -50,10 +51,13 @@ public:
     QMap<QDateTime, double *> m_dataVectors;
 };
 
-inline double DataLayerPrivate::value(double *dataVector, int x, int y, int height) const
+inline double DataLayerPrivate::value(double *dataVector, int lon, int lat, int height) const
 {
-    if(m_geometry.layerCount(x, y) > height) {
-        return dataVector[m_geometry.start(x, y) + height];
+    int layerCount = m_geometry.layerCount(lon, lat);
+    assert(layerCount >= 0);
+    qDebug() << "layerCount =" << layerCount;
+    if(layerCount > height) {
+        return dataVector[m_geometry.start(lon, lat) + height];
     }
     else {
         return NAN;
@@ -273,8 +277,8 @@ DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
         dimensionCount[2] = highLatTrim - lowLatTrim;
 
         CoordinateAxis axis(Lat);
-        axis.setMinimumValue(-180.0);
-        axis.setMaximumValue(+180.0);
+        axis.setMinimumValue(-90.0);
+        axis.setMaximumValue(+90.0);
         axis.setValueCount(dimensionCount[2]);
         axes.append(axis);
     }
@@ -318,9 +322,9 @@ DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
         axes.append(axis);
     }
     else {
-        lowLatTrim = 0;
-        highLatTrim = d->m_geometry.maximumLayerCount();
-        dimensionCount[3] = highLatTrim;
+        lowHeightTrim = 0;
+        highHeightTrim = d->m_geometry.maximumLayerCount();
+        dimensionCount[3] = highHeightTrim;
 
         CoordinateAxis axis(Height);
         if(d->m_geometry.heightDimension() >= 0) {
@@ -351,6 +355,7 @@ DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
 
     // Now write the data into the allocated array.
     double *writePos = matrix;
+
     for(QMap<QDateTime,double*>::const_iterator timeIt = lowTimeTrim;
         timeIt != highTimeTrim;
         ++timeIt)

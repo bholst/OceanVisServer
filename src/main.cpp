@@ -30,10 +30,12 @@ int main(int argc, char** argv)
             MapGeometryParser parser;
             parser.setFile(&file);
             geometry = *parser.mapGeometry();
+            geometry.setHeightDimension(-10.0);
             qDebug() << "Loaded geometry.";
             qDebug() << "Value count:" << geometry.totalSize();
             qDebug() << "Width:" << geometry.width();
             qDebug() << "Height:" << geometry.height();
+            qDebug() << "HeightDimension:" << geometry.heightDimension();
         }
         else {
             qDebug() << "File does not exist.";
@@ -50,14 +52,13 @@ int main(int argc, char** argv)
         lon.setTrimHigh(0.0);
 //         subsets.append(&lon);
 
-        DimensionTrim lat(Lat);
-        lat.setTrimLow(50.0);
-        lat.setTrimHigh(60.0);
-//         subsets.append(&lat);
+        DimensionSlice lat(Lat);
+        lat.setSlicePoint(-90.0);
+        subsets.append(&lat);
 
         DimensionSlice height(Height);
         height.setSlicePoint(0.0);
-        subsets.append(&height);
+//         subsets.append(&height);
 
         QList<DataLayer *> layers;
         for(int i = 2; i < argc; ++i) {

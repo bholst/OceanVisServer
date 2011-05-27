@@ -75,7 +75,7 @@ MapGeometry *MapGeometryParser::mapGeometry() const
                 (*in) >> columns;
                 bool ok = true;
                 width = columns.toInt(&ok);
-                if(!ok || height <= 0) {
+                if(!ok || width <= 0) {
                     break;
                 }
             }
@@ -89,9 +89,9 @@ MapGeometry *MapGeometryParser::mapGeometry() const
     if(height * width <= 0) {
         return 0;
     }
-    
-    int sizes[height * width];
+
     int total = height * width;
+    int sizes[total];
     for(int i = 0; i < total; ++i) {
         int size;
         (*in) >> size;

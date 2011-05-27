@@ -2,6 +2,9 @@
 // Copyright 2011      Bastian Holst <bastianholst@gmx.de>
 //
 
+// Qt
+#include <QtCore/QDebug>
+
 // Project
 #include "CoordinateAxis.h"
 
@@ -41,21 +44,13 @@ void DataMatrixPrivate::inStringUntilDimension(int until,
     CoordinateAxis axis = m_axes[until];
 
     int begin = 0;
-    int end = 0;
-    int incrementor = 0;
+    int end = axis.valueCount();
+    int incrementor = 1;
     int nextHigherLevelCount = higherLevelCount * axis.valueCount();
-    switch (axis.dimension()) {
-        case Height:
-        case Lat:
-            begin = axis.valueCount() - 1;
-            end = - 1;
-            incrementor = -1;
-            break;
-        default:
-            begin = 0;
-            end = axis.valueCount();
-            incrementor = 1;
-            break;
+    if(until == 1) {
+        begin = axis.valueCount() - 1;
+        end = - 1;
+        incrementor = -1;
     }
 
     for(int i = begin; i != end; i += incrementor) {

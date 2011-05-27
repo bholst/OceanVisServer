@@ -125,22 +125,22 @@ void MapGeometry::setLayerCounts(int *layerCounts)
     d->m_totalSize = currentStart;
 }
 
-int MapGeometry::layerCount(int x, int y) const
+int MapGeometry::layerCount(int lon, int lat) const
 {
-    if(x >= d->m_width || y >= d->m_height) {
+    if(lon >= d->m_width || lat >= d->m_height) {
         return -1;
     }
 
-    return d->m_layerCounts[x + y * d->m_width];
+    return d->m_layerCounts[lon + lat * d->m_width];
 }
 
-long MapGeometry::start(int x, int y) const
+long MapGeometry::start(int lon, int lat) const
 {
-    if(x >= d->m_width || y >= d->m_height) {
+    if(lon >= d->m_width || lat >= d->m_height) {
         return -1;
     }
 
-    return d->m_starts[x + y * d->m_width];
+    return d->m_starts[lon + lat * d->m_width];
 }
 
 long MapGeometry::totalSize() const

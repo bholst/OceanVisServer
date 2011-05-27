@@ -23,8 +23,8 @@ public:
 
     void setLayerCounts(int *layerCounts);
 
-    int layerCount(int x, int y) const;
-    long start(int x, int y) const;
+    int layerCount(int lon, int lat) const;
+    long start(int lon, int lat) const;
 
     int maximumLayerCount() const;
 
