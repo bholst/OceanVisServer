@@ -10,6 +10,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QList>
 #include <QtCore/QDateTime>
+#include <QtGui/QImage>
 #include <QCoreApplication>
 
 // Project
@@ -60,7 +61,7 @@ int main(int argc, char** argv)
 //         lat.setTrimLow(0.0);
 //         lat.setTrimHigh(90.0);
         lat.setSlicePoint(-0.1);
-        subsets.append(&lat);
+//         subsets.append(&lat);
 
         DimensionSlice height(Height);
         height.setSlicePoint(0.0);
@@ -75,6 +76,7 @@ int main(int argc, char** argv)
 
             DataMatrix *matrix = layer->dataSubset(subsets);
             std::cout << matrix->toString().toStdString() << std::endl;
+            matrix->toImage().save("/home/bastian/oceanvistest.png");
         }
 
         foreach(DataLayer *layer, layers) {

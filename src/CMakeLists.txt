@@ -8,6 +8,6 @@ include_directories(${QT_INCLUDES}
 set(OCEANVISSERVER_SRCS OceanVisServer.cpp main.cpp)
 qt4_automoc(${OCEANVISSERVER_SRCS})
 add_executable(OceanVisServer ${OCEANVISSERVER_SRCS})
-target_link_libraries(OceanVisServer ${QT_QTCORE_LIBRARY} oceanvis)
+target_link_libraries(OceanVisServer ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} oceanvis)
 
 add_subdirectory(tests)

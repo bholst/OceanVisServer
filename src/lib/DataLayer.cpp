@@ -355,6 +355,7 @@ DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
 
     // Now write the data into the allocated array.
     double *writePos = matrix;
+    double maxValue = 0.0;
 
     for(QMap<QDateTime,double*>::const_iterator timeIt = lowTimeTrim;
         timeIt != highTimeTrim;
@@ -364,13 +365,21 @@ DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
             for(int latIt = lowLatTrim; latIt != highLatTrim; ++latIt) {
                 if(d->m_geometry.heightDimension() >= 0) {
                     for(int heightIt = lowHeightTrim; heightIt != highHeightTrim; ++heightIt) {
-                        *writePos = d->value(timeIt.value(), lonIt, latIt, heightIt);
+                        double value = d->value(timeIt.value(), lonIt, latIt, heightIt);
+                        if(value > maxValue) {
+                            maxValue = value;
+                        }
+                        *writePos = value;
                         writePos++;
                     }
                 }
                 else {
                     for(int heightIt = highHeightTrim - 1; heightIt >= lowHeightTrim; --heightIt) {
-                        *writePos = d->value(timeIt.value(), lonIt, latIt, heightIt);
+                        double value = d->value(timeIt.value(), lonIt, latIt, heightIt);
+                        if(value > maxValue) {
+                            maxValue = value;
+                        }
+                        *writePos = value;
                         writePos++;
                     }
                 }
@@ -381,5 +390,6 @@ DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
     DataMatrix *result = new DataMatrix();
     result->setValues(matrix);
     result->setCoordinateAxes(axes);
+    result->setMaxValue(maxValue);
     return result;
 }

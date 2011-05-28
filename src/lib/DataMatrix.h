@@ -27,7 +27,12 @@ public:
     void setValues(double *values);
     double *values();
 
+    void setMaxValue(double maxValue);
+    double maxValue();
+
     QString toString() const;
+
+    QImage toImage() const;
 
 private:
     Q_DISABLE_COPY(DataMatrix)
