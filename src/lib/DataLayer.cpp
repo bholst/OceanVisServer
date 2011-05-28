@@ -211,7 +211,7 @@ DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
     int highLonTrim = 0; // The first longitude value which will not be in the returned matrix.
 
     if(lonSliceIt != dimensionSlices.end()) {
-        int slicePoint = round(
+        int slicePoint = std::floor(
             (lonSliceIt->slicePoint().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width());
         lowLonTrim = slicePoint;
         highLonTrim = slicePoint + 1;
@@ -219,9 +219,9 @@ DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
     }
     else if(lonTrimIt != dimensionTrims.end()) {
         lowLonTrim = std::ceil(
-            (lonTrimIt->trimLow().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width());
+            (lonTrimIt->trimLow().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width() - 0.5);
         highLonTrim = std::floor(
-            (lonTrimIt->trimHigh().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width()) + 1;
+            (lonTrimIt->trimHigh().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width() - 0.5) + 1;
         dimensionCount[1] = highLonTrim - lowLonTrim;
 
         CoordinateAxis axis(Lon);
@@ -252,7 +252,7 @@ DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
     int highLatTrim = 0; // The first latitude value which will not be in the returned matrix.
 
     if(latSliceIt != dimensionSlices.end()) {
-        int slicePoint = round(
+        int slicePoint = std::floor(
             (latSliceIt->slicePoint().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height());
         lowLatTrim = slicePoint;
         highLatTrim = slicePoint + 1;
@@ -260,9 +260,9 @@ DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
     }
     else if(latTrimIt != dimensionTrims.end()) {
         lowLatTrim = std::ceil(
-            (latTrimIt->trimLow().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height());
+            (latTrimIt->trimLow().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height() - 0.5);
         highLatTrim = std::floor(
-            (latTrimIt->trimHigh().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height()) + 1;
+            (latTrimIt->trimHigh().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height() - 0.5) + 1;
         dimensionCount[2] = highLatTrim - lowLatTrim;
 
         CoordinateAxis axis(Lat);

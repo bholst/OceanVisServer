@@ -2,6 +2,9 @@
 // Copyright 2011      Bastian Holst <bastianholst@gmx.de>
 //
 
+// STD
+#include <iostream>
+
 // Qt
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -47,18 +50,21 @@ int main(int argc, char** argv)
         slice.setSlicePoint(QDateTime::currentDateTime());
         subsets.append(&slice);
 
-        DimensionTrim lon(Lon);
-        lon.setTrimLow(-10.0);
-        lon.setTrimHigh(0.0);
+        DimensionSlice lon(Lon);
+//         lon.setTrimLow(-180.0);
+//         lon.setTrimHigh(-23.0);
+        lon.setSlicePoint(-46);
 //         subsets.append(&lon);
 
         DimensionSlice lat(Lat);
-        lat.setSlicePoint(-90.0);
+//         lat.setTrimLow(0.0);
+//         lat.setTrimHigh(90.0);
+        lat.setSlicePoint(-0.1);
         subsets.append(&lat);
 
         DimensionSlice height(Height);
         height.setSlicePoint(0.0);
-//         subsets.append(&height);
+        subsets.append(&height);
 
         QList<DataLayer *> layers;
         for(int i = 2; i < argc; ++i) {
@@ -68,13 +74,13 @@ int main(int argc, char** argv)
             layers.append(layer);
 
             DataMatrix *matrix = layer->dataSubset(subsets);
-            qDebug() << matrix->toString();
+            std::cout << matrix->toString().toStdString() << std::endl;
         }
 
         foreach(DataLayer *layer, layers) {
             delete layer;
         }
     }
-    OceanVisServer foo;
-    return app.exec();
+//     OceanVisServer foo;
+//     return app.exec();
 }
