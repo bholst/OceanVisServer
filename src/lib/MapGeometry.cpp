@@ -131,7 +131,7 @@ int MapGeometry::layerCount(int lon, int lat) const
         return -1;
     }
 
-    return d->m_layerCounts[lon + lat * d->m_width];
+    return d->m_layerCounts[(lon + d->m_width / 2) % d->m_width + lat * d->m_width];
 }
 
 long MapGeometry::start(int lon, int lat) const
@@ -140,7 +140,7 @@ long MapGeometry::start(int lon, int lat) const
         return -1;
     }
 
-    return d->m_starts[lon + lat * d->m_width];
+    return d->m_starts[(lon + d->m_width / 2) % d->m_width + lat * d->m_width];
 }
 
 long MapGeometry::totalSize() const
