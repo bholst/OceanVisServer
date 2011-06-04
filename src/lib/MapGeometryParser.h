@@ -22,7 +22,7 @@ public:
     
     QTextStream *textStream() const;
     
-    MapGeometry *mapGeometry() const;
+    MapGeometry mapGeometry() const;
     
 private:
     void parse();

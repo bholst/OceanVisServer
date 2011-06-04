@@ -108,7 +108,7 @@ void DataLayer::setFileName(const QDateTime& dateTime, const QString& fileName)
                 error = true;
             }
             stream >> dataVector[i];
-            qDebug() << "Read" << dataVector[i];
+//             qDebug() << "Read" << dataVector[i];
         }
         if(!stream.atEnd()) {
             qDebug() << "ERROR: file to long, too much data.";

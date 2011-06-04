@@ -41,7 +41,7 @@ QTextStream *MapGeometryParser::textStream() const
     return m_textStream;
 }
 
-MapGeometry *MapGeometryParser::mapGeometry() const
+MapGeometry MapGeometryParser::mapGeometry() const
 {
     QTextStream *in = m_textStream;
     int height = 0;
@@ -87,7 +87,8 @@ MapGeometry *MapGeometryParser::mapGeometry() const
     }
     
     if(height * width <= 0) {
-        return 0;
+        // TODO: Throw exception.
+        return MapGeometry();
     }
 
     int total = height * width;
@@ -98,9 +99,9 @@ MapGeometry *MapGeometryParser::mapGeometry() const
         sizes[i] = size;
     }
     
-    MapGeometry *geometry = new MapGeometry();
-    geometry->setWidth(width);
-    geometry->setHeight(height);
-    geometry->setLayerCounts(sizes);
+    MapGeometry geometry;
+    geometry.setWidth(width);
+    geometry.setHeight(height);
+    geometry.setLayerCounts(sizes);
     return geometry;
 }

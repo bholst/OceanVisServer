@@ -21,17 +21,15 @@ private Q_SLOTS:
     void testParsing();
 
 private:
-    MapGeometry *m_geometry;
+    MapGeometry m_geometry;
 };
 
 TestMapGeometryParser::TestMapGeometryParser()
-    : m_geometry(0)
 {
 }
 
 TestMapGeometryParser::~TestMapGeometryParser()
 {
-    delete m_geometry;
 }
 
 void TestMapGeometryParser::initTestCase()
@@ -58,9 +56,9 @@ void TestMapGeometryParser::testParsing_data()
     QTest::addColumn<int>("layerCount");
     QTest::addColumn<long>("start");
 
-    QTest::newRow("col0row0") << 0 << 0 << 1 << (long) 0;
-    QTest::newRow("col1row0") << 1 << 0 << 2 << (long) 1;
-    QTest::newRow("col3row1") << 3 << 1 << 6 << (long) 15;
+    QTest::newRow("col0row0") << 0 << 0 << 0 << (long) 3;
+    QTest::newRow("col1row0") << 1 << 0 << 3 << (long) 3;
+    QTest::newRow("col3row1") << 3 << 1 << 0 << (long) 10;
 }
 
 void TestMapGeometryParser::testParsing()
@@ -70,8 +68,8 @@ void TestMapGeometryParser::testParsing()
     QFETCH(int, layerCount);
     QFETCH(long, start);
 
-    QCOMPARE(m_geometry->layerCount(x, y), layerCount);
-    QCOMPARE(m_geometry->start(x, y), start);
+    QCOMPARE(m_geometry.layerCount(x, y), layerCount);
+    QCOMPARE(m_geometry.start(x, y), start);
 }
 
 QTEST_MAIN( TestMapGeometryParser )
