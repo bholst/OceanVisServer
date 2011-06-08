@@ -22,6 +22,9 @@ public:
     DataLayer();
     virtual ~DataLayer();
 
+    void setName(const QString& name);
+    QString name() const;
+
     void setFileName(const QDateTime& dateTime, const QString& fileName);
     QString fileName(const QDateTime& dateTime) const;
 

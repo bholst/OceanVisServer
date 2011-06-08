@@ -31,7 +31,7 @@ public:
     DataLayerPrivate()
     {
     }
-    
+
     ~DataLayerPrivate(){
         foreach(QFile *file, m_files) {
             delete file;
@@ -46,6 +46,7 @@ public:
                         int lat,
                         int height) const;
 
+    QString m_name;
     MapGeometry m_geometry;
     QMap<QDateTime, QFile *> m_files;
     QMap<QDateTime, double *> m_dataVectors;
@@ -72,6 +73,16 @@ DataLayer::DataLayer()
 DataLayer::~DataLayer()
 {
     delete d;
+}
+
+void DataLayer::setName(const QString& name)
+{
+    d->m_name = name;
+}
+
+QString DataLayer::name() const
+{
+    return d->m_name;
 }
 
 MapGeometry DataLayer::geometry() const
@@ -108,7 +119,6 @@ void DataLayer::setFileName(const QDateTime& dateTime, const QString& fileName)
                 error = true;
             }
             stream >> dataVector[i];
-//             qDebug() << "Read" << dataVector[i];
         }
         if(!stream.atEnd()) {
             qDebug() << "ERROR: file to long, too much data.";

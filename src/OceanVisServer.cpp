@@ -6,12 +6,16 @@
 #include <iostream>
 
 // Qt
+#include <QtAlgorithms>
 #include <QtNetwork/QTcpSocket>
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 #include <QtCore/QTextStream>
 #include <QtCore/QStringList>
 #include <QtCore/QDateTime>
+
+// Project
+#include "DataLayer.h"
 
 // Self
 #include "OceanVisServer.h"
@@ -22,7 +26,9 @@ OceanVisServer::OceanVisServer(QObject *parent)
 }
 
 OceanVisServer::~OceanVisServer()
-{}
+{
+    qDeleteAll(m_layers);
+}
 
 void OceanVisServer::incomingConnection(int socket)
 {
@@ -45,6 +51,16 @@ void OceanVisServer::pause()
 void OceanVisServer::resume()
 {
     disabled = false;
+}
+
+void OceanVisServer::setLayers(const QList<DataLayer *>& layers)
+{
+    m_layers = layers;
+}
+
+QList<DataLayer *> OceanVisServer::layers() const
+{
+    return m_layers;
 }
 
 void OceanVisServer::readClient()

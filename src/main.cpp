@@ -22,20 +22,18 @@
 int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
+    QList<DataLayer *> layers;
 
     if(argc >= 2) {
         QString path(argv[1]);
         ConfigurationParser parser;
         parser.setPath(path);
         parser.read();
-        QList<DataLayer *> layers = parser.layers();
-
-        foreach(DataLayer *layer, layers) {
-            delete layer;
-        }
+        layers += parser.layers();
     }
 
-    OceanVisServer foo;
-    foo.listen(QHostAddress::Any, 8080);
+    OceanVisServer server;
+    server.setLayers(layers);
+    server.listen(QHostAddress::Any, 8080);
     return app.exec();
 }

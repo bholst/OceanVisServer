@@ -153,6 +153,10 @@ DataLayer *ConfigurationParser::readLayer()
                 layer->setFileName(dateTime, readCharacters());
                 qDebug() << "Added file for time:" << dateTime;
             }
+            else if(name() == "name") {
+                layer->setName(readCharacters());
+                qDebug() << "Name:" << layer->name();
+            }
             else {
                 readUnknownElement();
             }
