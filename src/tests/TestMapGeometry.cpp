@@ -42,9 +42,9 @@ void TestMapGeometry::testMapGeometry_data()
     QTest::addColumn<int>("layerCount");
     QTest::addColumn<long>("start");
 
-    QTest::newRow("col0row0") << 0 << 0 << 1 << (long) 0;
-    QTest::newRow("col1row0") << 1 << 0 << 2 << (long) 1;
-    QTest::newRow("col3row1") << 3 << 1 << 6 << (long) 15;
+    QTest::newRow("col0row0") << 2 << 0 << 1 << (long) 0;
+    QTest::newRow("col1row0") << 3 << 0 << 2 << (long) 1;
+    QTest::newRow("col3row1") << 1 << 1 << 6 << (long) 15;
 }
 
 void TestMapGeometry::testMapGeometry()

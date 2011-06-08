@@ -22,7 +22,7 @@ void TestDataMatrix::test()
     axes.append(CoordinateAxis(Lat));
     axes.append(CoordinateAxis(Lon));
     original.setCoordinateAxes(axes);
-    double *values1;
+    double *values1 = new double[5];
     original.setValues(values1);
 
     QCOMPARE(original.coordinateAxes(), axes);

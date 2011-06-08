@@ -97,6 +97,7 @@ QList<CoordinateAxis> DataMatrix::coordinateAxes() const
 
 void DataMatrix::setValues(double *values)
 {
+    delete d->m_values;
     d->m_values = values;
 }
 
