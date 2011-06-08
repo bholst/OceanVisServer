@@ -23,7 +23,15 @@ public:
     void pause();
     void resume();
 
+    /**
+     * Set the layers the server has to serve.
+     * This object will take the ownership of each layer.
+     */
     void setLayers(const QList<DataLayer *>& layers);
+
+    /**
+     * Return the layers of the server.
+     */
     QList<DataLayer *> layers() const;
 
 private slots:
