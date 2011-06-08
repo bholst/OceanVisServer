@@ -72,22 +72,50 @@ void OceanVisServer::readClient()
 
     if(socket->canReadLine()) {
         QStringList tokens = QString(socket->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
-        if(tokens[0] == "GET") {
-            QTextStream os(socket);
-            os.setAutoDetectUnicode(true);
-            os << "HTTP/1.0 200 Ok\r\n"
-                  "Content-Type: text/html; charset=\"utf-8\"\r\n"
-                  "\r\n"
-                  "<h1>Nothing to see here</h1>\n"
-               << QDateTime::currentDateTime().toString() << "\n";
-            socket->close();
+        if(tokens[0] != "GET") {
+            return;
+        }
 
-            qDebug() << "Wrote to client";
+        QString url = tokens[1];
+        QStringList urlSplit = url.split('?');
+        if(urlSplit.size() < 2) {
+            qDebug() << "Invalid request";
+            return;
+        }
 
-            if(socket->state() == QTcpSocket::UnconnectedState) {
-                delete socket;
-                qDebug() << "Connection closed";
+        QStringList args = urlSplit.at(1).split('&');
+
+        QString service;
+        foreach(QString arg, args) {
+            QStringList argParts = arg.split('=');
+            if(argParts.size() != 2) {
+                qDebug() << "Strange arguments.";
+                continue;
             }
+
+            if(argParts[0] == "SERVICE") {
+                service = argParts[1];
+            }
+        }
+
+        if(service != "wcs") {
+            return;
+        }
+
+        QTextStream os(socket);
+        os.setAutoDetectUnicode(true);
+        os << "HTTP/1.0 200 Ok\r\n"
+              "Content-Type: text/html; charset=\"utf-8\"\r\n"
+              "\r\n"
+              "<h1>Nothing to see here, yet</h1>\n"
+           << QDateTime::currentDateTime().toString() << "\n";
+        socket->close();
+
+        qDebug() << "Wrote to client";
+
+        if(socket->state() == QTcpSocket::UnconnectedState) {
+            delete socket;
+            qDebug() << "Connection closed";
         }
     }
 }
