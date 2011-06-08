@@ -16,10 +16,9 @@
 // Self
 #include "OceanVisServer.h"
 
-OceanVisServer::OceanVisServer(quint16 port, QObject *parent)
+OceanVisServer::OceanVisServer(QObject *parent)
     : disabled(false)
 {
-    listen(QHostAddress::Any, port);
 }
 
 OceanVisServer::~OceanVisServer()

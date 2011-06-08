@@ -35,6 +35,7 @@ int main(int argc, char** argv)
         }
     }
 
-    OceanVisServer foo(8080);
+    OceanVisServer foo;
+    foo.listen(QHostAddress::Any, 8080);
     return app.exec();
 }

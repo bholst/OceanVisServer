@@ -11,7 +11,7 @@ class OceanVisServer : public QTcpServer
 {
 Q_OBJECT
 public:
-    OceanVisServer(quint16 port, QObject *parent = 0);
+    OceanVisServer(QObject *parent = 0);
     virtual ~OceanVisServer();
 
     void incomingConnection(int socket);
