@@ -53,12 +53,12 @@ void OceanVisServer::resume()
     disabled = false;
 }
 
-void OceanVisServer::setLayers(const QList<DataLayer *>& layers)
+void OceanVisServer::setLayers(const QHash<QString,DataLayer *>& layers)
 {
     m_layers = layers;
 }
 
-QList<DataLayer *> OceanVisServer::layers() const
+QHash<QString,DataLayer *> OceanVisServer::layers() const
 {
     return m_layers;
 }

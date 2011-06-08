@@ -8,7 +8,6 @@
 // Qt
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
-#include <QtCore/QList>
 #include <QtCore/QDateTime>
 #include <QtGui/QImage>
 #include <QCoreApplication>
@@ -22,14 +21,14 @@
 int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
-    QList<DataLayer *> layers;
+    QHash<QString,DataLayer *> layers;
 
     if(argc >= 2) {
         QString path(argv[1]);
         ConfigurationParser parser;
         parser.setPath(path);
         parser.read();
-        layers += parser.layers();
+        layers = parser.layers();
     }
 
     OceanVisServer server;

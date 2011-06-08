@@ -75,7 +75,7 @@ void ConfigurationParser::readMap()
             }
             else if (name() == "layer") {
                 DataLayer *layer = readLayer();
-                m_layers.append(layer);
+                m_layers.insert(layer->name(), layer);
             }
             else {
                 readUnknownElement();
@@ -190,7 +190,7 @@ QString ConfigurationParser::readCharacters()
     return string;
 }
 
-QList<DataLayer *> ConfigurationParser::layers() const
+QHash<QString,DataLayer *> ConfigurationParser::layers() const
 {
     return m_layers;
 }

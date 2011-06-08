@@ -6,7 +6,7 @@
 #define CONFIGURATIONPARSER_H
 
 #include <QtCore/QXmlStreamReader>
-#include <QtCore/QList>
+#include <QtCore/QHash>
 
 class DataLayer;
 class MapGeometry;
@@ -18,7 +18,7 @@ public:
 
     void read();
 
-    QList<DataLayer *> layers() const;
+    QHash<QString,DataLayer *> layers() const;
 
     void setPath(const QString &path);
     QString path() const;
@@ -30,7 +30,7 @@ private:
     QString readCharacters();
 
     QString m_path;
-    QList<DataLayer *> m_layers;
+    QHash<QString,DataLayer *> m_layers;
 };
 
 #endif

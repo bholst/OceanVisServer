@@ -6,7 +6,7 @@
 #define OCEANVISSERVER_H
 
 // Qt
-#include <QtCore/QList>
+#include <QtCore/QHash>
 #include <QtNetwork/QTcpServer>
 
 class DataLayer;
@@ -27,12 +27,12 @@ public:
      * Set the layers the server has to serve.
      * This object will take the ownership of each layer.
      */
-    void setLayers(const QList<DataLayer *>& layers);
+    void setLayers(const QHash<QString,DataLayer *>& layers);
 
     /**
      * Return the layers of the server.
      */
-    QList<DataLayer *> layers() const;
+    QHash<QString,DataLayer *> layers() const;
 
 private slots:
     void readClient();
@@ -40,7 +40,7 @@ private slots:
 
 private:
     bool disabled;
-    QList<DataLayer *> m_layers;
+    QHash<QString,DataLayer *> m_layers;
 };
 
 #endif
