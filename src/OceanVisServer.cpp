@@ -2,24 +2,87 @@
 // Copyright 2011      Bastian Holst <bastianholst@gmx.de>
 //
 
-#include "OceanVisServer.h"
-
-#include <QTimer>
+// Standard
 #include <iostream>
 
-OceanVisServer::OceanVisServer()
+// Qt
+#include <QtNetwork/QTcpSocket>
+#include <QtCore/QString>
+#include <QtCore/QDebug>
+#include <QtCore/QTextStream>
+#include <QtCore/QStringList>
+#include <QtCore/QDateTime>
+
+// Self
+#include "OceanVisServer.h"
+
+OceanVisServer::OceanVisServer(quint16 port, QObject *parent)
+    : disabled(false)
 {
-    QTimer* timer = new QTimer(this);
-    connect( timer, SIGNAL(timeout()), SLOT(output()) );
-    timer->start( 1000 );
+    listen(QHostAddress::Any, port);
 }
 
 OceanVisServer::~OceanVisServer()
 {}
 
-void OceanVisServer::output()
+void OceanVisServer::incomingConnection(int socket)
 {
-    std::cout << "Hello World!" << std::endl;
+    if(disabled)
+        return;
+
+    QTcpSocket *s = new QTcpSocket(this);
+    connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));
+    connect(s, SIGNAL(disconnected()), this, SLOT(discardClient()));
+    s->setSocketDescriptor(socket);
+
+    qDebug() << "New Connection";
+}
+
+void OceanVisServer::pause()
+{
+    disabled = true;
+}
+
+void OceanVisServer::resume()
+{
+    disabled = false;
+}
+
+void OceanVisServer::readClient()
+{
+    if(disabled)
+        return;
+
+    QTcpSocket *socket = (QTcpSocket *) sender();
+
+    if(socket->canReadLine()) {
+        QStringList tokens = QString(socket->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
+        if(tokens[0] == "GET") {
+            QTextStream os(socket);
+            os.setAutoDetectUnicode(true);
+            os << "HTTP/1.0 200 Ok\r\n"
+                  "Content-Type: text/html; charset=\"utf-8\"\r\n"
+                  "\r\n"
+                  "<h1>Nothing to see here</h1>\n"
+               << QDateTime::currentDateTime().toString() << "\n";
+            socket->close();
+
+            qDebug() << "Wrote to client";
+
+            if(socket->state() == QTcpSocket::UnconnectedState) {
+                delete socket;
+                qDebug() << "Connection closed";
+            }
+        }
+    }
+}
+
+void OceanVisServer::discardClient()
+{
+    QTcpSocket *socket = (QTcpSocket *) sender();
+    socket->deleteLater();
+
+    qDebug() << "Connection closed";
 }
 
 #include "OceanVisServer.moc"

@@ -1,6 +1,6 @@
 project(OceanVisServer)
 cmake_minimum_required(VERSION 2.6)
-find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui)
+find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtNetwork)
 
 INCLUDE(CTest)
 
@@ -16,6 +16,7 @@ macro(oceanvis_add_test TEST_NAME)
     target_link_libraries(${TEST_NAME} ${QT_QTCORE_LIBRARY}
                                        ${QT_QTGUI_LIBRARY}
                                        ${QT_QTTEST_LIBRARY}
+                                       ${QT_QTNETWORK_LIBRARY}
                                        oceanvis)
     add_test( ${TEST_NAME} ${TEST_NAME} )
 endmacro( oceanvis_add_test TEST_NAME )

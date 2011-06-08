@@ -22,6 +22,7 @@
 int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
+
     if(argc >= 2) {
         QString path(argv[1]);
         ConfigurationParser parser;
@@ -33,6 +34,7 @@ int main(int argc, char** argv)
             delete layer;
         }
     }
-//     OceanVisServer foo;
-//     return app.exec();
+
+    OceanVisServer foo(8080);
+    return app.exec();
 }
