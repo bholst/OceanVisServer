@@ -86,6 +86,8 @@ void OceanVisServer::readClient()
         QStringList args = urlSplit.at(1).split('&');
 
         QString service;
+        QString request;
+        QStringList coverages;
         foreach(QString arg, args) {
             QStringList argParts = arg.split('=');
             if(argParts.size() != 2) {
@@ -96,10 +98,41 @@ void OceanVisServer::readClient()
             if(argParts[0] == "SERVICE") {
                 service = argParts[1];
             }
+            else if(argParts[0] == "VERSION") {
+                if(argParts[1] != "2.0.0") {
+                    // TODO: This is the wrong behavior.
+                    qDebug() << "Wrong version.";
+                    return;
+                }
+            }
+            else if(argParts[0] == "REQUEST") {
+                request = argParts[1];
+            }
+            else if(argParts[0] == "COVERAGEID") {
+                coverages = argParts[1].split(',');
+            }
         }
 
         if(service != "wcs") {
+            qDebug() << "Wrong service";
             return;
+        }
+
+        if(request.isEmpty()) {
+            qDebug() << "No request.";
+            return;
+        }
+
+        QList<DataLayer *> selectedLayers;
+        foreach(QString coverage, coverages) {
+            QHash<QString,DataLayer *>::const_iterator layer = m_layers.constFind(coverage);
+            if(layer == m_layers.constEnd()) {
+                qDebug() << "Coverage not found.";
+                return;
+            }
+            else {
+                selectedLayers.append(layer.value());
+            }
         }
 
         QTextStream os(socket);
@@ -107,7 +140,8 @@ void OceanVisServer::readClient()
         os << "HTTP/1.0 200 Ok\r\n"
               "Content-Type: text/html; charset=\"utf-8\"\r\n"
               "\r\n"
-              "<h1>Nothing to see here, yet</h1>\n"
+              "<h1>" + request + "</h1>\n"
+              "<p>Selected " + QString::number(selectedLayers.size()) + " layers.</p>"
            << QDateTime::currentDateTime().toString() << "\n";
         socket->close();
 
