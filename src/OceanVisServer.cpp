@@ -13,6 +13,7 @@
 #include <QtCore/QTextStream>
 #include <QtCore/QStringList>
 #include <QtCore/QDateTime>
+#include <QtCore/QRegExp>
 
 // Project
 #include "DataLayer.h"
@@ -71,55 +72,82 @@ void OceanVisServer::readClient()
     QTcpSocket *socket = (QTcpSocket *) sender();
 
     if(socket->canReadLine()) {
-        QStringList tokens = QString(socket->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
-        if(tokens[0] != "GET") {
-            return;
-        }
-
-        QString url = tokens[1];
-        QStringList urlSplit = url.split('?');
-        if(urlSplit.size() < 2) {
-            qDebug() << "Invalid request";
-            return;
-        }
-
-        QStringList args = urlSplit.at(1).split('&');
-
-        QString service;
-        QString request;
         QStringList coverages;
-        foreach(QString arg, args) {
-            QStringList argParts = arg.split('=');
-            if(argParts.size() != 2) {
-                qDebug() << "Strange arguments.";
-                continue;
+        QString request;
+
+        QStringList tokens = QString(socket->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
+        if(tokens[0] == "GET") {
+            QString url = tokens[1];
+            QStringList urlSplit = url.split('?');
+            if(urlSplit.size() < 2) {
+                qDebug() << "Invalid request";
+                return;
             }
 
-            if(argParts[0] == "SERVICE") {
-                service = argParts[1];
-            }
-            else if(argParts[0] == "VERSION") {
-                if(argParts[1] != "2.0.0") {
-                    // TODO: This is the wrong behavior.
-                    qDebug() << "Wrong version.";
-                    return;
+            QStringList args = urlSplit.at(1).split('&');
+
+            QString service;
+            bool tiff = false;
+            foreach(QString arg, args) {
+                QStringList argParts = arg.split('=');
+                if(argParts.size() != 2) {
+                    qDebug() << "Strange arguments.";
+                    continue;
+                }
+
+                if(argParts[0] == "SERVICE") {
+                    service = argParts[1];
+                }
+                else if(argParts[0] == "VERSION") {
+                    if(argParts[1] != "2.0.0") {
+                        // TODO: This is the wrong behavior.
+                        qDebug() << "Wrong version.";
+                        return;
+                    }
+                }
+                else if(argParts[0] == "REQUEST") {
+                    request = argParts[1];
+                }
+                else if(argParts[0] == "COVERAGEID") {
+                    coverages = argParts[1].split(',');
+                }
+                else if(argParts[0] == "FORMAT") {
+                    if(argParts[1] == "image/tiff") {
+                        tiff = true;
+                    }
+                }
+                else if(argParts[0] == "SUBSET") {
+                    qDebug() << "Parsing subset.";
+                    QString arg = argParts[1];
+                    QRegExp exp("(lon|lat),http://www.opengis.net/def/crs/EPSG/0/4326\\(([-+]?[0-9]{0,}\\.?[0-9]{0,}),([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
+                    exp.indexIn(arg);
+                    if(exp.pos() > -1) {
+                        QString axis = exp.cap(1);
+                        QString min = exp.cap(2);
+                        QString max = exp.cap(3);
+                        
+                        qDebug() << "Axis:" << axis;
+                        qDebug() << "Min:" << min;
+                        qDebug() << "Max:" << max;
+                    }
                 }
             }
-            else if(argParts[0] == "REQUEST") {
-                request = argParts[1];
+
+            if(service != "wcs") {
+                qDebug() << "Wrong service";
+                return;
             }
-            else if(argParts[0] == "COVERAGEID") {
-                coverages = argParts[1].split(',');
+
+            if(request.isEmpty()) {
+                qDebug() << "No request.";
+                return;
             }
         }
-
-        if(service != "wcs") {
-            qDebug() << "Wrong service";
+        else if(tokens[0] == "POST") {
+            qDebug() << "POST not supported yet.";
             return;
         }
-
-        if(request.isEmpty()) {
-            qDebug() << "No request.";
+        else {
             return;
         }
 
