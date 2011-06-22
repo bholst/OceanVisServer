@@ -17,6 +17,8 @@
 
 // Project
 #include "DataLayer.h"
+#include "RequestBase.h"
+#include "GetCoverage.h"
 
 // Self
 #include "OceanVisServer.h"
@@ -73,7 +75,8 @@ void OceanVisServer::readClient()
 
     if(socket->canReadLine()) {
         QStringList coverages;
-        QString request;
+        
+        RequestBase *request = 0;
 
         QStringList tokens = QString(socket->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
         if(tokens[0] == "GET") {
@@ -83,11 +86,26 @@ void OceanVisServer::readClient()
                 qDebug() << "Invalid request";
                 return;
             }
+            
+            QRegExp serviceType("SERVICE=(wcs)");
+            serviceType.indexIn(urlSplit.at(1));
+            QRegExp requestType("REQUEST=(GetCoverage)");
+            requestType.indexIn(urlSplit.at(1));
+
+            if(serviceType.pos() <= -1) {
+                return;
+            }
+            if(serviceType.cap(1) == "wcs"
+               && requestType.cap(1) == "GetCoverage")
+            {
+                request = new GetCoverage();
+            }
+            else {
+                return;
+            }
 
             QStringList args = urlSplit.at(1).split('&');
 
-            QString service;
-            bool tiff = false;
             foreach(QString arg, args) {
                 QStringList argParts = arg.split('=');
                 if(argParts.size() != 2) {
@@ -95,25 +113,13 @@ void OceanVisServer::readClient()
                     continue;
                 }
 
-                if(argParts[0] == "SERVICE") {
-                    service = argParts[1];
-                }
                 else if(argParts[0] == "VERSION") {
-                    if(argParts[1] != "2.0.0") {
-                        // TODO: This is the wrong behavior.
-                        qDebug() << "Wrong version.";
-                        return;
-                    }
-                }
-                else if(argParts[0] == "REQUEST") {
-                    request = argParts[1];
+                    request->setVersion(argParts[1]);
                 }
                 else if(argParts[0] == "COVERAGEID") {
-                    coverages = argParts[1].split(',');
-                }
-                else if(argParts[0] == "FORMAT") {
-                    if(argParts[1] == "image/tiff") {
-                        tiff = true;
+                    GetCoverage *getCoverage = dynamic_cast<GetCoverage *>(request);
+                    if(getCoverage) {
+                        getCoverage->setCoverageId(argParts[1]);
                     }
                 }
                 else if(argParts[0] == "SUBSET") {
@@ -132,22 +138,18 @@ void OceanVisServer::readClient()
                     }
                 }
             }
-
-            if(service != "wcs") {
-                qDebug() << "Wrong service";
-                return;
-            }
-
-            if(request.isEmpty()) {
-                qDebug() << "No request.";
-                return;
-            }
         }
         else if(tokens[0] == "POST") {
             qDebug() << "POST not supported yet.";
             return;
         }
         else {
+            return;
+        }
+        
+        if(request->version() != "2.0.0") {
+            // TODO: This is the wrong behavior.
+            qDebug() << "Wrong version.";
             return;
         }
 
@@ -168,7 +170,7 @@ void OceanVisServer::readClient()
         os << "HTTP/1.0 200 Ok\r\n"
               "Content-Type: text/html; charset=\"utf-8\"\r\n"
               "\r\n"
-              "<h1>" + request + "</h1>\n"
+              "<h1>" + request->request() + "</h1>\n"
               "<p>Selected " + QString::number(selectedLayers.size()) + " layers.</p>"
            << QDateTime::currentDateTime().toString() << "\n";
         socket->close();
@@ -179,6 +181,8 @@ void OceanVisServer::readClient()
             delete socket;
             qDebug() << "Connection closed";
         }
+        
+        delete request;
     }
 }
 
