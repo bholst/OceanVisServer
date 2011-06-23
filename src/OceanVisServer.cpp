@@ -19,6 +19,8 @@
 #include "DataLayer.h"
 #include "RequestBase.h"
 #include "GetCoverage.h"
+#include "DimensionTrim.h"
+#include "DimensionSlice.h"
 
 // Self
 #include "OceanVisServer.h"
@@ -122,19 +124,59 @@ void OceanVisServer::readClient()
                         getCoverage->setCoverageId(argParts[1]);
                     }
                 }
-                else if(argParts[0] == "SUBSET") {
-                    qDebug() << "Parsing subset.";
-                    QString arg = argParts[1];
-                    QRegExp exp("(lon|lat),http://www.opengis.net/def/crs/EPSG/0/4326\\(([-+]?[0-9]{0,}\\.?[0-9]{0,}),([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
-                    exp.indexIn(arg);
-                    if(exp.pos() > -1) {
-                        QString axis = exp.cap(1);
-                        QString min = exp.cap(2);
-                        QString max = exp.cap(3);
-                        
-                        qDebug() << "Axis:" << axis;
-                        qDebug() << "Min:" << min;
-                        qDebug() << "Max:" << max;
+                else if(argParts[0] == "SUBSET"
+                        || argParts[0] == "TRIM"
+                        || argParts[0] == "SLICE")
+                {
+                    GetCoverage *getCoverage = dynamic_cast<GetCoverage *>(request);
+                    if(getCoverage) {
+                        qDebug() << "Parsing subset.";
+                        QString arg = argParts[1];
+                        QRegExp trimExp("(lon|lat),http://www.opengis.net/def/crs/EPSG/0/4326\\(([-+]?[0-9]{0,}\\.?[0-9]{0,}),([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
+                        trimExp.indexIn(arg);
+                        if(trimExp.pos() > -1) {
+                            qDebug() << "Found trim.";
+                            QString axis = trimExp.cap(1);
+                            QString min = trimExp.cap(2);
+                            QString max = trimExp.cap(3);
+                            
+                            qDebug() << "Axis:" << axis;
+                            qDebug() << "Min:" << min;
+                            qDebug() << "Max:" << max;
+                            
+                            try {
+                                DimensionTrim trim(axis);
+                                trim.setTrimLow(min);
+                                trim.setTrimHigh(max);
+                                getCoverage->addDimensionSubset(trim);
+                            } catch (BadDimensionString e) {
+                                qDebug() << e.what();
+                                delete request;
+                                return;
+                            }
+                        }
+                        else {
+                            QRegExp sliceExp("(lon|lat),http://www.opengis.net/def/crs/EPSG/0/4326\\(([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
+                            sliceExp.indexIn(arg);
+                            if(sliceExp.pos() > -1) {
+                                qDebug() << "Fount slice";
+                                QString axis = sliceExp.cap(1);
+                                QString slicePoint = sliceExp.cap(2);
+                                
+                                qDebug() << "Axis:" << axis;
+                                qDebug() << "Slice point:" << slicePoint;
+                                
+                                try {
+                                    DimensionSlice slice(axis);
+                                    slice.setSlicePoint(slicePoint);
+                                    getCoverage->addDimensionSubset(slice);
+                                } catch (BadDimensionString e) {
+                                    qDebug() << e.what();
+                                    delete request;
+                                    return;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -147,42 +189,57 @@ void OceanVisServer::readClient()
             return;
         }
         
-        if(request->version() != "2.0.0") {
-            // TODO: This is the wrong behavior.
-            qDebug() << "Wrong version.";
-            return;
-        }
-
-        QList<DataLayer *> selectedLayers;
-        foreach(QString coverage, coverages) {
-            QHash<QString,DataLayer *>::const_iterator layer = m_layers.constFind(coverage);
-            if(layer == m_layers.constEnd()) {
-                qDebug() << "Coverage not found.";
-                return;
-            }
-            else {
-                selectedLayers.append(layer.value());
-            }
-        }
-
-        QTextStream os(socket);
-        os.setAutoDetectUnicode(true);
-        os << "HTTP/1.0 200 Ok\r\n"
-              "Content-Type: text/html; charset=\"utf-8\"\r\n"
-              "\r\n"
-              "<h1>" + request->request() + "</h1>\n"
-              "<p>Selected " + QString::number(selectedLayers.size()) + " layers.</p>"
-           << QDateTime::currentDateTime().toString() << "\n";
-        socket->close();
-
-        qDebug() << "Wrote to client";
-
-        if(socket->state() == QTcpSocket::UnconnectedState) {
-            delete socket;
-            qDebug() << "Connection closed";
-        }
+        handleRequest(socket, request);
         
         delete request;
+    }
+}
+
+void OceanVisServer::handleRequest(QTcpSocket *socket, RequestBase *request)
+{
+    if(request->version() != "2.0.0") {
+        // TODO: This is the wrong behavior.
+        qDebug() << "Wrong version.";
+        return;
+    }
+
+    GetCoverage *getCoverage = dynamic_cast<GetCoverage *>(request);
+    if(getCoverage) {
+        handleGetCoverage(socket, getCoverage);
+    }
+    else {
+        qDebug() << "Unknown request.";
+    }
+}
+
+void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCoverage)
+{    
+    DataLayer *selectedLayer;
+    QHash<QString,DataLayer *>::const_iterator layer = m_layers.constFind(getCoverage->coverageId());
+    if(layer == m_layers.constEnd()) {
+        // TODO: This is the wrong behavior.
+        qDebug() << "Coverage not found.";
+        return;
+    }
+    else {
+        selectedLayer = layer.value();
+    }
+    
+    QTextStream os(socket);
+    os.setAutoDetectUnicode(true);
+    os << "HTTP/1.0 200 Ok\r\n"
+    "Content-Type: text/html; charset=\"utf-8\"\r\n"
+    "\r\n"
+    "<h1>" + getCoverage->request() + "</h1>\n"
+    "<p>Selected a layer with name " + selectedLayer->name() + ".</p>"
+    << QDateTime::currentDateTime().toString() << "\n";
+    socket->close();
+    
+    qDebug() << "Wrote to client";
+    
+    if(socket->state() == QTcpSocket::UnconnectedState) {
+        delete socket;
+        qDebug() << "Connection closed";
     }
 }
 

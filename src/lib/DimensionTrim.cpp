@@ -20,6 +20,13 @@ public:
           m_trimHigh(0.0)
     {
     }
+    
+    DimensionTrimPrivate(QString dimension)
+        : DimensionSubsetPrivate(dimension),
+          m_trimLow(0.0),
+          m_trimHigh(0.0)
+    {
+    }
 
     DimensionTrimPrivate(const DimensionTrimPrivate& other)
         : DimensionSubsetPrivate(other),
@@ -52,6 +59,11 @@ public:
 };
 
 DimensionTrim::DimensionTrim(Dimension dimension)
+    : DimensionSubset(new DimensionTrimPrivate(dimension))
+{
+}
+
+DimensionTrim::DimensionTrim(QString dimension) throw (BadDimensionString)
     : DimensionSubset(new DimensionTrimPrivate(dimension))
 {
 }

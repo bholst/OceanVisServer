@@ -10,10 +10,14 @@
 
 // Project
 #include "Dimension.h"
+#include "BadDimensionString.h"
+
+class QString;
 
 class DimensionSubsetPrivate {
 public:
     DimensionSubsetPrivate(Dimension dimension);
+    DimensionSubsetPrivate(QString dimension) throw (BadDimensionString);
     DimensionSubsetPrivate(const DimensionSubsetPrivate& other);
 
     virtual ~DimensionSubsetPrivate();

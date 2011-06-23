@@ -10,6 +10,9 @@
 #include <QtNetwork/QTcpServer>
 
 class DataLayer;
+class QTcpSocket;
+class RequestBase;
+class GetCoverage;
 
 class OceanVisServer : public QTcpServer
 {
@@ -33,6 +36,18 @@ public:
      * Return the layers of the server.
      */
     QHash<QString,DataLayer *> layers() const;
+    
+    /**
+     * Answer the given request using the given socket.
+     */
+    void handleRequest(QTcpSocket *socket, RequestBase *request);
+    
+    /**
+     * Answer the getCoverage request.
+     * Sends the requested coverage or, if this is not possible, an error
+     * message through the given socket.
+     */
+    void handleGetCoverage(QTcpSocket *socket, GetCoverage *getCoverage);
 
 private slots:
     void readClient();

@@ -6,6 +6,7 @@
 #define DIMENSIONSUBSET_H
 
 // Project
+#include "BadDimensionString.h"
 #include "BadDimensionTypeException.h"
 
 class QVariant;
@@ -15,6 +16,16 @@ class DimensionSubset
 {
 public:
     DimensionSubset(Dimension dimension);
+    /** 
+     * Create a new Dimension subset and parse the dimension from the given
+     * string.
+     * Possible strings:
+     * - Time: "time"
+     * - Lon: "lon", "x"
+     * - Lat: "lat", "y"
+     * - Height: "height", "z"
+     */
+    DimensionSubset(QString dimension) throw (BadDimensionString);
     DimensionSubset(const DimensionSubset &other);
     DimensionSubset(DimensionSubsetPrivate *d);
 

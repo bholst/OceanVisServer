@@ -28,6 +28,11 @@ void GetCoverage::setDimensionSubsets(const QList<DimensionSubset> &dimensionSub
     m_dimensionSubsets = dimensionSubsets;
 }
 
+void GetCoverage::addDimensionSubset(const DimensionSubset& dimensionSubset)
+{
+    m_dimensionSubsets.append(dimensionSubset);
+}
+
 QString GetCoverage::coverageId() const
 {
     return m_coverageId;

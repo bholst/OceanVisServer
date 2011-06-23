@@ -19,6 +19,28 @@ DimensionSubsetPrivate::DimensionSubsetPrivate(Dimension dimension)
 {
 }
 
+DimensionSubsetPrivate::DimensionSubsetPrivate(QString dimension) throw (BadDimensionString)
+    : ref(1)
+{
+    if(dimension == "time") {
+        m_dimension = Time;
+    }
+    else if(dimension == "x" || dimension == "lon") {
+        m_dimension = Lon;
+    }
+    else if(dimension == "y" || dimension == "lat") {
+        m_dimension = Lat;
+    }
+    else if(dimension == "height" || dimension == "z") {
+        m_dimension = Height;
+    }
+    else {
+        BadDimensionString exception;
+        exception.setString(dimension);
+        throw exception;
+    }
+}
+
 DimensionSubsetPrivate::DimensionSubsetPrivate(const DimensionSubsetPrivate& other)
     : m_dimension(other.m_dimension),
       ref(1)
@@ -45,6 +67,11 @@ bool DimensionSubsetPrivate::operator==(const DimensionSubsetPrivate &other)
 }
 
 DimensionSubset::DimensionSubset(Dimension dimension)
+{
+    d = new DimensionSubsetPrivate(dimension);
+}
+
+DimensionSubset::DimensionSubset(QString dimension) throw (BadDimensionString)
 {
     d = new DimensionSubsetPrivate(dimension);
 }

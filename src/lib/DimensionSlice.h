@@ -17,6 +17,16 @@ class DimensionSlice : public DimensionSubset
 {
 public:
     DimensionSlice(Dimension dimension);
+    /** 
+     * Create a new Dimension subset and parse the dimension from the given
+     * string.
+     * Possible strings:
+     * - Time: "time"
+     * - Lon: "lon", "x"
+     * - Lat: "lat", "y"
+     * - Height: "height", "z"
+     */
+    DimensionSlice(QString dimension) throw (BadDimensionString);
     DimensionSlice(const DimensionSlice &other);
 
     virtual ~DimensionSlice();

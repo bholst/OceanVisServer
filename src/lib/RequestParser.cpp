@@ -5,6 +5,7 @@
 // Qt
 #include <QtCore/QXmlStreamAttributes>
 #include <QtCore/QDateTime>
+#include <QtCore/QDebug>
 
 // Project
 #include "DimensionSlice.h"
@@ -155,9 +156,9 @@ DimensionSlice RequestParser::readDimensionSlice()
     Q_ASSERT(isStartElement()
              && namespaceUri() == "wcs"
              && name() == "DimensionSlice");
-    
-    Dimension dimension = Time;
+
     QString slicePointString;
+    QString dimension;
 
     while(!atEnd()) {
         readNext();
@@ -169,19 +170,7 @@ DimensionSlice RequestParser::readDimensionSlice()
             if(namespaceUri() == "wcs"
                && name() == "Dimension")
             {
-                QString dim = readCharacters();
-                if(dim == "time") {
-                    dimension = Time;
-                }
-                else if(dim == "x" || dim == "lon") {
-                    dimension = Lon;
-                }
-                else if(dim == "y" || dim == "lat") {
-                    dimension = Lat;
-                }
-                else if(dim == "height" || dim == "z") {
-                    dimension = Height;
-                }
+                QString dimension = readCharacters();
             }
             else if (namespaceUri() == "wcs"
                      && name() == "SlicePoint")
@@ -194,17 +183,23 @@ DimensionSlice RequestParser::readDimensionSlice()
         }
     }
     
-    DimensionSlice slice(dimension);
-    if(dimension == Time) {
-        QDateTime slicePoint;
-        slicePoint.setTime_t(slicePointString.toUInt());
-        slice.setSlicePoint(slicePoint);
+    try {
+        DimensionSlice slice(dimension);
+        
+        if(slice.dimension() == Time) {
+            QDateTime slicePoint;
+            slicePoint.setTime_t(slicePointString.toUInt());
+            slice.setSlicePoint(slicePoint);
+        }
+        else {
+            slice.setSlicePoint(slicePointString.toDouble());
+        }
+        
+        return slice;
+    } catch (BadDimensionString e) {
+        qDebug() << e.what();
+        return DimensionSlice(Time);
     }
-    else {
-        slice.setSlicePoint(slicePointString.toDouble());
-    }
-    
-    return slice;
 }
 
 void RequestParser::readUnknownElement()

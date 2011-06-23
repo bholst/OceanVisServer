@@ -22,6 +22,7 @@ public:
     
     QList<DimensionSubset> dimensionSubsets() const;
     void setDimensionSubsets(const QList<DimensionSubset> &dimensionSubsets);
+    void addDimensionSubset(const DimensionSubset& dimensionSubset);
     
     QString coverageId() const;
     void setCoverageId(const QString& coverageId);

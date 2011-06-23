@@ -19,6 +19,12 @@ public:
           m_slicePoint(0.0)
     {
     }
+    
+    DimensionSlicePrivate(QString dimension) throw (BadDimensionString)
+        : DimensionSubsetPrivate(dimension),
+          m_slicePoint(0.0)
+    {
+    }
 
     DimensionSlicePrivate(const DimensionSlicePrivate& other)
         : DimensionSubsetPrivate(other),
@@ -47,6 +53,11 @@ public:
 };
 
 DimensionSlice::DimensionSlice(Dimension dimension)
+    : DimensionSubset(new DimensionSlicePrivate(dimension))
+{
+}
+
+DimensionSlice::DimensionSlice(QString dimension) throw (BadDimensionString)
     : DimensionSubset(new DimensionSlicePrivate(dimension))
 {
 }
