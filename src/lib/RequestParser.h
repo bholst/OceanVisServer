@@ -24,8 +24,8 @@ public:
     
 private:
     void readGetCoverage();
-    DimensionTrim readDimensionTrim();
-    DimensionSlice readDimensionSlice();
+    DimensionTrim *readDimensionTrim();
+    DimensionSlice *readDimensionSlice();
     void readUnknownElement();
     QString readCharacters();
     

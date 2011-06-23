@@ -20,15 +20,27 @@ public:
     
     virtual QString request() const;
     
-    QList<DimensionSubset> dimensionSubsets() const;
-    void setDimensionSubsets(const QList<DimensionSubset> &dimensionSubsets);
-    void addDimensionSubset(const DimensionSubset& dimensionSubset);
+    QList<DimensionSubset*> dimensionSubsets() const;
+
+    /**
+     * Set the dimension subsets.
+     * The GetCoverage object takes the ownership of the DimensionSubset
+     * objects.
+     */
+    void setDimensionSubsets(const QList<DimensionSubset*> &dimensionSubsets);
+
+    /**
+     * Add a dimension subset.
+     * The GetCoverage object takes the ownership of the DimensionSubset
+     * object.
+     */
+    void addDimensionSubset(DimensionSubset* dimensionSubset);
     
     QString coverageId() const;
     void setCoverageId(const QString& coverageId);
     
 private:
-    QList<DimensionSubset> m_dimensionSubsets;
+    QList<DimensionSubset*> m_dimensionSubsets;
     QString m_coverageId;
 };
 

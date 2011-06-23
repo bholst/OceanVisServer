@@ -56,7 +56,6 @@ inline double DataLayerPrivate::value(double *dataVector, int lon, int lat, int 
 {
     int layerCount = m_geometry.layerCount(lon, lat);
     assert(layerCount >= 0);
-    qDebug() << "layerCount =" << layerCount;
     if(layerCount > height) {
         return dataVector[m_geometry.start(lon, lat) + height];
     }

@@ -21,6 +21,7 @@
 #include "GetCoverage.h"
 #include "DimensionTrim.h"
 #include "DimensionSlice.h"
+#include "DataMatrix.h"
 
 // Self
 #include "OceanVisServer.h"
@@ -129,10 +130,13 @@ void OceanVisServer::readClient()
                         || argParts[0] == "SLICE")
                 {
                     GetCoverage *getCoverage = dynamic_cast<GetCoverage *>(request);
-                    if(getCoverage) {
+                    if(!getCoverage) {
+                        qDebug() << "No get coverage.";
+                    }
+                    else {
                         qDebug() << "Parsing subset.";
                         QString arg = argParts[1];
-                        QRegExp trimExp("(lon|lat),http://www.opengis.net/def/crs/EPSG/0/4326\\(([-+]?[0-9]{0,}\\.?[0-9]{0,}),([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
+                        QRegExp trimExp("([a-zA-z]{1,}),http://www.opengis.net/def/crs/EPSG/0/4326\\(([-+]?[0-9]{0,}\\.?[0-9]{0,}),([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
                         trimExp.indexIn(arg);
                         if(trimExp.pos() > -1) {
                             qDebug() << "Found trim.";
@@ -145,9 +149,9 @@ void OceanVisServer::readClient()
                             qDebug() << "Max:" << max;
                             
                             try {
-                                DimensionTrim trim(axis);
-                                trim.setTrimLow(min);
-                                trim.setTrimHigh(max);
+                                DimensionTrim *trim = new DimensionTrim(axis);
+                                trim->setTrimLow(min);
+                                trim->setTrimHigh(max);
                                 getCoverage->addDimensionSubset(trim);
                             } catch (BadDimensionString e) {
                                 qDebug() << e.what();
@@ -156,7 +160,7 @@ void OceanVisServer::readClient()
                             }
                         }
                         else {
-                            QRegExp sliceExp("(lon|lat),http://www.opengis.net/def/crs/EPSG/0/4326\\(([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
+                            QRegExp sliceExp("([a-zA-z]{1,}),http://www.opengis.net/def/crs/EPSG/0/4326\\(([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
                             sliceExp.indexIn(arg);
                             if(sliceExp.pos() > -1) {
                                 qDebug() << "Fount slice";
@@ -167,8 +171,8 @@ void OceanVisServer::readClient()
                                 qDebug() << "Slice point:" << slicePoint;
                                 
                                 try {
-                                    DimensionSlice slice(axis);
-                                    slice.setSlicePoint(slicePoint);
+                                    DimensionSlice *slice = new DimensionSlice(axis);
+                                    slice->setSlicePoint(slicePoint);
                                     getCoverage->addDimensionSubset(slice);
                                 } catch (BadDimensionString e) {
                                     qDebug() << e.what();
@@ -225,6 +229,10 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
         selectedLayer = layer.value();
     }
     
+    QList<DimensionSubset *> dimensionSubsets = getCoverage->dimensionSubsets();
+    qDebug() << "Number of subset things:" << dimensionSubsets.length();
+    DataMatrix *matrix = selectedLayer->dataSubset(dimensionSubsets);
+    
     QTextStream os(socket);
     os.setAutoDetectUnicode(true);
     os << "HTTP/1.0 200 Ok\r\n"
@@ -232,10 +240,12 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
     "\r\n"
     "<h1>" + getCoverage->request() + "</h1>\n"
     "<p>Selected a layer with name " + selectedLayer->name() + ".</p>"
-    << QDateTime::currentDateTime().toString() << "\n";
+    << QDateTime::currentDateTime().toString() << "<br>\n"
+    << matrix->toString();
     socket->close();
-    
     qDebug() << "Wrote to client";
+    
+    delete matrix;
     
     if(socket->state() == QTcpSocket::UnconnectedState) {
         delete socket;

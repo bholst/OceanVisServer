@@ -51,7 +51,7 @@ void RequestParser::readGetCoverage()
     m_request = getCoverage;
     QXmlStreamAttributes att = attributes();
     m_request->setVersion(att.value("version").toString());
-    QList<DimensionSubset> subsets;
+    QList<DimensionSubset*> subsets;
     
     while(!atEnd()) {
         readNext();
@@ -68,12 +68,18 @@ void RequestParser::readGetCoverage()
             else if (namespaceUri() == "wcs"
                      && name() == "DimensionTrim")
             {
-                subsets.append(readDimensionTrim());
+                DimensionTrim *trim = readDimensionTrim();
+                if(trim) {
+                    subsets.append(trim);
+                }
             }
             else if (namespaceUri() == "wcs"
                      && name() == "DimensionSlice")
             {
-                subsets.append(readDimensionSlice());
+                DimensionSlice *slice = readDimensionSlice();
+                if(slice) {
+                    subsets.append(slice);
+                }
             }
             else {
                 readUnknownElement();
@@ -84,13 +90,13 @@ void RequestParser::readGetCoverage()
     getCoverage->setDimensionSubsets(subsets);
 }
 
-DimensionTrim RequestParser::readDimensionTrim()
+DimensionTrim *RequestParser::readDimensionTrim()
 {
     Q_ASSERT(isStartElement()
              && namespaceUri() == "wcs"
              && name() == "DimensionTrim");
     
-    Dimension dimension = Time;
+    QString dimension;
     QString trimLowString;
     QString trimHighString;
 
@@ -104,19 +110,7 @@ DimensionTrim RequestParser::readDimensionTrim()
             if(namespaceUri() == "wcs"
                && name() == "Dimension")
             {
-                QString dim = readCharacters();
-                if(dim == "time") {
-                    dimension = Time;
-                }
-                else if(dim == "x" || dim == "lon") {
-                    dimension = Lon;
-                }
-                else if(dim == "y" || dim == "lat") {
-                    dimension = Lat;
-                }
-                else if(dim == "height" || dim == "z") {
-                    dimension = Height;
-                }
+                dimension = readCharacters();
             }
             else if (namespaceUri() == "wcs"
                      && name() == "TrimLow")
@@ -134,24 +128,30 @@ DimensionTrim RequestParser::readDimensionTrim()
         }
     }
     
-    DimensionTrim trim(dimension);
-    if(dimension == Time) {
-        QDateTime trimLow;
-        QDateTime trimHigh;
-        trimLow.setTime_t(trimLowString.toUInt());
-        trim.setTrimLow(trimLow);
-        trimHigh.setTime_t(trimHighString.toUInt());
-        trim.setTrimHigh(trimHigh);
+    try {
+        DimensionTrim *trim = new DimensionTrim(dimension);
+        
+        if(trim->dimension() == Time) {
+            QDateTime trimLow;
+            QDateTime trimHigh;
+            trimLow.setTime_t(trimLowString.toUInt());
+            trim->setTrimLow(trimLow);
+            trimHigh.setTime_t(trimHighString.toUInt());
+            trim->setTrimHigh(trimHigh);
+        }
+        else {
+            trim->setTrimLow(trimLowString.toDouble());
+            trim->setTrimHigh(trimHighString.toDouble());
+        }
+        
+        return trim;
+    } catch (BadDimensionString e) {
+        qDebug() << e.what();
+        return 0;
     }
-    else {
-        trim.setTrimLow(trimLowString.toDouble());
-        trim.setTrimHigh(trimHighString.toDouble());
-    }
-    
-    return trim;
 }
 
-DimensionSlice RequestParser::readDimensionSlice()
+DimensionSlice *RequestParser::readDimensionSlice()
 {
     Q_ASSERT(isStartElement()
              && namespaceUri() == "wcs"
@@ -184,21 +184,21 @@ DimensionSlice RequestParser::readDimensionSlice()
     }
     
     try {
-        DimensionSlice slice(dimension);
+        DimensionSlice *slice = new DimensionSlice(dimension);
         
-        if(slice.dimension() == Time) {
+        if(slice->dimension() == Time) {
             QDateTime slicePoint;
             slicePoint.setTime_t(slicePointString.toUInt());
-            slice.setSlicePoint(slicePoint);
+            slice->setSlicePoint(slicePoint);
         }
         else {
-            slice.setSlicePoint(slicePointString.toDouble());
+            slice->setSlicePoint(slicePointString.toDouble());
         }
         
         return slice;
     } catch (BadDimensionString e) {
         qDebug() << e.what();
-        return DimensionSlice(Time);
+        return 0;
     }
 }
 

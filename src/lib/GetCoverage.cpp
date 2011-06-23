@@ -11,6 +11,7 @@ GetCoverage::GetCoverage()
 
 GetCoverage::~GetCoverage()
 {
+    qDeleteAll(m_dimensionSubsets);
 }
 
 QString GetCoverage::request() const
@@ -18,17 +19,17 @@ QString GetCoverage::request() const
     return QString("GetCoverage");
 }
     
-QList<DimensionSubset> GetCoverage::dimensionSubsets() const
+QList<DimensionSubset*> GetCoverage::dimensionSubsets() const
 {
     return m_dimensionSubsets;
 }
 
-void GetCoverage::setDimensionSubsets(const QList<DimensionSubset> &dimensionSubsets)
+void GetCoverage::setDimensionSubsets(const QList<DimensionSubset*> &dimensionSubsets)
 {
     m_dimensionSubsets = dimensionSubsets;
 }
 
-void GetCoverage::addDimensionSubset(const DimensionSubset& dimensionSubset)
+void GetCoverage::addDimensionSubset(DimensionSubset* dimensionSubset)
 {
     m_dimensionSubsets.append(dimensionSubset);
 }
