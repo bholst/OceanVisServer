@@ -14,6 +14,10 @@
 #include <QtCore/QStringList>
 #include <QtCore/QDateTime>
 #include <QtCore/QRegExp>
+#include <QtCore/QBuffer>
+#include <QtCore/QDataStream>
+#include <QtGui/QImageWriter>
+#include <QtGui/QImage>
 
 // Project
 #include "DataLayer.h"
@@ -22,6 +26,7 @@
 #include "DimensionTrim.h"
 #include "DimensionSlice.h"
 #include "DataMatrix.h"
+#include "RequestParser.h"
 
 // Self
 #include "OceanVisServer.h"
@@ -150,8 +155,15 @@ void OceanVisServer::readClient()
                             
                             try {
                                 DimensionTrim *trim = new DimensionTrim(axis);
-                                trim->setTrimLow(min);
-                                trim->setTrimHigh(max);
+                                
+                                if(trim->dimension() == Time) {
+                                    trim->setTrimLow(RequestParser::parseTime(min));
+                                    trim->setTrimHigh(RequestParser::parseTime(max));
+                                }
+                                else {
+                                    trim->setTrimLow(min.toDouble());
+                                    trim->setTrimHigh(max.toDouble());
+                                }
                                 getCoverage->addDimensionSubset(trim);
                             } catch (BadDimensionString e) {
                                 qDebug() << e.what();
@@ -160,19 +172,25 @@ void OceanVisServer::readClient()
                             }
                         }
                         else {
-                            QRegExp sliceExp("([a-zA-z]{1,}),http://www.opengis.net/def/crs/EPSG/0/4326\\(([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
+                            QRegExp sliceExp("([a-zA-z]{1,}),http://www.opengis.net/def/crs/EPSG/0/4326\\((\\S{1,})\\)");
                             sliceExp.indexIn(arg);
                             if(sliceExp.pos() > -1) {
                                 qDebug() << "Fount slice";
                                 QString axis = sliceExp.cap(1);
-                                QString slicePoint = sliceExp.cap(2);
+                                QString slicePointString = sliceExp.cap(2);
                                 
                                 qDebug() << "Axis:" << axis;
-                                qDebug() << "Slice point:" << slicePoint;
+                                qDebug() << "Slice point:" << slicePointString;
                                 
                                 try {
                                     DimensionSlice *slice = new DimensionSlice(axis);
-                                    slice->setSlicePoint(slicePoint);
+                                    
+                                    if(slice->dimension() == Time) {
+                                        slice->setSlicePoint(QVariant(RequestParser::parseTime(slicePointString)));
+                                    }
+                                    else {
+                                        slice->setSlicePoint(slicePointString.toDouble());
+                                    }
                                     getCoverage->addDimensionSubset(slice);
                                 } catch (BadDimensionString e) {
                                     qDebug() << e.what();
@@ -236,14 +254,22 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
     QTextStream os(socket);
     os.setAutoDetectUnicode(true);
     os << "HTTP/1.0 200 Ok\r\n"
-    "Content-Type: text/html; charset=\"utf-8\"\r\n"
-    "\r\n"
-    "<h1>" + getCoverage->request() + "</h1>\n"
-    "<p>Selected a layer with name " + selectedLayer->name() + ".</p>"
-    << QDateTime::currentDateTime().toString() << "<br>\n"
-    << matrix->toString();
+    "Content-Type: image/png; charset=\"utf-8\"\r\n";
+//     "\r\n"
+//     "<h1>" + getCoverage->request() + "</h1>\n"
+//     "<p>Selected a layer with name " + selectedLayer->name() + ".</p>"
+//     << QDateTime::currentDateTime().toString() << "<br>\n"
+//     << matrix->toString();
+//     qDebug() << "Wrote to client";
+//     QBuffer buffer;
+    QImageWriter iw;
+    iw.setDevice(socket);
+    iw.setFormat("png");
+    iw.write(matrix->toImage());
+//     QDataStream bs(socket);
+//     bs << buffer;
+     
     socket->close();
-    qDebug() << "Wrote to client";
     
     delete matrix;
     

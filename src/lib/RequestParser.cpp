@@ -132,12 +132,8 @@ DimensionTrim *RequestParser::readDimensionTrim()
         DimensionTrim *trim = new DimensionTrim(dimension);
         
         if(trim->dimension() == Time) {
-            QDateTime trimLow;
-            QDateTime trimHigh;
-            trimLow.setTime_t(trimLowString.toUInt());
-            trim->setTrimLow(trimLow);
-            trimHigh.setTime_t(trimHighString.toUInt());
-            trim->setTrimHigh(trimHigh);
+            trim->setTrimLow(parseTime(trimLowString));
+            trim->setTrimHigh(parseTime(trimHighString));
         }
         else {
             trim->setTrimLow(trimLowString.toDouble());
@@ -187,9 +183,7 @@ DimensionSlice *RequestParser::readDimensionSlice()
         DimensionSlice *slice = new DimensionSlice(dimension);
         
         if(slice->dimension() == Time) {
-            QDateTime slicePoint;
-            slicePoint.setTime_t(slicePointString.toUInt());
-            slice->setSlicePoint(slicePoint);
+            slice->setSlicePoint(RequestParser::parseTime(slicePointString));
         }
         else {
             slice->setSlicePoint(slicePointString.toDouble());
@@ -237,4 +231,20 @@ QString RequestParser::readCharacters()
     }
 
     return string;
+}
+
+QDateTime RequestParser::parseTime(QString timeString)
+{
+    QDateTime time;
+    bool success = false;
+    uint seconds = timeString.toUInt(&success);
+    if(success) {
+        qDebug() << "Found seconds.";
+        time.setTime_t(seconds);
+    }
+    else {
+        qDebug() << "ISO time.";
+    }
+    
+    return time;
 }
