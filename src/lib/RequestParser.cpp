@@ -244,6 +244,7 @@ QDateTime RequestParser::parseTime(QString timeString)
     }
     else {
         qDebug() << "ISO time.";
+        time = QDateTime::fromString(timeString, Qt::ISODate);
     }
     
     return time;
