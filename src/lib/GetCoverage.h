@@ -39,9 +39,22 @@ public:
     QString coverageId() const;
     void setCoverageId(const QString& coverageId);
     
+    /**
+     * Set the return format. Possible formats are for example:
+     * text/xml
+     * image/png
+     */
+    void setFormat(const QString& format);
+    
+    /**
+     * Return the return format.
+     */
+    QString format() const;
+    
 private:
     QList<DimensionSubset*> m_dimensionSubsets;
     QString m_coverageId;
+    QString m_format;
 };
 
 #endif

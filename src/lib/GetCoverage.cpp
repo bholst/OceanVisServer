@@ -5,7 +5,8 @@
 #include "GetCoverage.h"
 
 GetCoverage::GetCoverage()
-    : RequestBase(RequestBase::WCS)
+    : RequestBase(RequestBase::WCS),
+      m_format("text/xml")
 {
 }
 
@@ -42,4 +43,14 @@ QString GetCoverage::coverageId() const
 void GetCoverage::setCoverageId(const QString& coverageId)
 {
     m_coverageId = coverageId;
+}
+
+void GetCoverage::setFormat(const QString& format)
+{
+    m_format = format;
+}
+
+QString GetCoverage::format() const
+{
+    return m_format;
 }

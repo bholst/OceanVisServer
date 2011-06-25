@@ -130,6 +130,12 @@ void OceanVisServer::readClient()
                         getCoverage->setCoverageId(argParts[1]);
                     }
                 }
+                else if(argParts[0] == "FORMAT") {
+                    GetCoverage *getCoverage = dynamic_cast<GetCoverage *>(request);
+                    if(getCoverage) {
+                        getCoverage->setFormat(argParts[1]);
+                    }
+                }
                 else if(argParts[0] == "SUBSET"
                         || argParts[0] == "TRIM"
                         || argParts[0] == "SLICE")
@@ -253,21 +259,27 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
     
     QTextStream os(socket);
     os.setAutoDetectUnicode(true);
-    os << "HTTP/1.0 200 Ok\r\n"
-    "Content-Type: image/png; charset=\"utf-8\"\r\n";
-//     "\r\n"
-//     "<h1>" + getCoverage->request() + "</h1>\n"
-//     "<p>Selected a layer with name " + selectedLayer->name() + ".</p>"
-//     << QDateTime::currentDateTime().toString() << "<br>\n"
-//     << matrix->toString();
-//     qDebug() << "Wrote to client";
-//     QBuffer buffer;
-    QImageWriter iw;
-    iw.setDevice(socket);
-    iw.setFormat("png");
-    iw.write(matrix->toImage());
-//     QDataStream bs(socket);
-//     bs << buffer;
+    os << "HTTP/1.0 200 Ok\r\n";
+    
+    if(getCoverage->format() == "text/xml") {
+        os << "Content-Type: text/html; charset=\"utf-8\"\r\n"
+              "\r\n"
+              "<h1>" + getCoverage->request() + "</h1>\n"
+              "<p>Selected a layer with name " + selectedLayer->name() + ".</p>"
+              << QDateTime::currentDateTime().toString() << "<br>\n"
+              << matrix->toString();
+    }
+    else if(getCoverage->format().startsWith("image/")) {
+        qDebug() << "Got image";
+        QString format = getCoverage->format().remove(0,6);
+        qDebug() << "The format is" << format;
+        os << "Content-Type: image/" + format + "\r\n";
+        qDebug() << "Hej an image";
+        QImageWriter iw;
+        iw.setDevice(socket);
+        iw.setFormat(format.toAscii());
+        iw.write(matrix->toImage());
+    }
      
     socket->close();
     

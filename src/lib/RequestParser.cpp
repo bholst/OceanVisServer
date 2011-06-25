@@ -81,6 +81,11 @@ void RequestParser::readGetCoverage()
                     subsets.append(slice);
                 }
             }
+            else if (namespaceUri() == "wcs"
+                     && name() == "format")
+            {
+                getCoverage->setFormat(readCharacters());
+            }
             else {
                 readUnknownElement();
             }
