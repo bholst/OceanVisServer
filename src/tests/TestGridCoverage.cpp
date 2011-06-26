@@ -6,18 +6,18 @@
 #include <QtTest/QtTest>
 
 #include "CoordinateAxis.h"
-#include "DataMatrix.h"
+#include "GridCoverage.h"
 
-class TestDataMatrix : public QObject {
+class TestGridCoverage : public QObject {
     Q_OBJECT
 
 private Q_SLOTS:
     void test();
 };
 
-void TestDataMatrix::test()
+void TestGridCoverage::test()
 {
-    DataMatrix original;
+    GridCoverage original;
     QList<CoordinateAxis> axes;
     axes.append(CoordinateAxis(Lat));
     axes.append(CoordinateAxis(Lon));
@@ -29,5 +29,5 @@ void TestDataMatrix::test()
     QCOMPARE(original.values(), values1);
 }
 
-QTEST_MAIN( TestDataMatrix )
-#include "TestDataMatrix.moc"
+QTEST_MAIN( TestGridCoverage )
+#include "TestGridCoverage.moc"

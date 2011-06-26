@@ -13,19 +13,19 @@
 #include "CoordinateAxis.h"
 
 // Self
-#include "DataMatrix.h"
+#include "GridCoverage.h"
 
 const double default_max_value = 5.0;
 
-class DataMatrixPrivate {
+class GridCoveragePrivate {
 public:
-    DataMatrixPrivate()
+    GridCoveragePrivate()
         : m_values(0),
           m_maxValue(default_max_value)
     {
     }
 
-    ~DataMatrixPrivate()
+    ~GridCoveragePrivate()
     {
         delete m_values;
     }
@@ -40,7 +40,7 @@ public:
     double m_maxValue;
 };
 
-void DataMatrixPrivate::inStringUntilDimension(int until,
+void GridCoveragePrivate::inStringUntilDimension(int until,
                                                int offset,
                                                int higherLevelCount,
                                                QString& string) const
@@ -75,55 +75,55 @@ void DataMatrixPrivate::inStringUntilDimension(int until,
     }
 }
 
-DataMatrix::DataMatrix()
-    : d(new DataMatrixPrivate())
+GridCoverage::GridCoverage()
+    : d(new GridCoveragePrivate())
 {
 }
 
-DataMatrix::~DataMatrix()
+GridCoverage::~GridCoverage()
 {
     delete d;
 }
 
-void DataMatrix::setCoordinateAxes(const QList<CoordinateAxis>& axes)
+void GridCoverage::setCoordinateAxes(const QList<CoordinateAxis>& axes)
 {
     d->m_axes = axes;
 }
 
-QList<CoordinateAxis> DataMatrix::coordinateAxes() const
+QList<CoordinateAxis> GridCoverage::coordinateAxes() const
 {
     return d->m_axes;
 }
 
-void DataMatrix::setValues(double *values)
+void GridCoverage::setValues(double *values)
 {
     delete d->m_values;
     d->m_values = values;
 }
 
-double *DataMatrix::values()
+double *GridCoverage::values()
 {
     return d->m_values;
 }
 
-void DataMatrix::setMaxValue(double maxValue)
+void GridCoverage::setMaxValue(double maxValue)
 {
     d->m_maxValue = maxValue;
 }
 
-double DataMatrix::maxValue()
+double GridCoverage::maxValue()
 {
     return d->m_maxValue;
 }
 
-QString DataMatrix::toString() const
+QString GridCoverage::toString() const
 {
     QString result;
     d->inStringUntilDimension(d->m_axes.length() - 1, 0, 1, result);
     return result;
 }
 
-QImage DataMatrix::toImage() const
+QImage GridCoverage::toImage() const
 {
     if(d->m_axes.length() != 2) {
         return QImage();

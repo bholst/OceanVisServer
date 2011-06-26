@@ -9,7 +9,7 @@ set(OCEANVISSERVER_LIB_SRCS MapGeometry.cpp
                             BadDimensionString.cpp
                             CoordinateAxis.cpp
                             Dimension.cpp
-                            DataMatrix.cpp
+                            GridCoverage.cpp
                             ConfigurationParser.cpp
                             RequestBase.cpp
                             GetCoverage.cpp

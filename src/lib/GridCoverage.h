@@ -2,20 +2,20 @@
 // Copyright 2011      Bastian Holst <bastianholst@gmx.de>
 //
 
-#ifndef DATAMATRIX_H
-#define DATAMATRIX_H
+#ifndef GRIDCOVERAGE_H
+#define GRIDCOVERAGE_H
 
 #include <QtCore/QList>
 
 class CoordinateAxis;
 class QString;
 
-class DataMatrixPrivate;
+class GridCoveragePrivate;
 
-class DataMatrix {
+class GridCoverage {
 public:
-    DataMatrix();
-    ~DataMatrix();
+    GridCoverage();
+    ~GridCoverage();
 
     void setCoordinateAxes(const QList<CoordinateAxis>& axes);
     QList<CoordinateAxis> coordinateAxes() const;
@@ -35,8 +35,8 @@ public:
     QImage toImage() const;
 
 private:
-    Q_DISABLE_COPY(DataMatrix)
-    DataMatrixPrivate * const d;
+    Q_DISABLE_COPY(GridCoverage)
+    GridCoveragePrivate * const d;
 };
 
 #endif

@@ -21,7 +21,7 @@
 #include "DimensionSubset.h"
 #include "DimensionSlice.h"
 #include "DimensionTrim.h"
-#include "DataMatrix.h"
+#include "GridCoverage.h"
 
 // Self
 #include "DataLayer.h"
@@ -142,7 +142,7 @@ QString DataLayer::fileName(const QDateTime& dateTime) const
     return QString();
 }
 
-DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
+GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
 {
     QMap<Dimension,DimensionSlice> dimensionSlices;
     QMap<Dimension,DimensionTrim> dimensionTrims;
@@ -396,7 +396,7 @@ DataMatrix *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
         }
     }
 
-    DataMatrix *result = new DataMatrix();
+    GridCoverage *result = new GridCoverage();
     result->setValues(matrix);
     result->setCoordinateAxes(axes);
     result->setMaxValue(maxValue);

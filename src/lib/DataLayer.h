@@ -8,7 +8,7 @@
 // Qt
 #include <QtCore/QList>
 
-class DataMatrix;
+class GridCoverage;
 class DimensionSubset;
 class MapGeometry;
 class QString;
@@ -31,7 +31,7 @@ public:
     MapGeometry geometry() const;
     void setGeometry(const MapGeometry &mapGeometry);
 
-    DataMatrix *dataSubset(QList<DimensionSubset*>& subsets);
+    GridCoverage *dataSubset(QList<DimensionSubset*>& subsets);
 
 private:
     Q_DISABLE_COPY(DataLayer);

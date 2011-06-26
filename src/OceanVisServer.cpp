@@ -25,7 +25,7 @@
 #include "GetCoverage.h"
 #include "DimensionTrim.h"
 #include "DimensionSlice.h"
-#include "DataMatrix.h"
+#include "GridCoverage.h"
 #include "RequestParser.h"
 
 // Self
@@ -255,7 +255,7 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
     
     QList<DimensionSubset *> dimensionSubsets = getCoverage->dimensionSubsets();
     qDebug() << "Number of subset things:" << dimensionSubsets.length();
-    DataMatrix *matrix = selectedLayer->dataSubset(dimensionSubsets);
+    GridCoverage *matrix = selectedLayer->dataSubset(dimensionSubsets);
     
     QTextStream os(socket);
     os.setAutoDetectUnicode(true);
