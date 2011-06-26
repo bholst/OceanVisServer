@@ -38,6 +38,7 @@ public:
     QList<CoordinateAxis> m_axes;
     double *m_values;
     double m_maxValue;
+    QString m_name;
 };
 
 void GridCoveragePrivate::inStringUntilDimension(int until,
@@ -111,9 +112,19 @@ void GridCoverage::setMaxValue(double maxValue)
     d->m_maxValue = maxValue;
 }
 
-double GridCoverage::maxValue()
+double GridCoverage::maxValue() const
 {
     return d->m_maxValue;
+}
+
+void GridCoverage::setName(const QString& name)
+{
+    d->m_name = name;
+}
+
+QString GridCoverage::name() const
+{
+    return d->m_name;
 }
 
 QString GridCoverage::toString() const

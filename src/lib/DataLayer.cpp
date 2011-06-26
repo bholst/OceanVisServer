@@ -400,5 +400,6 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
     result->setValues(matrix);
     result->setCoordinateAxes(axes);
     result->setMaxValue(maxValue);
+    result->setName(name());
     return result;
 }

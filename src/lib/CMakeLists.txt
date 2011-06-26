@@ -13,7 +13,8 @@ set(OCEANVISSERVER_LIB_SRCS MapGeometry.cpp
                             ConfigurationParser.cpp
                             RequestBase.cpp
                             GetCoverage.cpp
-                            RequestParser.cpp)
+                            RequestParser.cpp
+                            ResponseWriter.cpp)
 qt4_automoc(${OCEANVISSERVER_LIB_SRCS})
 add_library(oceanvis ${OCEANVISSERVER_LIB_SRCS})
 target_link_libraries(oceanvis ${QT_QTCORE_LIBRARY})

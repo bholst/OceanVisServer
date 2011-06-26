@@ -9,6 +9,7 @@
 
 class CoordinateAxis;
 class QString;
+class QImage;
 
 class GridCoveragePrivate;
 
@@ -28,7 +29,10 @@ public:
     double *values();
 
     void setMaxValue(double maxValue);
-    double maxValue();
+    double maxValue() const;
+    
+    void setName(const QString& name);
+    QString name() const;
 
     QString toString() const;
 

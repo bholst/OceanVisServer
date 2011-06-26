@@ -27,6 +27,7 @@
 #include "DimensionSlice.h"
 #include "GridCoverage.h"
 #include "RequestParser.h"
+#include "ResponseWriter.h"
 
 // Self
 #include "OceanVisServer.h"
@@ -262,18 +263,20 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
     os << "HTTP/1.0 200 Ok\r\n";
     
     if(getCoverage->format() == "text/xml") {
-        os << "Content-Type: text/html; charset=\"utf-8\"\r\n"
-              "\r\n"
-              "<h1>" + getCoverage->request() + "</h1>\n"
-              "<p>Selected a layer with name " + selectedLayer->name() + ".</p>"
-              << QDateTime::currentDateTime().toString() << "<br>\n"
-              << matrix->toString();
+        os << "Content-Type: text/xml; charset=\"utf-8\"\r\n"
+              "\r\n";
+        os.flush();
+        
+        ResponseWriter writer;
+        writer.setDevice(socket);
+        writer.write(matrix);
     }
     else if(getCoverage->format().startsWith("image/")) {
         qDebug() << "Got image";
         QString format = getCoverage->format().remove(0,6);
         qDebug() << "The format is" << format;
         os << "Content-Type: image/" + format + "\r\n";
+        os.flush();
         qDebug() << "Hej an image";
         QImageWriter iw;
         iw.setDevice(socket);
