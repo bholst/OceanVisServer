@@ -275,7 +275,8 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
         qDebug() << "Got image";
         QString format = getCoverage->format().remove(0,6);
         qDebug() << "The format is" << format;
-        os << "Content-Type: image/" + format + "\r\n";
+        os << "Content-Type: image/" + format + "\r\n"
+           << "\r\n";
         os.flush();
         qDebug() << "Hej an image";
         QImageWriter iw;
