@@ -8,6 +8,7 @@
 // Qt
 #include <QtCore/QDebug>
 #include <QtGui/QImage>
+#include <QtGui/QColor>
 
 // Project
 #include "CoordinateAxis.h"
@@ -38,6 +39,7 @@ public:
     QList<CoordinateAxis> m_axes;
     double *m_values;
     double m_maxValue;
+    double m_minValue;
     QString m_name;
 };
 
@@ -107,6 +109,16 @@ double *GridCoverage::values()
     return d->m_values;
 }
 
+void GridCoverage::setMinValue(double minValue)
+{
+    d->m_minValue = minValue;
+}
+
+double GridCoverage::minValue() const
+{
+    return d->m_minValue;
+}
+
 void GridCoverage::setMaxValue(double maxValue)
 {
     d->m_maxValue = maxValue;
@@ -139,13 +151,30 @@ QImage GridCoverage::toImage() const
     if(d->m_axes.length() != 2) {
         return QImage();
     }
+    qDebug() << "Creating image (minValue =" << d->m_minValue << ", maxValue =" << d->m_maxValue;
+    double span = d->m_maxValue - d->m_minValue;
 
     int width = d->m_axes[0].valueCount();
     int height = d->m_axes[1].valueCount();
     QImage result(width, height, QImage::Format_RGB32);
     for(int x = 0; x < width; ++x) {
         for(int y = 0; y < height; ++y) {
-            result.setPixel(x, height - y - 1, 0x010000 * round((d->m_values[x * height + y] / d->m_maxValue) * 355));
+            if(d->m_values[x * height + y] != d->m_values[x * height + y]) {
+                // NaN
+                result.setPixel(x, height - y - 1, 0);
+            }
+            else {
+                double relative = (d->m_values[x * height + y] - d->m_minValue) / span;
+                if(relative < 0.0)
+                    relative = 0.0;
+                if(relative > 1.0)
+                    relative = 1.0;
+            
+                QColor color;
+                color.setHsvF(relative, 1.0, 1.0);
+            
+                result.setPixel(x, height - y - 1, color.red() * 0x0100000 + color.green() * 0x000100 + color.blue() * 0x000001);
+            }
         }
     }
 

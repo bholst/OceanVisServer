@@ -20,7 +20,7 @@ public:
           m_width(0),
           m_height(0),
           m_totalSize(-1),
-          m_maximumLayerCount(0),
+          m_maxLayerCount(0),
           m_heightDimension(1.0),
           ref( 1 )
     {
@@ -46,7 +46,7 @@ public:
         delete m_starts;
         m_starts = new long[m_width * m_height];
         memcpy(m_starts, other.m_starts, m_width * m_height * sizeof(long));
-        m_maximumLayerCount = other.m_maximumLayerCount;
+        m_maxLayerCount = other.m_maxLayerCount;
         m_heightDimension = other.m_heightDimension;
         m_layerSizes = other.m_layerSizes;
         m_layerStarts = other.m_layerStarts;
@@ -59,7 +59,7 @@ public:
     int m_width;
     int m_height;
     int m_totalSize;
-    int m_maximumLayerCount;
+    int m_maxLayerCount;
     double m_heightDimension;
     QList<double> m_layerSizes;
     QList<double> m_layerStarts;
@@ -115,14 +115,14 @@ void MapGeometry::setLayerCounts(int *layerCounts)
     detach();
     d->m_layerCounts = new int[d->m_width * d->m_height];
     d->m_starts = new long[d->m_width * d->m_height];
-    d->m_maximumLayerCount = 0;
+    d->m_maxLayerCount = 0;
     long currentStart = 0;
     for(int i = 0; i < d->m_width * d->m_height; ++i) {
         d->m_layerCounts[i] = layerCounts[i];
         d->m_starts[i] = currentStart;
         currentStart += d->m_layerCounts[i];
-        if(d->m_layerCounts[i] > d->m_maximumLayerCount) {
-            d->m_maximumLayerCount = d->m_layerCounts[i];
+        if(d->m_layerCounts[i] > d->m_maxLayerCount) {
+            d->m_maxLayerCount = d->m_layerCounts[i];
         }
     }
 
@@ -152,13 +152,14 @@ long MapGeometry::totalSize() const
     return d->m_totalSize;
 }
 
-int MapGeometry::maximumLayerCount() const
+int MapGeometry::maxLayerCount() const
 {
-    return d->m_maximumLayerCount;
+    return d->m_maxLayerCount;
 }
 
 void MapGeometry::setHeightDimension(double heightDimension)
 {
+    detach();
     d->m_heightDimension = heightDimension;
 }
 
@@ -167,8 +168,9 @@ double MapGeometry::heightDimension() const
     return d->m_heightDimension;
 }
 
-void MapGeometry::setLayerSizes(const QList<double>& layerSizes) const
+void MapGeometry::setLayerSizes(const QList<double>& layerSizes)
 {
+    detach();
     d->m_layerSizes = layerSizes;
     d->m_layerStarts.clear();
     
@@ -179,7 +181,7 @@ void MapGeometry::setLayerSizes(const QList<double>& layerSizes) const
     }
 }
 
-QList<double> MapGeometry::layerSizes()
+QList<double> MapGeometry::layerSizes() const
 {
     return d->m_layerSizes;
 }

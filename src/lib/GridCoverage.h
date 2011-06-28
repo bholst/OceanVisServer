@@ -27,6 +27,9 @@ public:
      */
     void setValues(double *values);
     double *values();
+    
+    void setMinValue(double minValue);
+    double minValue() const;
 
     void setMaxValue(double maxValue);
     double maxValue() const;

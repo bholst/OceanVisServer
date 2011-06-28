@@ -26,7 +26,7 @@ public:
     int layerCount(int lon, int lat) const;
     long start(int lon, int lat) const;
 
-    int maximumLayerCount() const;
+    int maxLayerCount() const;
 
     /**
      * Set the dimension of the height.
@@ -41,8 +41,8 @@ public:
      */
     double heightDimension() const;
     
-    void setLayerSizes(const QList<double>& layerSizes) const;
-    QList<double> layerSizes();
+    void setLayerSizes(const QList<double>& layerSizes);
+    QList<double> layerSizes() const;
 
     MapGeometry& operator=( const MapGeometry &other );
 

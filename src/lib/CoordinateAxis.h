@@ -45,13 +45,13 @@ public:
      *                     contain a type which is convertible to the type
      *                     associated to the dimension of this object.
      */
-    void setMinimumValue(const QVariant& minimumValue) throw (BadDimensionTypeException);
+    void setMinValue(const QVariant& minValue) throw (BadDimensionTypeException);
     /**
      * Return the maximum value on this axis.
      * In the described matrix is a value for minimumValue,
      * but there is no value for smaller points in this dimension.
      */
-    QVariant minimumValue() const;
+    QVariant minValue() const;
 
     /**
      * Set the maximum value on this axis.
@@ -62,13 +62,13 @@ public:
      *                     contain a type which is convertible to the type
      *                     associated to the dimension of this object.
      */
-    void setMaximumValue(const QVariant& maximumValue) throw (BadDimensionTypeException);
+    void setMaxValue(const QVariant& maxValue) throw (BadDimensionTypeException);
     /**
      * Return the maximum value on this axis.
      * In the described matrix is a value for maximumValue,
      * but there is no value for higher points in this dimension.
      */
-    QVariant maximumValue() const;
+    QVariant maxValue() const;
 
     /**
      * Set the number of points on this axis.
