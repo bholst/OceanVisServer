@@ -107,6 +107,7 @@ MapGeometry ConfigurationParser::readGeometry()
               && name() == "geometry");
 
     QString path;
+    double heightDimension = 1.0;
 
     while(!atEnd()) {
         readNext();
@@ -118,6 +119,9 @@ MapGeometry ConfigurationParser::readGeometry()
             if(name() == "layers") {
                 path = readCharacters();
             }
+            else if(name() == "heightDimension") {
+                heightDimension = readCharacters().toDouble();
+            }
             else {
                 readUnknownElement();
             }
@@ -128,7 +132,10 @@ MapGeometry ConfigurationParser::readGeometry()
 
     MapGeometryParser parser;
     parser.setFile(&file);
-    return parser.mapGeometry();
+    
+    MapGeometry geometry = parser.mapGeometry();
+    geometry.setHeightDimension(heightDimension);
+    return geometry;
 }
 
 DataLayer *ConfigurationParser::readLayer()

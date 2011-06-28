@@ -40,6 +40,9 @@ public:
      * layerNumber * heightDimension
      */
     double heightDimension() const;
+    
+    void setLayerSizes(const QList<double>& layerSizes) const;
+    QList<double> layerSizes();
 
     MapGeometry& operator=( const MapGeometry &other );
 

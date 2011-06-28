@@ -48,6 +48,8 @@ public:
         memcpy(m_starts, other.m_starts, m_width * m_height * sizeof(long));
         m_maximumLayerCount = other.m_maximumLayerCount;
         m_heightDimension = other.m_heightDimension;
+        m_layerSizes = other.m_layerSizes;
+        m_layerStarts = other.m_layerStarts;
         ref = other.ref;
         return *this;
     }
@@ -59,6 +61,8 @@ public:
     int m_totalSize;
     int m_maximumLayerCount;
     double m_heightDimension;
+    QList<double> m_layerSizes;
+    QList<double> m_layerStarts;
     QAtomicInt ref;
 };
 
@@ -161,6 +165,23 @@ void MapGeometry::setHeightDimension(double heightDimension)
 double MapGeometry::heightDimension() const
 {
     return d->m_heightDimension;
+}
+
+void MapGeometry::setLayerSizes(const QList<double>& layerSizes) const
+{
+    d->m_layerSizes = layerSizes;
+    d->m_layerStarts.clear();
+    
+    double currentEnd = 0.0;
+    for(int i = 0; i < d->m_layerSizes.size(); ++i) {
+        d->m_layerStarts.append(currentEnd);
+        currentEnd += d->m_layerSizes[i];
+    }
+}
+
+QList<double> MapGeometry::layerSizes()
+{
+    return d->m_layerSizes;
 }
 
 MapGeometry& MapGeometry::operator=( const MapGeometry &other )
