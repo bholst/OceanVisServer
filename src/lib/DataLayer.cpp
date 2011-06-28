@@ -144,6 +144,10 @@ QString DataLayer::fileName(const QDateTime& dateTime) const
 
 GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
 {
+    if(d->m_dataVectors.empty()) {
+        return 0;
+    }
+    
     QMap<Dimension,DimensionSlice> dimensionSlices;
     QMap<Dimension,DimensionTrim> dimensionTrims;
     for(int i = 0; i < subsets.size(); ++i) {
@@ -172,6 +176,9 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
     QMap<QDateTime,double*>::const_iterator highTimeTrim;
     if(timeSliceIt != dimensionSlices.constEnd()) {
         lowTimeTrim = d->m_dataVectors.lowerBound(timeSliceIt->slicePoint().toDateTime());
+        if(lowTimeTrim == d->m_dataVectors.constEnd()) {
+            lowTimeTrim--;
+        }
         highTimeTrim = lowTimeTrim + 1;
         dimensionCount[0] = 1;
     }
