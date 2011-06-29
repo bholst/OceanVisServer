@@ -171,7 +171,8 @@ QImage GridCoverage::toImage() const
                     relative = 1.0;
             
                 QColor color;
-                color.setHsvF(relative, 1.0, 1.0);
+//                 color.setHsvF(relative, 1.0, 1.0);
+                color.setHsvF(1.0, relative, 1.0);
             
                 result.setPixel(x, height - y - 1, color.red() * 0x0100000 + color.green() * 0x000100 + color.blue() * 0x000001);
             }

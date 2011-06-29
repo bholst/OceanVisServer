@@ -164,6 +164,12 @@ DataLayer *ConfigurationParser::readLayer()
                 layer->setName(readCharacters());
                 qDebug() << "Name:" << layer->name();
             }
+            else if(name() == "scaleMin") {
+                layer->setScaleMin(readCharacters().toDouble());
+            }
+            else if(name() == "scaleMax") {
+                layer->setScaleMax(readCharacters().toDouble());
+            }
             else {
                 readUnknownElement();
             }
