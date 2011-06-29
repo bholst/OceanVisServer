@@ -257,6 +257,9 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
     QList<DimensionSubset *> dimensionSubsets = getCoverage->dimensionSubsets();
     qDebug() << "Number of subset things:" << dimensionSubsets.length();
     GridCoverage *matrix = selectedLayer->dataSubset(dimensionSubsets);
+    if(!matrix) {
+        return;
+    }
     
     QTextStream os(socket);
     os.setAutoDetectUnicode(true);

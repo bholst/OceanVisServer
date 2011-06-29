@@ -25,6 +25,7 @@ public:
 private:
     void readMap();
     void readUnknownElement();
+    void readFiles(DataLayer *layer);
     MapGeometry readGeometry();
     DataLayer *readLayer();
     QString readCharacters();

@@ -38,9 +38,9 @@ public:
     }
 
     ~DataLayerPrivate(){
-        foreach(QFile *file, m_files) {
-            delete file;
-        }
+//         foreach(QFile *file, m_files) {
+//             delete file;
+//         }
         foreach(double *vec, m_dataVectors) {
             delete vec;
         }
@@ -53,7 +53,8 @@ public:
 
     QString m_name;
     MapGeometry m_geometry;
-    QMap<QDateTime, QFile *> m_files;
+    QMap<QDateTime, QString> m_fileNames;
+//     QMap<QDateTime, QFile *> m_files;
     QMap<QDateTime, double *> m_dataVectors;
     double m_scaleMin;
     double m_minValue;
@@ -107,10 +108,11 @@ void DataLayer::setFileName(const QDateTime& dateTime, const QString& fileName)
 {
     QFile *file = new QFile(fileName);
     if(!file->open(QIODevice::ReadOnly)) {
-        qDebug() << "ERROR: File" << fileName << "cannot be opened.";
+        qDebug() << "ERROR" << file->error() << ": File" << fileName << "cannot be opened.";
     }
     else {
-        d->m_files.insert(dateTime, file);
+//         d->m_files.insert(dateTime, file);
+        d->m_fileNames.insert(dateTime, fileName);
         QDataStream stream(file);
         qint32 magicNumber;
         stream >> magicNumber;
@@ -145,14 +147,17 @@ void DataLayer::setFileName(const QDateTime& dateTime, const QString& fileName)
         else {
             delete dataVector;
         }
+        
+        file->close();
+        delete file;
     }
 }
 
 QString DataLayer::fileName(const QDateTime& dateTime) const
 {
-    QMap<QDateTime, QFile *>::const_iterator fileIterator = d->m_files.find(dateTime);
-    if(fileIterator != d->m_files.end() && fileIterator.key() == dateTime) {
-        return fileIterator.value()->fileName();
+    QMap<QDateTime, QString>::const_iterator fileIterator = d->m_fileNames.find(dateTime);
+    if(fileIterator != d->m_fileNames.end() && fileIterator.key() == dateTime) {
+        return fileIterator.value();
     }
     return QString();
 }
@@ -313,6 +318,14 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
     qDebug() << "Low lon trim:" << lowLonTrim;
     qDebug() << "High lon trim:" << highLonTrim;
     qDebug() << "Number of lon values:" << dimensionCount[1];
+    if(lowLonTrim >= d->m_geometry.width()
+       || highLonTrim > d->m_geometry.width()
+       || lowLonTrim < 0
+       || highLonTrim <= 0
+    )
+    {
+        return 0;
+    }
 
     QMap<Dimension,DimensionSlice>::const_iterator latSliceIt = dimensionSlices.find(Lat);
     QMap<Dimension,DimensionTrim>::const_iterator latTrimIt = dimensionTrims.find(Lat);
@@ -320,8 +333,11 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
     int highLatTrim = 0; // The first latitude value which will not be in the returned matrix.
 
     if(latSliceIt != dimensionSlices.end()) {
+        qDebug() << "d->m_geometry.height" << d->m_geometry.height();
+        qDebug() << "double slicePoint:" << (latSliceIt->slicePoint().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height();
         int slicePoint = std::floor(
             (latSliceIt->slicePoint().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height());
+        qDebug() << "SlicePoint:" << slicePoint;
         lowLatTrim = slicePoint;
         highLatTrim = slicePoint + 1;
         dimensionCount[2] = 1;
@@ -354,6 +370,14 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
     qDebug() << "Low lat trim:" << lowLatTrim;
     qDebug() << "High lat trim:" << highLatTrim;
     qDebug() << "Number of lat values:" << dimensionCount[2];
+    if(lowLatTrim >= d->m_geometry.height()
+       || highLatTrim > d->m_geometry.height()
+       || lowLatTrim < 0
+       || highLatTrim <= 0
+    )
+    {
+        return 0;
+    }
 
     QMap<Dimension,DimensionSlice>::const_iterator heightSliceIt = dimensionSlices.find(Height);
     QMap<Dimension,DimensionTrim>::const_iterator heightTrimIt = dimensionTrims.find(Height);

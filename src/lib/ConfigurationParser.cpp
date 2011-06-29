@@ -54,6 +54,7 @@ void ConfigurationParser::read()
     }
 
     QDir::setCurrent(oldCurrent);
+    qDebug() << "Finished reading configuration.";
 }
 
 void ConfigurationParser::readMap()
@@ -160,6 +161,9 @@ DataLayer *ConfigurationParser::readLayer()
                 layer->setFileName(dateTime, readCharacters());
                 qDebug() << "Added file for time:" << dateTime;
             }
+            else if(name() == "files") {
+                readFiles(layer);
+            }
             else if(name() == "name") {
                 layer->setName(readCharacters());
                 qDebug() << "Name:" << layer->name();
@@ -177,6 +181,59 @@ DataLayer *ConfigurationParser::readLayer()
     }
 
     return layer;
+}
+
+void ConfigurationParser::readFiles(DataLayer *layer)
+{
+    Q_ASSERT(isStartElement()
+             && name() == "files");
+    
+    QDateTime startDate;
+    int start = 0;
+    QDateTime endDate;
+    int end = 0;
+    int digits = 0;
+    QString scheme;
+    
+    while(!atEnd()) {
+        readNext();
+        
+        if(isStartElement()) {
+            if(name() == "start") {
+                QXmlStreamAttributes att = attributes();
+                startDate.setTime(QTime::fromString(att.value("time").toString(), Qt::ISODate));
+                startDate.setDate(QDate::fromString(att.value("date").toString(), Qt::ISODate));
+                start = readCharacters().toInt();
+            }
+            else if(name() == "end") {
+                QXmlStreamAttributes att = attributes();
+                endDate.setTime(QTime::fromString(att.value("time").toString(), Qt::ISODate));
+                endDate.setDate(QDate::fromString(att.value("date").toString(), Qt::ISODate));
+                end = readCharacters().toInt();
+            }
+            else if(name() == "scheme") {
+                QXmlStreamAttributes att = attributes();
+                digits = att.value("digits").toString().toInt();
+                scheme = readCharacters();
+            }
+            else {
+                readUnknownElement();
+            }
+        }
+    }
+    
+    if(startDate.isValid() && endDate.isValid()) {
+        qint64 spanMSecs = endDate.toMSecsSinceEpoch() - startDate.toMSecsSinceEpoch();
+        int count = end - start;
+        qint64 diffMSecs = spanMSecs / (count + 1);
+        
+        for(int i = 0; i < count; ++i) {
+            QDateTime fileTime = startDate.addMSecs(diffMSecs * i);
+            QString fileName = scheme.arg(start + i, digits, 10, QChar('0'));
+            
+            layer->setFileName(fileTime, fileName);
+        }
+    }
 }
 
 QString ConfigurationParser::readCharacters()
