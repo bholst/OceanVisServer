@@ -54,3 +54,18 @@ QString GetCoverage::format() const
 {
     return m_format;
 }
+
+void GetCoverage::setSize(Dimension dimension, int size)
+{
+    m_sizes.insert(dimension, size);
+}
+    
+int GetCoverage::size(Dimension dimension) const
+{
+    return m_sizes.value(dimension);
+}
+
+QMap<Dimension, int> GetCoverage::sizes() const
+{
+    return m_sizes;
+}

@@ -20,6 +20,7 @@
 #include <QtGui/QImage>
 
 // Project
+#include "Dimension.h"
 #include "DataLayer.h"
 #include "RequestBase.h"
 #include "GetCoverage.h"
@@ -137,6 +138,22 @@ void OceanVisServer::readClient()
                         getCoverage->setFormat(argParts[1]);
                     }
                 }
+                else if(argParts[0] == "SIZE") {
+                    GetCoverage *getCoverage = dynamic_cast<GetCoverage *>(request);
+                    if(getCoverage) {
+                        QRegExp sizeExp("([a-zA-Z]+)\\(([0-9]+)\\)");
+                        sizeExp.indexIn(argParts[1]);
+                        if(sizeExp.pos() > -1) {
+                            try {
+                                getCoverage->setSize(dimensionFromString(sizeExp.cap(1)), sizeExp.cap(2).toInt());
+                            } catch (BadDimensionString e) {
+                                qDebug() << e.what();
+                                delete request;
+                                return;
+                            }
+                        }
+                    }
+                }
                 else if(argParts[0] == "SUBSET"
                         || argParts[0] == "TRIM"
                         || argParts[0] == "SLICE")
@@ -148,7 +165,7 @@ void OceanVisServer::readClient()
                     else {
                         qDebug() << "Parsing subset.";
                         QString arg = argParts[1];
-                        QRegExp trimExp("([a-zA-z]{1,}),http://www.opengis.net/def/crs/EPSG/0/4326\\(([-+]?[0-9]{0,}\\.?[0-9]{0,}),([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
+                        QRegExp trimExp("([a-zA-Z]{1,}),http://www.opengis.net/def/crs/EPSG/0/4326\\(([-+]?[0-9]{0,}\\.?[0-9]{0,}),([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
                         trimExp.indexIn(arg);
                         if(trimExp.pos() > -1) {
                             qDebug() << "Found trim.";
@@ -179,7 +196,7 @@ void OceanVisServer::readClient()
                             }
                         }
                         else {
-                            QRegExp sliceExp("([a-zA-z]{1,}),http://www.opengis.net/def/crs/EPSG/0/4326\\((\\S{1,})\\)");
+                            QRegExp sliceExp("([a-zA-Z]{1,}),http://www.opengis.net/def/crs/EPSG/0/4326\\((\\S{1,})\\)");
                             sliceExp.indexIn(arg);
                             if(sliceExp.pos() > -1) {
                                 qDebug() << "Fount slice";
@@ -285,7 +302,7 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
         QImageWriter iw;
         iw.setDevice(socket);
         iw.setFormat(format.toAscii());
-        iw.write(matrix->toImage());
+        iw.write(matrix->toImage(getCoverage->sizes()));
     }
      
     socket->close();

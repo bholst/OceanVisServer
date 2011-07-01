@@ -5,11 +5,17 @@
 #ifndef GRIDCOVERAGE_H
 #define GRIDCOVERAGE_H
 
+// Qt
 #include <QtCore/QList>
+#include <QtCore/QMap>
+
+// Project
+#include "global.h"
 
 class CoordinateAxis;
 class QString;
 class QImage;
+class QSize;
 
 class GridCoveragePrivate;
 
@@ -40,6 +46,8 @@ public:
     QString toString() const;
 
     QImage toImage() const;
+    QImage toImage(const QSize& size) const;
+    QImage toImage(const QMap<Dimension, int>& sizes) const;
 
 private:
     Q_DISABLE_COPY(GridCoverage)

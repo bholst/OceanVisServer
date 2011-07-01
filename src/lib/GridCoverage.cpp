@@ -9,6 +9,7 @@
 #include <QtCore/QDebug>
 #include <QtGui/QImage>
 #include <QtGui/QColor>
+#include <QtCore/QSize>
 
 // Project
 #include "CoordinateAxis.h"
@@ -180,4 +181,30 @@ QImage GridCoverage::toImage() const
     }
 
     return result;
+}
+
+QImage GridCoverage::toImage(const QSize& size) const
+{
+    return toImage().scaled(size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+}
+
+QImage GridCoverage::toImage(const QMap<Dimension, int>& sizes) const
+{
+    if(d->m_axes.length() != 2) {
+        return QImage();
+    }
+    
+    QSize size(d->m_axes.at(0).valueCount(), d->m_axes.at(1).valueCount());
+    
+    QMap<Dimension, int>::const_iterator it = sizes.constBegin();
+    for(; it != sizes.constEnd(); ++it) {
+        if(d->m_axes.at(0).dimension() == it.key()) {
+            size.setWidth(it.value());
+        }
+        else if(d->m_axes.at(1).dimension() == it.key()) {
+            size.setHeight(it.value());
+        }
+    }
+    
+    return toImage(size);
 }

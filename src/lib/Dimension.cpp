@@ -28,3 +28,28 @@ void checkDimensionType(Dimension dimension, const QVariant& value) throw (BadDi
         }
     }
 }
+
+Dimension dimensionFromString(QString dimension) throw (BadDimensionString)
+{
+    Dimension dim;
+    if(dimension == "time") {
+        dim = Time;
+    }
+    else if(dimension == "x" || dimension == "lon") {
+        dim = Lon;
+    }
+    else if(dimension == "y" || dimension == "lat") {
+        dim = Lat;
+    }
+    else if(dimension == "height" || dimension == "z") {
+        dim = Height;
+    }
+    else {
+        BadDimensionString exception;
+        exception.setString(dimension);
+        throw exception;
+    }
+    
+    return dim;
+}
+

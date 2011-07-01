@@ -22,23 +22,7 @@ DimensionSubsetPrivate::DimensionSubsetPrivate(Dimension dimension)
 DimensionSubsetPrivate::DimensionSubsetPrivate(QString dimension) throw (BadDimensionString)
     : ref(1)
 {
-    if(dimension == "time") {
-        m_dimension = Time;
-    }
-    else if(dimension == "x" || dimension == "lon") {
-        m_dimension = Lon;
-    }
-    else if(dimension == "y" || dimension == "lat") {
-        m_dimension = Lat;
-    }
-    else if(dimension == "height" || dimension == "z") {
-        m_dimension = Height;
-    }
-    else {
-        BadDimensionString exception;
-        exception.setString(dimension);
-        throw exception;
-    }
+    m_dimension = dimensionFromString(dimension);
 }
 
 DimensionSubsetPrivate::DimensionSubsetPrivate(const DimensionSubsetPrivate& other)

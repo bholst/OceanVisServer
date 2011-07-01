@@ -7,8 +7,11 @@
 
 // Qt
 #include <QtCore/QList>
+#include <QtCore/QSize>
+#include <QtCore/QMap>
 
 // Project
+#include "global.h"
 #include "RequestBase.h"
 #include "DimensionSubset.h"
 
@@ -51,10 +54,21 @@ public:
      */
     QString format() const;
     
+    /**
+     * Set the size of the resulting image.
+     * Has no effect if the format is text/xml.
+     */
+    void setSize(Dimension dimension, int size);
+    
+    int size(Dimension dimension) const;
+    
+    QMap<Dimension, int> sizes() const;
+    
 private:
     QList<DimensionSubset*> m_dimensionSubsets;
     QString m_coverageId;
     QString m_format;
+    QMap<Dimension, int> m_sizes;
 };
 
 #endif
