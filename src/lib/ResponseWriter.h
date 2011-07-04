@@ -19,13 +19,18 @@ public:
     void write(GridCoverage *gridCoverage);
     
 private:
-    void writeRangeSet(GridCoverage *gridCoverage);
-    void writeDataBlock(GridCoverage *gridCoverage);
-    void writeTupleList(GridCoverage *gridCoverage);
+    void writeBoundedBy(GridCoverage *gridCoverage);
+    void writeEnvelope(GridCoverage *gridCoverage);
+    void writeLowerCorner(GridCoverage *gridCoverage);
+    void writeUpperCorner(GridCoverage *gridCoverage);
     
     void writeRangeType(GridCoverage *gridCoverage);
     void writeField(GridCoverage *gridCoverage);
     void writeQuantity(GridCoverage *gridCoverage);
+    
+    void writeRangeSet(GridCoverage *gridCoverage);
+    void writeDataBlock(GridCoverage *gridCoverage);
+    void writeTupleList(GridCoverage *gridCoverage);
 };
 
 #endif
