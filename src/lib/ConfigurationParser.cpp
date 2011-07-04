@@ -198,6 +198,10 @@ void ConfigurationParser::readFiles(DataLayer *layer)
     while(!atEnd()) {
         readNext();
         
+        if(isEndElement()) {
+            break;
+        }
+        
         if(isStartElement()) {
             if(name() == "start") {
                 QXmlStreamAttributes att = attributes();
