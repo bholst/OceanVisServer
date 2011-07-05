@@ -10,7 +10,8 @@
 class RequestBase {
 public:
     enum RequestType { 
-        WCS
+        WCS,
+        WMS
     };
     
     RequestBase(RequestType requestType);
