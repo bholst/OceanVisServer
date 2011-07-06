@@ -234,8 +234,13 @@ void OceanVisServer::handleGetMap(QTcpSocket *socket, GetMap *getMap)
     }
     
     QImage imageResult(getMap->width(), getMap->height(), QImage::Format_ARGB32);
+    if(getMap->transparent()) {
+        imageResult.fill(qRgba(0,0,0,0));
+    }
+    else {
+        imageResult.fill(getMap->backgroundColor().rgb());
+    }
     QPainter painter(&imageResult);
-    painter.fillRect(0, 0, getMap->width(), getMap->height(), getMap->backgroundColor());
     
     QList<DimensionSubset *> dimensionSubsets = getMap->dimensionSubsets();
     qDebug() << "Number of subset things:" << dimensionSubsets.length();
