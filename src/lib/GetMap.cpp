@@ -195,22 +195,22 @@ GetMap *GetMap::fromRequestString(QString request)
         if(argParts.size() != 2) {
             return 0;
         }
-        QString field = argParts[0];
+        QString field = argParts[0].toLower();
         QString value = argParts[1];
         
-        if(field == "VERSION") {
+        if(field == "version") {
             version = value;
         }
-        else if(field == "LAYERS") {
+        else if(field == "layers") {
             layers = value.split(',');
         }
-        else if(field == "STYLES") {
+        else if(field == "styles") {
             styles = value.split(',');
         }
-        else if(field == "CRS" && value != "EPSG:4326") {
+        else if(field == "crs" && value != "EPSG:4326") {
             return 0;
         }
-        else if(field == "BBOX") {
+        else if(field == "bbox") {
             QStringList borders = value.split(',');
             if(borders.size() != 4) 
                 return 0;
@@ -221,32 +221,32 @@ GetMap *GetMap::fromRequestString(QString request)
             boundingBox.setLonMax(borders.at(2).toDouble());
             boundingBox.setLatMax(borders.at(3).toDouble());
         }
-        else if(field == "WIDTH") {
+        else if(field == "width") {
             width = value.toInt();
         }
-        else if(field == "HEIGHT") {
+        else if(field == "height") {
             height = value.toInt();
         }
-        else if(field == "TRANSPARENT") {
-            if(value == "TRUE") {
+        else if(field == "transparent") {
+            if(value.toLower() == "true") {
                 transparent = true;
             }
             else {
                 transparent = false;
             }
         }
-        else if(field == "BGCOLOR") {
+        else if(field == "bgcolor") {
             bool ok;
             uint colorVal = value.toUInt(&ok, 0);
             backgroundColor.setRgb(colorVal>>16 & 0xFF, colorVal>>8 & 0xFF,colorVal & 0xFF);
         }
-        else if(field == "EXCEPTIONS" && value != "XML") {
+        else if(field == "exceptions" && value.toLower() != "xml") {
             return 0;
         }
-        else if(field == "TIME") {
+        else if(field == "time") {
             time = RequestParser::parseTime(value);
         }
-        else if(field == "ELEVATION") {
+        else if(field == "elevation") {
             elevation = value.toInt();
         }
     }

@@ -98,20 +98,22 @@ void OceanVisServer::readClient()
             }
             
             QRegExp serviceType("SERVICE=(wcs|wms)");
+            serviceType.setCaseSensitivity(Qt::CaseInsensitive);
             serviceType.indexIn(urlSplit.at(1));
             QRegExp requestType("REQUEST=(GetMap|GetCoverage)");
+            requestType.setCaseSensitivity(Qt::CaseInsensitive);
             requestType.indexIn(urlSplit.at(1));
 
             if(serviceType.pos() <= -1) {
                 return;
             }
-            if(serviceType.cap(1) == "wcs"
-               && requestType.cap(1) == "GetCoverage")
+            if(QString::compare(serviceType.cap(1), "wcs", Qt::CaseInsensitive) == 0
+               && QString::compare(requestType.cap(1), "GetCoverage", Qt::CaseInsensitive) == 0)
             {
                 request = GetCoverage::fromRequestString(urlSplit.at(1));
             }
-            else if(serviceType.cap(1) == "wms"
-               && requestType.cap(1) == "GetMap")
+            else if(QString::compare(serviceType.cap(1), "wms", Qt::CaseInsensitive) == 0
+               && QString::compare(requestType.cap(1), "GetMap", Qt::CaseInsensitive) == 0)
             {
                 request = GetMap::fromRequestString(urlSplit.at(1));
             }
@@ -213,9 +215,12 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
 
 void OceanVisServer::handleGetMap(QTcpSocket *socket, GetMap *getMap)
 {
-    if(getMap->version() != "1.3.0") {
+    if(getMap->version() != "1.3.0"
+       && getMap->version() != "1.1.1"
+       && getMap->version() != "1.1.0")
+    {
         // TODO: This is the wrong behavior.
-        qDebug() << "WMS: Wrong version.";
+        qDebug() << "WMS: Wrong version" << getMap->version();
         return;
     }
 
