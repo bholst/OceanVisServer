@@ -64,6 +64,11 @@ public:
 
 inline double DataLayerPrivate::value(double *dataVector, int lon, int lat, int height) const
 {
+    if(lon < 0 || lon >= m_geometry.width()
+       || lat < 0 || lat >= m_geometry.height())
+    {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
     int layerCount = m_geometry.layerCount(lon, lat);
     assert(layerCount >= 0);
     if(layerCount > height) {
@@ -199,7 +204,8 @@ double DataLayer::maxValue() const
     return d->m_scaleMax;
 }
 
-GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
+GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
+                                    DataLayer::CutMode mode)
 {
     if(d->m_dataVectors.empty()) {
         return 0;
@@ -318,14 +324,6 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
     qDebug() << "Low lon trim:" << lowLonTrim;
     qDebug() << "High lon trim:" << highLonTrim;
     qDebug() << "Number of lon values:" << dimensionCount[1];
-    if(lowLonTrim >= d->m_geometry.width()
-       || highLonTrim > d->m_geometry.width()
-       || lowLonTrim < 0
-       || highLonTrim <= 0
-    )
-    {
-        return 0;
-    }
 
     QMap<Dimension,DimensionSlice>::const_iterator latSliceIt = dimensionSlices.find(Lat);
     QMap<Dimension,DimensionTrim>::const_iterator latTrimIt = dimensionTrims.find(Lat);
@@ -370,14 +368,6 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets)
     qDebug() << "Low lat trim:" << lowLatTrim;
     qDebug() << "High lat trim:" << highLatTrim;
     qDebug() << "Number of lat values:" << dimensionCount[2];
-    if(lowLatTrim >= d->m_geometry.height()
-       || highLatTrim > d->m_geometry.height()
-       || lowLatTrim < 0
-       || highLatTrim <= 0
-    )
-    {
-        return 0;
-    }
 
     QMap<Dimension,DimensionSlice>::const_iterator heightSliceIt = dimensionSlices.find(Height);
     QMap<Dimension,DimensionTrim>::const_iterator heightTrimIt = dimensionTrims.find(Height);
