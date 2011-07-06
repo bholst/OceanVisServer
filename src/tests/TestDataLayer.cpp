@@ -25,6 +25,8 @@ private Q_SLOTS:
     
     void testCalculateLonLimitsSlice_data();
     void testCalculateLonLimitsSlice();
+    
+    void testCalculateLonLimitsNull();
 
 private:
     MapGeometry m_geometry;
@@ -142,6 +144,22 @@ void TestDataLayer::testCalculateLonLimitsSlice()
     m_dataLayer.calculateLonLimits(&slice, &realLowLonTrim, &realHighLonTrim, DataLayer::Overlaps);
     QCOMPARE(realLowLonTrim, lowLonTrim);
     QCOMPARE(realHighLonTrim, highLonTrim);
+}
+
+void TestDataLayer::testCalculateLonLimitsNull()
+{
+    int realLowLonTrim = -100;
+    int realHighLonTrim = -100;
+    
+    m_dataLayer.calculateLonLimits(0, &realLowLonTrim, &realHighLonTrim, DataLayer::Contains);
+    QCOMPARE(realLowLonTrim, 0);
+    QCOMPARE(realHighLonTrim, 4);
+    realLowLonTrim = -100;
+    realHighLonTrim = -100;
+    
+    m_dataLayer.calculateLonLimits(0, &realLowLonTrim, &realHighLonTrim, DataLayer::Overlaps);
+    QCOMPARE(realLowLonTrim, 0);
+    QCOMPARE(realHighLonTrim, 4);
 }
 
 QTEST_MAIN( TestDataLayer )
