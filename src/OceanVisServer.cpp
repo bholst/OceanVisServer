@@ -24,6 +24,7 @@
 #include "DataLayer.h"
 #include "RequestBase.h"
 #include "GetCoverage.h"
+#include "GetMap.h"
 #include "DimensionTrim.h"
 #include "DimensionSlice.h"
 #include "GridCoverage.h"
@@ -83,9 +84,7 @@ void OceanVisServer::readClient()
 
     QTcpSocket *socket = (QTcpSocket *) sender();
 
-    if(socket->canReadLine()) {
-        QStringList coverages;
-        
+    if(socket->canReadLine()) {        
         RequestBase *request = 0;
 
         QStringList tokens = QString(socket->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
@@ -97,9 +96,9 @@ void OceanVisServer::readClient()
                 return;
             }
             
-            QRegExp serviceType("SERVICE=(wcs)");
+            QRegExp serviceType("SERVICE=(wcs|wms)");
             serviceType.indexIn(urlSplit.at(1));
-            QRegExp requestType("REQUEST=(GetCoverage)");
+            QRegExp requestType("REQUEST=(GetMap|GetCoverage)");
             requestType.indexIn(urlSplit.at(1));
 
             if(serviceType.pos() <= -1) {
@@ -108,123 +107,12 @@ void OceanVisServer::readClient()
             if(serviceType.cap(1) == "wcs"
                && requestType.cap(1) == "GetCoverage")
             {
-                request = new GetCoverage();
+                request = GetCoverage::fromRequestString(urlSplit.at(1));
             }
-            else {
-                return;
-            }
-
-            QStringList args = urlSplit.at(1).split('&');
-
-            foreach(QString arg, args) {
-                QStringList argParts = arg.split('=');
-                if(argParts.size() != 2) {
-                    qDebug() << "Strange arguments.";
-                    continue;
-                }
-
-                else if(argParts[0] == "VERSION") {
-                    request->setVersion(argParts[1]);
-                }
-                else if(argParts[0] == "COVERAGEID") {
-                    GetCoverage *getCoverage = dynamic_cast<GetCoverage *>(request);
-                    if(getCoverage) {
-                        getCoverage->setCoverageId(argParts[1]);
-                    }
-                }
-                else if(argParts[0] == "FORMAT") {
-                    GetCoverage *getCoverage = dynamic_cast<GetCoverage *>(request);
-                    if(getCoverage) {
-                        getCoverage->setFormat(argParts[1]);
-                    }
-                }
-                else if(argParts[0] == "SIZE") {
-                    GetCoverage *getCoverage = dynamic_cast<GetCoverage *>(request);
-                    if(getCoverage) {
-                        QRegExp sizeExp("([a-zA-Z]+)\\(([0-9]+)\\)");
-                        sizeExp.indexIn(argParts[1]);
-                        if(sizeExp.pos() > -1) {
-                            try {
-                                getCoverage->setSize(dimensionFromString(sizeExp.cap(1)), sizeExp.cap(2).toInt());
-                            } catch (BadDimensionString e) {
-                                qDebug() << e.what();
-                                delete request;
-                                return;
-                            }
-                        }
-                    }
-                }
-                else if(argParts[0] == "SUBSET"
-                        || argParts[0] == "TRIM"
-                        || argParts[0] == "SLICE")
-                {
-                    GetCoverage *getCoverage = dynamic_cast<GetCoverage *>(request);
-                    if(!getCoverage) {
-                        qDebug() << "No get coverage.";
-                    }
-                    else {
-                        qDebug() << "Parsing subset.";
-                        QString arg = argParts[1];
-                        QRegExp trimExp("([a-zA-Z]{1,}),http://www.opengis.net/def/crs/EPSG/0/4326\\(([-+]?[0-9]{0,}\\.?[0-9]{0,}),([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
-                        trimExp.indexIn(arg);
-                        if(trimExp.pos() > -1) {
-                            qDebug() << "Found trim.";
-                            QString axis = trimExp.cap(1);
-                            QString min = trimExp.cap(2);
-                            QString max = trimExp.cap(3);
-                            
-                            qDebug() << "Axis:" << axis;
-                            qDebug() << "Min:" << min;
-                            qDebug() << "Max:" << max;
-                            
-                            try {
-                                DimensionTrim *trim = new DimensionTrim(axis);
-                                
-                                if(trim->dimension() == Time) {
-                                    trim->setTrimLow(RequestParser::parseTime(min));
-                                    trim->setTrimHigh(RequestParser::parseTime(max));
-                                }
-                                else {
-                                    trim->setTrimLow(min.toDouble());
-                                    trim->setTrimHigh(max.toDouble());
-                                }
-                                getCoverage->addDimensionSubset(trim);
-                            } catch (BadDimensionString e) {
-                                qDebug() << e.what();
-                                delete request;
-                                return;
-                            }
-                        }
-                        else {
-                            QRegExp sliceExp("([a-zA-Z]{1,}),http://www.opengis.net/def/crs/EPSG/0/4326\\((\\S{1,})\\)");
-                            sliceExp.indexIn(arg);
-                            if(sliceExp.pos() > -1) {
-                                qDebug() << "Fount slice";
-                                QString axis = sliceExp.cap(1);
-                                QString slicePointString = sliceExp.cap(2);
-                                
-                                qDebug() << "Axis:" << axis;
-                                qDebug() << "Slice point:" << slicePointString;
-                                
-                                try {
-                                    DimensionSlice *slice = new DimensionSlice(axis);
-                                    
-                                    if(slice->dimension() == Time) {
-                                        slice->setSlicePoint(QVariant(RequestParser::parseTime(slicePointString)));
-                                    }
-                                    else {
-                                        slice->setSlicePoint(slicePointString.toDouble());
-                                    }
-                                    getCoverage->addDimensionSubset(slice);
-                                } catch (BadDimensionString e) {
-                                    qDebug() << e.what();
-                                    delete request;
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
+            else if(serviceType.cap(1) == "wms"
+               && requestType.cap(1) == "GetMap")
+            {
+                request = GetMap::fromRequestString(urlSplit.at(1));
             }
         }
         else if(tokens[0] == "POST") {
@@ -243,15 +131,16 @@ void OceanVisServer::readClient()
 
 void OceanVisServer::handleRequest(QTcpSocket *socket, RequestBase *request)
 {
-    if(request->version() != "2.0.0") {
-        // TODO: This is the wrong behavior.
-        qDebug() << "Wrong version.";
-        return;
+    if(!request) {
+        qDebug() << "Request is empty.";
     }
-
     GetCoverage *getCoverage = dynamic_cast<GetCoverage *>(request);
+    GetMap *getMap = dynamic_cast<GetMap *>(request);
     if(getCoverage) {
         handleGetCoverage(socket, getCoverage);
+    }
+    else if(getMap) {
+        handleGetMap(socket, getMap);
     }
     else {
         qDebug() << "Unknown request.";
@@ -259,7 +148,13 @@ void OceanVisServer::handleRequest(QTcpSocket *socket, RequestBase *request)
 }
 
 void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCoverage)
-{    
+{
+    if(getCoverage->version() != "2.0.0") {
+        // TODO: This is the wrong behavior.
+        qDebug() << "WCS: Wrong version.";
+        return;
+    }
+
     DataLayer *selectedLayer;
     QHash<QString,DataLayer *>::const_iterator layer = m_layers.constFind(getCoverage->coverageId());
     if(layer == m_layers.constEnd()) {
@@ -305,6 +200,62 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
         iw.write(matrix->toImage(getCoverage->sizes()));
     }
      
+    socket->close();
+    
+    delete matrix;
+    
+    if(socket->state() == QTcpSocket::UnconnectedState) {
+        delete socket;
+        qDebug() << "Connection closed";
+    }
+}
+
+void OceanVisServer::handleGetMap(QTcpSocket *socket, GetMap *getMap)
+{
+    if(getMap->version() != "1.3.0") {
+        // TODO: This is the wrong behavior.
+        qDebug() << "WMS: Wrong version.";
+        return;
+    }
+
+    QStringList layers = getMap->layers();
+    QList<DataLayer *> selectedLayers;
+    for(int i = 0; i < layers.size(); ++i) {
+        QHash<QString,DataLayer *>::const_iterator layer = m_layers.constFind(layers[i]);
+        if(layer == m_layers.constEnd()) {
+            // TODO: This is the wrong behavior.
+            qDebug() << "Coverage not found.";
+            return;
+        }
+        else {
+            selectedLayers.append(layer.value());
+        }
+    }
+    
+    QList<DimensionSubset *> dimensionSubsets = getMap->dimensionSubsets();
+    qDebug() << "Number of subset things:" << dimensionSubsets.length();
+    GridCoverage *matrix = selectedLayers.at(0)->dataSubset(dimensionSubsets);
+    if(!matrix) {
+        // TODO: Still the wrong behavior.
+        return;
+    }
+    
+    QTextStream os(socket);
+    os.setAutoDetectUnicode(true);
+    os << "HTTP/1.0 200 Ok\r\n";
+    
+    qDebug() << "Got image";
+    QString format = getMap->format().remove(0,6);
+    qDebug() << "The format is" << format;
+    os << "Content-Type: image/" + format + "\r\n"
+       << "\r\n";
+    os.flush();
+    
+    QImageWriter iw;
+    iw.setDevice(socket);
+    iw.setFormat(format.toAscii());
+    iw.write(matrix->toImage(QSize(getMap->width(), getMap->height())));
+    
     socket->close();
     
     delete matrix;

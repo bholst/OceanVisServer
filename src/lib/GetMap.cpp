@@ -53,7 +53,7 @@ QList<DimensionSubset*> GetMap::dimensionSubsets() const
         m_dimensionSubsets.append(lat);
         
         DimensionSlice *height = new DimensionSlice(Height);
-        height->setSlicePoint(m_height);
+        height->setSlicePoint(m_elevation);
         m_dimensionSubsets.append(height);
         
         m_dimensionSubsetsChanged = false;
@@ -175,8 +175,9 @@ void GetMap::setElevation(int elevation)
     m_elevation = elevation;
 }
 
-const GetMap *GetMap::fromRequestString(QString request)
+GetMap *GetMap::fromRequestString(QString request)
 {
+    QString version;
     QStringList styles;
     QStringList layers;
     BoundingBox boundingBox;
@@ -197,8 +198,8 @@ const GetMap *GetMap::fromRequestString(QString request)
         QString field = argParts[0];
         QString value = argParts[1];
         
-        if(field == "version" && value != "1.3.0") {
-            return 0;
+        if(field == "VERSION") {
+            version = value;
         }
         else if(field == "LAYERS") {
             layers = value.split(',');
@@ -251,6 +252,7 @@ const GetMap *GetMap::fromRequestString(QString request)
     }
     
     GetMap *getMap = new GetMap();
+    getMap->setVersion(version);
     getMap->setLayers(layers);
     getMap->setStyles(styles);
     getMap->setBoundingBox(boundingBox);
@@ -261,4 +263,39 @@ const GetMap *GetMap::fromRequestString(QString request)
     getMap->setTime(time);
     getMap->setElevation(elevation);
     return getMap;
+}
+
+QString GetMap::toString() const
+{
+    QString result("Getmap (%1):\n"
+                   "VERSION=%2\n"
+                   "LAYERS=%3\n"
+                   "STYLES=%4\n"
+                   "BBOX=%5,%6,%7,%8\n"
+                   "WIDTH=%9\n"
+                   "HEIGHT=%10\n"
+                   "TRANSPARENT=%11\n"
+                   "BGCOLOR=0x%12%13%14\n"
+                   "TIME=%15\n"
+                   "ELEVATION=%16\n");
+    
+    result = result.arg((unsigned long) this, 0, 16);
+    result = result.arg(version());
+    result = result.arg(layers().join(QChar(',')));
+    result = result.arg(styles().join(QChar(',')));
+    result = result.arg(m_boundingBox.lonMin()).arg(m_boundingBox.latMin()).arg(m_boundingBox.lonMax()).arg(m_boundingBox.latMax());
+    result = result.arg(width());
+    result = result.arg(height());
+    if(transparent()) {
+        result = result.arg("TRUE");
+    }
+    else {
+        result = result.arg("FALSE");
+    }
+    result = result.arg(m_backgroundColor.red(), 2, 16, QChar('0'))
+                   .arg(m_backgroundColor.green(), 2, 16, QChar('0'))
+                   .arg(m_backgroundColor.blue(), 2, 16, QChar('0'));
+    result = result.arg(m_time.toString(Qt::ISODate));
+    result = result.arg(m_elevation);
+    return result;
 }

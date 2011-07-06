@@ -13,6 +13,7 @@ class DataLayer;
 class QTcpSocket;
 class RequestBase;
 class GetCoverage;
+class GetMap;
 
 class OceanVisServer : public QTcpServer
 {
@@ -48,6 +49,13 @@ public:
      * message through the given socket.
      */
     void handleGetCoverage(QTcpSocket *socket, GetCoverage *getCoverage);
+    
+    /**
+     * Answer the getMap request.
+     * Sends the requested map or, if this is not possible, an error
+     * message through the given socket.
+     */
+    void handleGetMap(QTcpSocket *socket, GetMap *getMap);
 
 private slots:
     void readClient();

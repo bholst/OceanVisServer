@@ -64,6 +64,8 @@ public:
     
     QMap<Dimension, int> sizes() const;
     
+    static GetCoverage *fromRequestString(QString request);
+    
 private:
     QList<DimensionSubset*> m_dimensionSubsets;
     QString m_coverageId;

@@ -67,7 +67,9 @@ public:
     int elevation() const;
     void setElevation(int elevation);
     
-    const GetMap *fromRequestString(QString request);
+    static GetMap *fromRequestString(QString request);
+    
+    QString toString() const;
     
 private:
     QStringList m_layers;
