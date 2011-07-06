@@ -45,9 +45,9 @@ public:
 
     QString toString() const;
 
-    QImage toImage() const;
-    QImage toImage(const QSize& size) const;
-    QImage toImage(const QMap<Dimension, int>& sizes) const;
+    QImage toImage(bool transparent = false) const;
+    QImage toImage(const QSize& size, bool transparent = false) const;
+    QImage toImage(const QMap<Dimension, int>& sizes, bool transparent = false) const;
 
 private:
     Q_DISABLE_COPY(GridCoverage)

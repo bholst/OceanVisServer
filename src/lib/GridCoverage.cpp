@@ -147,7 +147,7 @@ QString GridCoverage::toString() const
     return result;
 }
 
-QImage GridCoverage::toImage() const
+QImage GridCoverage::toImage(bool transparent) const
 {
     if(d->m_axes.length() != 2) {
         return QImage();
@@ -157,12 +157,17 @@ QImage GridCoverage::toImage() const
 
     int width = d->m_axes[0].valueCount();
     int height = d->m_axes[1].valueCount();
-    QImage result(width, height, QImage::Format_RGB32);
+    QImage result(width, height, QImage::Format_ARGB32);
     for(int x = 0; x < width; ++x) {
         for(int y = 0; y < height; ++y) {
             if(d->m_values[x * height + y] != d->m_values[x * height + y]) {
                 // NaN
-                result.setPixel(x, height - y - 1, 0);
+                if(transparent) {
+                    result.setPixel(x, height - y - 1, qRgba(0, 0, 0, 0));
+                }
+                else {
+                    result.setPixel(x, height - y - 1, qRgba(0, 0, 0, 255));
+                }
             }
             else {
                 double relative = (d->m_values[x * height + y] - d->m_minValue) / span;
@@ -173,9 +178,10 @@ QImage GridCoverage::toImage() const
             
                 QColor color;
 //                 color.setHsvF(relative, 1.0, 1.0);
-                color.setHsvF(1.0, relative, 1.0);
+//                 color.setHsvF(1.0, relative, 1.0);
+                color.setRgbF(1.0, 0, 0);
             
-                result.setPixel(x, height - y - 1, color.red() * 0x0100000 + color.green() * 0x000100 + color.blue() * 0x000001);
+                result.setPixel(x, height - y - 1, qRgba(color.red(), color.green(), color.blue(), relative * 255));
             }
         }
     }
@@ -183,12 +189,12 @@ QImage GridCoverage::toImage() const
     return result;
 }
 
-QImage GridCoverage::toImage(const QSize& size) const
+QImage GridCoverage::toImage(const QSize& size, bool transparent) const
 {
-    return toImage().scaled(size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    return toImage(transparent).scaled(size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 
-QImage GridCoverage::toImage(const QMap<Dimension, int>& sizes) const
+QImage GridCoverage::toImage(const QMap<Dimension, int>& sizes, bool transparent) const
 {
     if(d->m_axes.length() != 2) {
         return QImage();
@@ -206,5 +212,5 @@ QImage GridCoverage::toImage(const QMap<Dimension, int>& sizes) const
         }
     }
     
-    return toImage(size);
+    return toImage(size, transparent);
 }

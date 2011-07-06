@@ -18,6 +18,7 @@
 #include <QtCore/QDataStream>
 #include <QtGui/QImageWriter>
 #include <QtGui/QImage>
+#include <QtGui/QPainter>
 
 // Project
 #include "Dimension.h"
@@ -232,12 +233,23 @@ void OceanVisServer::handleGetMap(QTcpSocket *socket, GetMap *getMap)
         }
     }
     
+    QImage imageResult(getMap->width(), getMap->height(), QImage::Format_ARGB32);
+    QPainter painter(&imageResult);
+    painter.fillRect(0, 0, getMap->width(), getMap->height(), getMap->backgroundColor());
+    
     QList<DimensionSubset *> dimensionSubsets = getMap->dimensionSubsets();
     qDebug() << "Number of subset things:" << dimensionSubsets.length();
-    GridCoverage *matrix = selectedLayers.at(0)->dataSubset(dimensionSubsets);
-    if(!matrix) {
-        // TODO: Still the wrong behavior.
-        return;
+    for(int i = 0; i < selectedLayers.size(); ++i) {
+        GridCoverage *matrix = selectedLayers.at(i)->dataSubset(dimensionSubsets);
+        if(!matrix) {
+            // TODO: Still the wrong behavior.
+            return;
+        }
+        
+        QImage image = matrix->toImage(QSize(getMap->width(), getMap->height()), true);
+        painter.drawImage(0, 0, image);
+        
+        delete matrix;
     }
     
     QTextStream os(socket);
@@ -254,11 +266,9 @@ void OceanVisServer::handleGetMap(QTcpSocket *socket, GetMap *getMap)
     QImageWriter iw;
     iw.setDevice(socket);
     iw.setFormat(format.toAscii());
-    iw.write(matrix->toImage(QSize(getMap->width(), getMap->height())));
+    iw.write(imageResult);
     
     socket->close();
-    
-    delete matrix;
     
     if(socket->state() == QTcpSocket::UnconnectedState) {
         delete socket;

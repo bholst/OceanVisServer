@@ -238,7 +238,7 @@ GetMap *GetMap::fromRequestString(QString request)
         else if(field == "BGCOLOR") {
             bool ok;
             uint colorVal = value.toUInt(&ok, 0);
-            backgroundColor.setRgb(colorVal>>16 | 0xFF, colorVal>>8 | 0xFF,colorVal | 0xFF);
+            backgroundColor.setRgb(colorVal>>16 & 0xFF, colorVal>>8 & 0xFF,colorVal & 0xFF);
         }
         else if(field == "EXCEPTIONS" && value != "XML") {
             return 0;
