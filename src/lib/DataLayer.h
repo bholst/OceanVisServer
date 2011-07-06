@@ -20,8 +20,8 @@ class DataLayerPrivate;
 class DataLayer {
 public:
     enum CutMode {
-        IncludingBorder,
-        ExcludingBorder
+        Contains,
+        Overlaps
     };
     
     DataLayer();
@@ -62,7 +62,9 @@ public:
      */
     double minValue() const;
 
-    GridCoverage *dataSubset(QList<DimensionSubset*>& subsets, CutMode mode = ExcludingBorder);
+    GridCoverage *dataSubset(QList<DimensionSubset*>& subsets, CutMode mode = Contains);
+    
+    void calculateLonLimits(DimensionSubset *subset, int *lowLonTrim, int *highLonTrim, CutMode mode);
 
 private:
     Q_DISABLE_COPY(DataLayer);
