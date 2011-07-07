@@ -82,10 +82,10 @@ void ResponseWriter::writeLowerCorner(GridCoverage *gridCoverage)
     QStringList lowerCorner;
     foreach(CoordinateAxis axis, gridCoverage->coordinateAxes()) {
         if(axis.dimension() == Time) {
-            lowerCorner << QString::number(axis.minValue().toDateTime().toTime_t());
+            lowerCorner << QString::number(axis.lowerLimit().toDateTime().toTime_t());
         }
         else {
-            lowerCorner << QString::number(axis.minValue().toDouble());
+            lowerCorner << QString::number(axis.lowerLimit().toDouble());
         }
     }
     writeCharacters(lowerCorner.join(" "));
@@ -98,10 +98,10 @@ void ResponseWriter::writeUpperCorner(GridCoverage *gridCoverage)
     QStringList upperCorner;
     foreach(CoordinateAxis axis, gridCoverage->coordinateAxes()) {
         if(axis.dimension() == Time) {
-            upperCorner << QString::number(axis.maxValue().toDateTime().toTime_t());
+            upperCorner << QString::number(axis.upperLimit().toDateTime().toTime_t());
         }
         else {
-            upperCorner << QString::number(axis.maxValue().toDouble());
+            upperCorner << QString::number(axis.upperLimit().toDouble());
         }
     }
     writeCharacters(upperCorner.join(" "));

@@ -19,65 +19,65 @@ private Q_SLOTS:
 void TestCoordinateAxis::testCopy()
 {
     CoordinateAxis original(Lat);
-    original.setMinValue(-50.0);
-    original.setMaxValue(-20.0);
+    original.setLowerLimit(-50.0);
+    original.setUpperLimit(-20.0);
     original.setValueCount(100);
 
     CoordinateAxis other(original);
 
     QCOMPARE(original.dimension(), Lat);
-    QCOMPARE(original.minValue().toDouble(), -50.0);
-    QCOMPARE(original.maxValue().toDouble(), -20.0);
+    QCOMPARE(original.lowerLimit().toDouble(), -50.0);
+    QCOMPARE(original.upperLimit().toDouble(), -20.0);
     QCOMPARE(original.valueCount(), 100);
     QCOMPARE(other.dimension(), Lat);
-    QCOMPARE(other.minValue().toDouble(), -50.0);
-    QCOMPARE(other.maxValue().toDouble(), -20.0);
+    QCOMPARE(other.lowerLimit().toDouble(), -50.0);
+    QCOMPARE(other.upperLimit().toDouble(), -20.0);
     QCOMPARE(other.valueCount(), 100);
 
-    other.setMinValue(-60.0);
-    original.setMaxValue(-10.0);
+    other.setLowerLimit(-60.0);
+    original.setUpperLimit(-10.0);
     other.setValueCount(20);
 
     QCOMPARE(original.dimension(), Lat);
-    QCOMPARE(original.minValue().toDouble(), -50.0);
-    QCOMPARE(original.maxValue().toDouble(), -10.0);
+    QCOMPARE(original.lowerLimit().toDouble(), -50.0);
+    QCOMPARE(original.upperLimit().toDouble(), -10.0);
     QCOMPARE(original.valueCount(), 100);
     QCOMPARE(other.dimension(), Lat);
-    QCOMPARE(other.minValue().toDouble(), -60.0);
-    QCOMPARE(other.maxValue().toDouble(), -20.0);
+    QCOMPARE(other.lowerLimit().toDouble(), -60.0);
+    QCOMPARE(other.upperLimit().toDouble(), -20.0);
     QCOMPARE(other.valueCount(), 20);
 }
 
 void TestCoordinateAxis::testAssignment()
 {
     CoordinateAxis original(Lat);
-    original.setMinValue(-50.0);
-    original.setMaxValue(-20.0);
+    original.setLowerLimit(-50.0);
+    original.setUpperLimit(-20.0);
     original.setValueCount(100);
 
     CoordinateAxis other(Lon);
     other = original;
     
     QCOMPARE(original.dimension(), Lat);
-    QCOMPARE(original.minValue().toDouble(), -50.0);
-    QCOMPARE(original.maxValue().toDouble(), -20.0);
+    QCOMPARE(original.lowerLimit().toDouble(), -50.0);
+    QCOMPARE(original.upperLimit().toDouble(), -20.0);
     QCOMPARE(original.valueCount(), 100);
     QCOMPARE(other.dimension(), Lat);
-    QCOMPARE(other.minValue().toDouble(), -50.0);
-    QCOMPARE(other.maxValue().toDouble(), -20.0);
+    QCOMPARE(other.lowerLimit().toDouble(), -50.0);
+    QCOMPARE(other.upperLimit().toDouble(), -20.0);
     QCOMPARE(other.valueCount(), 100);
 
-    original.setMaxValue(-10.0);
-    other.setMinValue(-60.0);
+    original.setUpperLimit(-10.0);
+    other.setLowerLimit(-60.0);
     other.setValueCount(20);
 
     QCOMPARE(original.dimension(), Lat);
-    QCOMPARE(original.minValue().toDouble(), -50.0);
-    QCOMPARE(original.maxValue().toDouble(), -10.0);
+    QCOMPARE(original.lowerLimit().toDouble(), -50.0);
+    QCOMPARE(original.upperLimit().toDouble(), -10.0);
     QCOMPARE(original.valueCount(), 100);
     QCOMPARE(other.dimension(), Lat);
-    QCOMPARE(other.minValue().toDouble(), -60.0);
-    QCOMPARE(other.maxValue().toDouble(), -20.0);
+    QCOMPARE(other.lowerLimit().toDouble(), -60.0);
+    QCOMPARE(other.upperLimit().toDouble(), -20.0);
     QCOMPARE(other.valueCount(), 20);
 }
 
@@ -85,29 +85,29 @@ void TestCoordinateAxis::testBadType()
 {
     CoordinateAxis timeAxis(Time);
 
-    QVariant oldValue = timeAxis.minValue();
+    QVariant oldValue = timeAxis.lowerLimit();
     bool exceptionThrown = false;
     try {
-        timeAxis.setMinValue(10.0);
+        timeAxis.setLowerLimit(10.0);
     }
     catch (BadDimensionTypeException exception) {
         exceptionThrown = true;
     }
     QCOMPARE(exceptionThrown, true);
-    QCOMPARE(timeAxis.minValue(), oldValue);
+    QCOMPARE(timeAxis.lowerLimit(), oldValue);
 
     CoordinateAxis lonAxis(Lon);
 
-    oldValue = lonAxis.maxValue();
+    oldValue = lonAxis.upperLimit();
     exceptionThrown = false;
     try {
-        lonAxis.setMaxValue(QDateTime());
+        lonAxis.setUpperLimit(QDateTime());
     }
     catch (BadDimensionTypeException exception) {
         exceptionThrown = true;
     }
     QCOMPARE(exceptionThrown, true);
-    QCOMPARE(lonAxis.maxValue(), oldValue);
+    QCOMPARE(lonAxis.upperLimit(), oldValue);
 }
 
 QTEST_MAIN( TestCoordinateAxis )

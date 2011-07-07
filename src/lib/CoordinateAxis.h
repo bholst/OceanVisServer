@@ -37,38 +37,38 @@ public:
     Dimension dimension() const;
 
     /**
-     * Set the minimum value on this axis.
-     * In the described matrix is a value for minimumValue,
-     * but there is no value for smaller points in this dimension.
+     * Set the lower limit on this axis.
+     * The described matrix contains values for values with a larger coordinate
+     * on this axis but not for lower ones.
      *
-     * @param minimumValue The minimum value on this axis. The QVariant has to
-     *                     contain a type which is convertible to the type
-     *                     associated to the dimension of this object.
+     * @param lowerLimit The lower limit of this axis. The QVariant has to
+     *                   contain a type which is convertible to the type
+     *                   associated to the dimension of this object.
      */
-    void setMinValue(const QVariant& minValue) throw (BadDimensionTypeException);
+    void setLowerLimit(const QVariant& lowerLimit) throw (BadDimensionTypeException);
     /**
-     * Return the maximum value on this axis.
-     * In the described matrix is a value for minimumValue,
-     * but there is no value for smaller points in this dimension.
+     * Return the lower limit on this axis.
+     * The described matrix contains values for values with a larger coordinate
+     * on this axis but not for lower ones.
      */
-    QVariant minValue() const;
+    QVariant lowerLimit() const;
 
     /**
-     * Set the maximum value on this axis.
-     * In the described matrix is a value for maximumValue,
-     * but there is no value for higher points in this dimension.
+     * Set the upper limit on this axis.
+     * The described matrix contains values for values with a lower coordinate
+     * on this axis but not for higher ones.
      *
-     * @param maximumValue The maximum value on this axis. The QVariant has to
+     * @param upperLimit The maximum value on this axis. The QVariant has to
      *                     contain a type which is convertible to the type
      *                     associated to the dimension of this object.
      */
-    void setMaxValue(const QVariant& maxValue) throw (BadDimensionTypeException);
+    void setUpperLimit(const QVariant& upperLimit) throw (BadDimensionTypeException);
     /**
-     * Return the maximum value on this axis.
-     * In the described matrix is a value for maximumValue,
-     * but there is no value for higher points in this dimension.
+     * Return the upper limit on this axis.
+     * The described matrix contains values for values with a lower coordinate
+     * on this axis but not for higher ones.
      */
-    QVariant maxValue() const;
+    QVariant upperLimit() const;
 
     /**
      * Set the number of points on this axis.

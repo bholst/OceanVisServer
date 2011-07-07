@@ -256,7 +256,7 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
         {
             lowTimeTrim--;
         }
-        axis.setMinValue(lowTimeTrim.key());
+        axis.setLowerLimit(lowTimeTrim.key());
 
         highTimeTrim = d->m_dataVectors.upperBound(trimHigh);
         if(mode == Overlaps
@@ -270,7 +270,7 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
             ++it)
         {
             dimensionCount[0]++;
-            axis.setMaxValue(it.key());
+            axis.setUpperLimit(it.key());
         }
         axis.setValueCount(dimensionCount[0]);
         axes.append(axis);
@@ -280,8 +280,8 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
         highTimeTrim = d->m_dataVectors.end();
         dimensionCount[0] = d->m_dataVectors.size();
         CoordinateAxis axis(Time);
-        axis.setMinValue(lowTimeTrim.key());
-        axis.setMaxValue((highTimeTrim - 1).key());
+        axis.setLowerLimit(lowTimeTrim.key());
+        axis.setUpperLimit((highTimeTrim - 1).key());
         axis.setValueCount(dimensionCount[0]);
         axes.append(axis);
     }
@@ -318,8 +318,8 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
         dimensionCount[1] = highLonTrim - lowLonTrim;
 
         CoordinateAxis axis(Lon);
-        axis.setMinValue(lowLonTrim * 360.0 / (double) d->m_geometry.width() - 180.0);
-        axis.setMaxValue((highLonTrim - 1) * 360.0 / (double) d->m_geometry.width() - 180.0);
+        axis.setLowerLimit(lowLonTrim * 360.0 / (double) d->m_geometry.width() - 180.0);
+        axis.setUpperLimit((highLonTrim - 1) * 360.0 / (double) d->m_geometry.width() - 180.0);
         axis.setValueCount(dimensionCount[1]);
         axes.append(axis);
     }
@@ -329,8 +329,8 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
         dimensionCount[1] = highLonTrim - lowLonTrim;
 
         CoordinateAxis axis(Lon);
-        axis.setMinValue(-180.0);
-        axis.setMaxValue(+180.0);
+        axis.setLowerLimit(-180.0);
+        axis.setUpperLimit(+180.0);
         axis.setValueCount(dimensionCount[1]);
         axes.append(axis);
     }
@@ -362,8 +362,8 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
         dimensionCount[2] = highLatTrim - lowLatTrim;
 
         CoordinateAxis axis(Lat);
-        axis.setMinValue(-lowLatTrim * 180.0 / (double) d->m_geometry.height() + 90.0);
-        axis.setMaxValue(-(highLatTrim - 1) * 180.0 / (double) d->m_geometry.height() + 90.0);
+        axis.setLowerLimit(-lowLatTrim * 180.0 / (double) d->m_geometry.height() + 90.0);
+        axis.setUpperLimit(-(highLatTrim - 1) * 180.0 / (double) d->m_geometry.height() + 90.0);
         axis.setValueCount(dimensionCount[2]);
         axes.append(axis);
     }
@@ -373,8 +373,8 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
         dimensionCount[2] = highLatTrim - lowLatTrim;
 
         CoordinateAxis axis(Lat);
-        axis.setMinValue(-90.0);
-        axis.setMaxValue(+90.0);
+        axis.setLowerLimit(-90.0);
+        axis.setUpperLimit(+90.0);
         axis.setValueCount(dimensionCount[2]);
         axes.append(axis);
     }
@@ -402,16 +402,16 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
                 heightTrimIt->trimLow().toDouble() / d->m_geometry.heightDimension());
             highHeightTrim = std::floor(
                 heightTrimIt->trimHigh().toDouble() / d->m_geometry.heightDimension()) + 1;
-            axis.setMinValue(lowHeightTrim * d->m_geometry.heightDimension());
-            axis.setMaxValue(highHeightTrim * d->m_geometry.heightDimension());
+            axis.setLowerLimit(lowHeightTrim * d->m_geometry.heightDimension());
+            axis.setUpperLimit(highHeightTrim * d->m_geometry.heightDimension());
         }
         else {
             lowHeightTrim = std::ceil(
                 heightTrimIt->trimHigh().toDouble() / d->m_geometry.heightDimension());
             highHeightTrim = std::floor(
                 heightTrimIt->trimLow().toDouble() / d->m_geometry.heightDimension()) + 1;
-            axis.setMinValue(highHeightTrim * d->m_geometry.heightDimension());
-            axis.setMaxValue(lowHeightTrim * d->m_geometry.heightDimension());
+            axis.setLowerLimit(highHeightTrim * d->m_geometry.heightDimension());
+            axis.setUpperLimit(lowHeightTrim * d->m_geometry.heightDimension());
         }
         dimensionCount[3] = highHeightTrim - lowHeightTrim;
         axis.setValueCount(dimensionCount[3]);
@@ -424,12 +424,12 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
 
         CoordinateAxis axis(Height);
         if(d->m_geometry.heightDimension() >= 0) {
-            axis.setMinValue(0.0);
-            axis.setMaxValue(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
+            axis.setLowerLimit(0.0);
+            axis.setUpperLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
         }
         else {
-            axis.setMinValue(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
-            axis.setMaxValue(0.0);
+            axis.setLowerLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
+            axis.setUpperLimit(0.0);
         }
         axis.setValueCount(dimensionCount[3]);
         axes.append(axis);
@@ -483,11 +483,20 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
     return result;
 }
 
-void DataLayer::calculateLonLimits(DimensionSubset *subset, int *lowLonTrim, int *highLonTrim, DataLayer::CutMode mode)
+void DataLayer::calculateLonLimits(DimensionSubset *subset, 
+                                   int *lowLonTrim, 
+                                   int *highLonTrim, 
+                                   QList<CoordinateAxis> *axes, 
+                                   DataLayer::CutMode mode)
 {
     if(!subset) {
         *lowLonTrim = 0;
         *highLonTrim = d->m_geometry.width();
+        CoordinateAxis axis(Lon);
+        axis.setLowerLimit(-180.0);
+        axis.setUpperLimit(+180.0);
+        axis.setValueCount(*highLonTrim - *lowLonTrim);
+        axes->append(axis);
         return;
     }
 
@@ -511,9 +520,15 @@ void DataLayer::calculateLonLimits(DimensionSubset *subset, int *lowLonTrim, int
             *lowLonTrim = std::floor(lowLonTrimDouble);
             *highLonTrim = std::ceil(highLonTrimDouble);
         }
+        
+        CoordinateAxis axis(Lon);
+        axis.setLowerLimit(*lowLonTrim * 360.0 / (double) d->m_geometry.width() - 180.0);
+        axis.setUpperLimit(*highLonTrim * 360.0 / (double) d->m_geometry.width() - 180.0);
+        axis.setValueCount(*highLonTrim - *lowLonTrim);
+        axes->append(axis);
     }
     else {
         qDebug() << "Subset invalid.";
-        calculateLonLimits(0, lowLonTrim, highLonTrim, mode);
+        calculateLonLimits(0, lowLonTrim, highLonTrim, axes, mode);
     }
 }

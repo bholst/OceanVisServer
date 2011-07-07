@@ -24,8 +24,8 @@ public:
 
     CoordinateAxisPrivate(const CoordinateAxisPrivate& other)
         : m_dimension(other.m_dimension),
-          m_minValue(other.m_minValue),
-          m_maxValue(other.m_maxValue),
+          m_lowerLimit(other.m_lowerLimit),
+          m_upperLimit(other.m_upperLimit),
           m_valueCount(other.m_valueCount),
           ref(1)
     {
@@ -41,8 +41,8 @@ public:
     CoordinateAxisPrivate& operator=(const CoordinateAxisPrivate &other)
     {
         m_dimension = other.m_dimension;
-        m_minValue = other.m_minValue;
-        m_maxValue = other.m_maxValue;
+        m_lowerLimit = other.m_lowerLimit;
+        m_upperLimit = other.m_upperLimit;
         m_valueCount = other.m_valueCount;
         ref = other.ref;
         return *this;
@@ -51,14 +51,14 @@ public:
     bool operator==(const CoordinateAxisPrivate &other)
     {
         return m_dimension == other.m_dimension
-               && m_minValue == other.m_minValue
-               && m_maxValue == other.m_maxValue
+               && m_lowerLimit == other.m_lowerLimit
+               && m_upperLimit == other.m_upperLimit
                && m_valueCount == other.m_valueCount;
     }
 
     Dimension m_dimension;
-    QVariant m_minValue;
-    QVariant m_maxValue;
+    QVariant m_lowerLimit;
+    QVariant m_upperLimit;
     int m_valueCount;
     QAtomicInt ref;
 };
@@ -85,28 +85,28 @@ Dimension CoordinateAxis::dimension() const
     return d->m_dimension;
 }
 
-void CoordinateAxis::setMinValue(const QVariant& minValue) throw (BadDimensionTypeException)
+void CoordinateAxis::setLowerLimit(const QVariant& lowerLimit) throw (BadDimensionTypeException)
 {
-    checkDimensionType(d->m_dimension, minValue);
+    checkDimensionType(d->m_dimension, lowerLimit);
     detach();
-    d->m_minValue = minValue;
+    d->m_lowerLimit = lowerLimit;
 }
 
-QVariant CoordinateAxis::minValue() const
+QVariant CoordinateAxis::lowerLimit() const
 {
-    return d->m_minValue;
+    return d->m_lowerLimit;
 }
 
-void CoordinateAxis::setMaxValue(const QVariant& maxValue) throw (BadDimensionTypeException)
+void CoordinateAxis::setUpperLimit(const QVariant& upperLimit) throw (BadDimensionTypeException)
 {
-    checkDimensionType(d->m_dimension, maxValue);
+    checkDimensionType(d->m_dimension, upperLimit);
     detach();
-    d->m_maxValue = maxValue;
+    d->m_upperLimit = upperLimit;
 }
 
-QVariant CoordinateAxis::maxValue() const
+QVariant CoordinateAxis::upperLimit() const
 {
-    return d->m_maxValue;
+    return d->m_upperLimit;
 }
 
 void CoordinateAxis::setValueCount(int valueCount)

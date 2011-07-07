@@ -11,6 +11,7 @@
 class GridCoverage;
 class DimensionSubset;
 class MapGeometry;
+class CoordinateAxis;
 class QString;
 class QFile;
 class QDateTime;
@@ -64,7 +65,7 @@ public:
 
     GridCoverage *dataSubset(QList<DimensionSubset*>& subsets, CutMode mode = Contains);
     
-    void calculateLonLimits(DimensionSubset *subset, int *lowLonTrim, int *highLonTrim, CutMode mode);
+    void calculateLonLimits(DimensionSubset *subset, int *lowLonTrim, int *highLonTrim, QList<CoordinateAxis> *axes, CutMode mode);
 
 private:
     Q_DISABLE_COPY(DataLayer);
