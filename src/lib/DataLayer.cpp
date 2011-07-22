@@ -211,10 +211,21 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
         return 0;
     }
     
+    DimensionSubset *lonSubset = 0;
+    DimensionSubset *latSubset = 0;
     QMap<Dimension,DimensionSlice> dimensionSlices;
     QMap<Dimension,DimensionTrim> dimensionTrims;
     for(int i = 0; i < subsets.size(); ++i) {
         DimensionSubset *subset = subsets[i];
+        
+        switch(subset->dimension()) {
+            case Lon:
+                lonSubset = subset;
+                break;
+            case Lat:
+                latSubset = subset;
+                break;
+        }
 
         DimensionSlice *slice = dynamic_cast<DimensionSlice*>(subset);
         DimensionTrim *trim = dynamic_cast<DimensionTrim*>(subset);
@@ -296,44 +307,8 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
     int lowLonTrim = 0; // The first longitude value which will be in the returned matrix.
     int highLonTrim = 0; // The first longitude value which will not be in the returned matrix.
 
-    if(lonSliceIt != dimensionSlices.end()) {
-        int slicePoint = std::floor(
-            (lonSliceIt->slicePoint().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width());
-        lowLonTrim = slicePoint; 
-        highLonTrim = slicePoint + 1;
-        dimensionCount[1] = 1;
-    }
-    else if(lonTrimIt != dimensionTrims.end()) {
-        double lowLonTrimDouble = (lonTrimIt->trimLow().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width();
-        double highLonTrimDouble = (lonTrimIt->trimHigh().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width();
-        if(mode == Contains) {
-            lowLonTrim = std::ceil(lowLonTrimDouble);
-            highLonTrim = std::floor(highLonTrimDouble) + 1;
-        }
-        else {
-            lowLonTrim = std::floor(lowLonTrimDouble);
-            highLonTrim = std::ceil(highLonTrimDouble) + 1;
-        }
-        
-        dimensionCount[1] = highLonTrim - lowLonTrim;
-
-        CoordinateAxis axis(Lon);
-        axis.setLowerLimit(lowLonTrim * 360.0 / (double) d->m_geometry.width() - 180.0);
-        axis.setUpperLimit((highLonTrim - 1) * 360.0 / (double) d->m_geometry.width() - 180.0);
-        axis.setValueCount(dimensionCount[1]);
-        axes.append(axis);
-    }
-    else {
-        lowLonTrim = 0;
-        highLonTrim = d->m_geometry.width();
-        dimensionCount[1] = highLonTrim - lowLonTrim;
-
-        CoordinateAxis axis(Lon);
-        axis.setLowerLimit(-180.0);
-        axis.setUpperLimit(+180.0);
-        axis.setValueCount(dimensionCount[1]);
-        axes.append(axis);
-    }
+    calculateLonLimits(lonSubset, &lowLonTrim, &highLonTrim, &axes, mode);
+    dimensionCount[1] = highLonTrim - lowLonTrim;
 
     qDebug() << "Low lon trim:" << lowLonTrim;
     qDebug() << "High lon trim:" << highLonTrim;
@@ -344,40 +319,8 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
     int lowLatTrim = 0; // The first latitude value which will be in the returned matrix.
     int highLatTrim = 0; // The first latitude value which will not be in the returned matrix.
 
-    if(latSliceIt != dimensionSlices.end()) {
-        qDebug() << "d->m_geometry.height" << d->m_geometry.height();
-        qDebug() << "double slicePoint:" << (latSliceIt->slicePoint().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height();
-        int slicePoint = std::floor(
-            (latSliceIt->slicePoint().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height());
-        qDebug() << "SlicePoint:" << slicePoint;
-        lowLatTrim = slicePoint;
-        highLatTrim = slicePoint + 1;
-        dimensionCount[2] = 1;
-    }
-    else if(latTrimIt != dimensionTrims.end()) {
-        lowLatTrim = std::ceil(
-            (latTrimIt->trimLow().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height() - 0.5);
-        highLatTrim = std::floor(
-            (latTrimIt->trimHigh().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height() - 0.5) + 1;
-        dimensionCount[2] = highLatTrim - lowLatTrim;
-
-        CoordinateAxis axis(Lat);
-        axis.setLowerLimit(-lowLatTrim * 180.0 / (double) d->m_geometry.height() + 90.0);
-        axis.setUpperLimit(-(highLatTrim - 1) * 180.0 / (double) d->m_geometry.height() + 90.0);
-        axis.setValueCount(dimensionCount[2]);
-        axes.append(axis);
-    }
-    else {
-        lowLatTrim = 0;
-        highLatTrim = d->m_geometry.height();
-        dimensionCount[2] = highLatTrim - lowLatTrim;
-
-        CoordinateAxis axis(Lat);
-        axis.setLowerLimit(-90.0);
-        axis.setUpperLimit(+90.0);
-        axis.setValueCount(dimensionCount[2]);
-        axes.append(axis);
-    }
+    calculateLatLimits(latSubset, &lowLatTrim, &highLatTrim, &axes, mode);
+    dimensionCount[2] = highLatTrim - lowLatTrim;
 
     qDebug() << "Low lat trim:" << lowLatTrim;
     qDebug() << "High lat trim:" << highLatTrim;
@@ -530,5 +473,56 @@ void DataLayer::calculateLonLimits(DimensionSubset *subset,
     else {
         qDebug() << "Subset invalid.";
         calculateLonLimits(0, lowLonTrim, highLonTrim, axes, mode);
+    }
+}
+
+void DataLayer::calculateLatLimits(DimensionSubset *subset,
+                        int *lowLatTrim,
+                        int *highLatTrim,
+                        QList<CoordinateAxis> *axes,
+                        DataLayer::CutMode mode)
+{
+    if(!subset) {
+        *lowLatTrim = 0;
+        *highLatTrim = d->m_geometry.height();
+
+        CoordinateAxis axis(Lat);
+        axis.setLowerLimit(-90.0);
+        axis.setUpperLimit(+90.0);
+        axis.setValueCount(*highLatTrim - *lowLatTrim);
+        axes->append(axis);
+        return;
+    }
+    
+    DimensionSlice *slice = dynamic_cast<DimensionSlice*>(subset);
+    DimensionTrim *trim = dynamic_cast<DimensionTrim*>(subset);
+        
+    if(slice) {
+        int slicePoint = std::floor(
+            (slice->slicePoint().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height());
+        *lowLatTrim = slicePoint;
+        *highLatTrim = slicePoint + 1;
+    }
+    else if(trim) {
+        double lowLatTrimDouble = (trim->trimLow().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height();
+        double highLatTrimDouble = (trim->trimHigh().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height();
+        if(mode == Contains) {
+            *lowLatTrim = std::ceil(lowLatTrimDouble);
+            *highLatTrim = std::floor(highLatTrimDouble);
+        }
+        else {
+            *lowLatTrim = std::floor(lowLatTrimDouble);
+            *highLatTrim = std::ceil(highLatTrimDouble);
+        }
+
+        CoordinateAxis axis(Lat);
+        axis.setLowerLimit(*lowLatTrim * 180.0 / (double) d->m_geometry.height() - 90.0);
+        axis.setUpperLimit(*highLatTrim * 180.0 / (double) d->m_geometry.height() - 90.0);
+        axis.setValueCount(*highLatTrim - *lowLatTrim);
+        axes->append(axis);
+    }
+    else {
+        qDebug() << "Subset invalid.";
+        calculateLonLimits(0, lowLatTrim, highLatTrim, axes, mode);
     }
 }

@@ -66,6 +66,7 @@ public:
     GridCoverage *dataSubset(QList<DimensionSubset*>& subsets, CutMode mode = Contains);
     
     void calculateLonLimits(DimensionSubset *subset, int *lowLonTrim, int *highLonTrim, QList<CoordinateAxis> *axes, CutMode mode);
+    void calculateLatLimits(DimensionSubset *subset, int *lowLatTrim, int *highLatTrim, QList<CoordinateAxis> *axes, CutMode mode);
 
 private:
     Q_DISABLE_COPY(DataLayer);
