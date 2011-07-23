@@ -526,3 +526,72 @@ void DataLayer::calculateLatLimits(DimensionSubset *subset,
         calculateLonLimits(0, lowLatTrim, highLatTrim, axes, mode);
     }
 }
+
+void DataLayer::calculateHeightLimits(DimensionSubset *subset, int *lowHeightTrim, int *highHeightTrim, QList<CoordinateAxis> *axes, CutMode mode)
+{
+    if(!subset) {
+        *lowHeightTrim = 0;
+        *highHeightTrim = d->m_geometry.maxLayerCount();
+
+        CoordinateAxis axis(Height);
+        if(d->m_geometry.heightDimension() >= 0) {
+            axis.setLowerLimit(0.0);
+            axis.setUpperLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
+        }
+        else {
+            axis.setLowerLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
+            axis.setUpperLimit(0.0);
+        }
+        axis.setValueCount(*highHeightTrim);
+        axes->append(axis);
+        return;
+    }
+    
+    DimensionSlice *slice = dynamic_cast<DimensionSlice*>(subset);
+    DimensionTrim *trim = dynamic_cast<DimensionTrim*>(subset);
+
+    if(slice) {
+        int slicePoint = std::floor(
+            slice->slicePoint().toDouble() / d->m_geometry.heightDimension());
+        *lowHeightTrim = slicePoint;
+        *highHeightTrim = slicePoint + 1;
+    }
+    else if(trim) {
+        CoordinateAxis axis(Height);
+        double lowHeightTrimDouble = trim->trimLow().toDouble() / d->m_geometry.heightDimension();
+        double highHeightTrimDouble = trim->trimHigh().toDouble() / d->m_geometry.heightDimension();
+
+        if(d->m_geometry.heightDimension() >= 0) {
+            if(mode == Contains) {
+                *lowHeightTrim = std::ceil(lowHeightTrimDouble);
+                *highHeightTrim = std::floor(highHeightTrimDouble);
+            }
+            else {
+                *lowHeightTrim = std::floor(lowHeightTrimDouble);
+                *highHeightTrim = std::ceil(highHeightTrimDouble);
+            }
+
+            axis.setLowerLimit(*lowHeightTrim * d->m_geometry.heightDimension());
+            axis.setUpperLimit(*highHeightTrim * d->m_geometry.heightDimension());
+        }
+        else {
+            if(mode == Contains) {
+                *lowHeightTrim = std::ceil(highHeightTrimDouble);
+                *highHeightTrim = std::floor(lowHeightTrimDouble);
+            }
+            else {
+                *lowHeightTrim = std::floor(highHeightTrimDouble);
+                *highHeightTrim = std::ceil(lowHeightTrimDouble);
+            }
+            
+            axis.setLowerLimit(*highHeightTrim * d->m_geometry.heightDimension());
+            axis.setUpperLimit(*lowHeightTrim * d->m_geometry.heightDimension());
+        }
+        axis.setValueCount(highHeightTrim - lowHeightTrim);
+        axes->append(axis);
+    }
+    else {
+        qDebug() << "Subset invalid.";
+        calculateHeightLimits(0, lowHeightTrim, highHeightTrim, axes, mode);
+    }
+}
