@@ -65,6 +65,11 @@ public:
 
     GridCoverage *dataSubset(QList<DimensionSubset*>& subsets, CutMode mode = Contains);
     
+    void calculateTimeLimits(DimensionSubset *subset,
+                             QMap<QDateTime,double*>::const_iterator *lowTimeTrim, 
+                             QMap<QDateTime,double*>::const_iterator *highTimeTrim,
+                             int *dimensionCount,
+                             QList<CoordinateAxis> *axes, CutMode mode);
     void calculateLonLimits(DimensionSubset *subset, int *lowLonTrim, int *highLonTrim, QList<CoordinateAxis> *axes, CutMode mode);
     void calculateLatLimits(DimensionSubset *subset, int *lowLatTrim, int *highLatTrim, QList<CoordinateAxis> *axes, CutMode mode);
     void calculateHeightLimits(DimensionSubset *subset, int *lowHeightTrim, int *highHeightTrim, QList<CoordinateAxis> *axes, CutMode mode);

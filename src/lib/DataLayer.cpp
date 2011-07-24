@@ -211,15 +211,17 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
         return 0;
     }
     
+    DimensionSubset *timeSubset = 0;
     DimensionSubset *lonSubset = 0;
     DimensionSubset *latSubset = 0;
     DimensionSubset *heightSubset = 0;
-    QMap<Dimension,DimensionSlice> dimensionSlices;
-    QMap<Dimension,DimensionTrim> dimensionTrims;
     for(int i = 0; i < subsets.size(); ++i) {
         DimensionSubset *subset = subsets[i];
         
         switch(subset->dimension()) {
+            case Time:
+                timeSubset = subset;
+                break;
             case Lon:
                 lonSubset = subset;
                 break;
@@ -230,84 +232,20 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
                 heightSubset = subset;
                 break;
         }
-
-        DimensionSlice *slice = dynamic_cast<DimensionSlice*>(subset);
-        DimensionTrim *trim = dynamic_cast<DimensionTrim*>(subset);
-        if(slice) {
-            qDebug() << "Subset number" << i << "is a slice";
-            dimensionSlices.insert(slice->dimension(), DimensionSlice(*slice));
-        }
-        else if(trim) {
-            qDebug() << "Subset number" << i << "is a trim";
-            dimensionTrims.insert(trim->dimension(), DimensionTrim(*trim));
-        }
-        else {
-            qDebug() << "Subset number" << i << "is nothing.";
-        }
     }
     QList<CoordinateAxis> axes;
 
     int dimensionCount[4] = {0, 0, 0, 0};
-    QMap<Dimension,DimensionSlice>::const_iterator timeSliceIt = dimensionSlices.find(Time);
-    QMap<Dimension,DimensionTrim>::const_iterator timeTrimIt = dimensionTrims.find(Time);
     QMap<QDateTime,double*>::const_iterator lowTimeTrim;
     QMap<QDateTime,double*>::const_iterator highTimeTrim;
-    if(timeSliceIt != dimensionSlices.constEnd()) {
-        lowTimeTrim = d->m_dataVectors.lowerBound(timeSliceIt->slicePoint().toDateTime());
-        if(lowTimeTrim == d->m_dataVectors.constEnd()) {
-            lowTimeTrim--;
-        }
-        highTimeTrim = lowTimeTrim + 1;
-        dimensionCount[0] = 1;
-    }
-    else if(timeTrimIt != dimensionTrims.constEnd()) {
-        CoordinateAxis axis(Time);
-        QDateTime trimLow = timeTrimIt->trimLow().toDateTime();
-        QDateTime trimHigh = timeTrimIt->trimHigh().toDateTime();
-
-        lowTimeTrim = d->m_dataVectors.lowerBound(trimLow);
-        if(mode == Overlaps
-           && lowTimeTrim != d->m_dataVectors.constBegin())
-        {
-            lowTimeTrim--;
-        }
-        axis.setLowerLimit(lowTimeTrim.key());
-
-        highTimeTrim = d->m_dataVectors.upperBound(trimHigh);
-        if(mode == Overlaps
-           && highTimeTrim != d->m_dataVectors.constEnd())
-        {
-            highTimeTrim++;
-        }
-
-        for(QMap<QDateTime, double*>::const_iterator it = lowTimeTrim;
-            it != highTimeTrim;
-            ++it)
-        {
-            dimensionCount[0]++;
-            axis.setUpperLimit(it.key());
-        }
-        axis.setValueCount(dimensionCount[0]);
-        axes.append(axis);
-    }
-    else {
-        lowTimeTrim = d->m_dataVectors.begin();
-        highTimeTrim = d->m_dataVectors.end();
-        dimensionCount[0] = d->m_dataVectors.size();
-        CoordinateAxis axis(Time);
-        axis.setLowerLimit(lowTimeTrim.key());
-        axis.setUpperLimit((highTimeTrim - 1).key());
-        axis.setValueCount(dimensionCount[0]);
-        axes.append(axis);
-    }
+    
+    calculateTimeLimits(timeSubset, &lowTimeTrim, &highTimeTrim, &(dimensionCount[0]), &axes, mode);
 
     qDebug() << "Low time trim:" << lowTimeTrim.key().toString();
     if(highTimeTrim != d->m_dataVectors.constEnd()) {
         qDebug() << "High time trim:" << highTimeTrim.key().toString();
     }
 
-    QMap<Dimension,DimensionSlice>::const_iterator lonSliceIt = dimensionSlices.find(Lon);
-    QMap<Dimension,DimensionTrim>::const_iterator lonTrimIt = dimensionTrims.find(Lon);
     int lowLonTrim = 0; // The first longitude value which will be in the returned matrix.
     int highLonTrim = 0; // The first longitude value which will not be in the returned matrix.
 
@@ -318,8 +256,6 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
     qDebug() << "High lon trim:" << highLonTrim;
     qDebug() << "Number of lon values:" << dimensionCount[1];
 
-    QMap<Dimension,DimensionSlice>::const_iterator latSliceIt = dimensionSlices.find(Lat);
-    QMap<Dimension,DimensionTrim>::const_iterator latTrimIt = dimensionTrims.find(Lat);
     int lowLatTrim = 0; // The first latitude value which will be in the returned matrix.
     int highLatTrim = 0; // The first latitude value which will not be in the returned matrix.
 
@@ -330,8 +266,6 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
     qDebug() << "High lat trim:" << highLatTrim;
     qDebug() << "Number of lat values:" << dimensionCount[2];
 
-    QMap<Dimension,DimensionSlice>::const_iterator heightSliceIt = dimensionSlices.find(Height);
-    QMap<Dimension,DimensionTrim>::const_iterator heightTrimIt = dimensionTrims.find(Height);
     int lowHeightTrim = 0; // The first latitude value which will be in the returned matrix.
     int highHeightTrim = 0; // The first latitude value which will not be in the returned matrix.
 
@@ -384,6 +318,71 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
     result->setMinValue(minValue());
     result->setName(name());
     return result;
+}
+
+void DataLayer::calculateTimeLimits(DimensionSubset *subset,
+                                    QMap<QDateTime,double*>::const_iterator *lowTimeTrim, 
+                                    QMap<QDateTime,double*>::const_iterator *highTimeTrim,
+                                    int *dimensionCount,
+                                    QList<CoordinateAxis> *axes, CutMode mode)
+{
+    if(!subset) {
+        *lowTimeTrim = d->m_dataVectors.begin();
+        *highTimeTrim = d->m_dataVectors.end();
+        *dimensionCount = d->m_dataVectors.size();
+        CoordinateAxis axis(Time);
+        axis.setLowerLimit(lowTimeTrim->key());
+        axis.setUpperLimit((*highTimeTrim - 1).key());
+        axis.setValueCount(*dimensionCount);
+        axes->append(axis);
+        return;
+    }
+    
+    DimensionSlice *slice = dynamic_cast<DimensionSlice*>(subset);
+    DimensionTrim *trim = dynamic_cast<DimensionTrim*>(subset);
+    
+    if(slice) {
+        *lowTimeTrim = d->m_dataVectors.lowerBound(slice->slicePoint().toDateTime());
+        if(*lowTimeTrim == d->m_dataVectors.constEnd()) {
+            (*lowTimeTrim)--;
+        }
+        *highTimeTrim = *lowTimeTrim + 1;
+        *dimensionCount = 1;
+    }
+    else if(trim) {
+        CoordinateAxis axis(Time);
+        QDateTime trimLow = trim->trimLow().toDateTime();
+        QDateTime trimHigh = trim->trimHigh().toDateTime();
+
+        *lowTimeTrim = d->m_dataVectors.lowerBound(trimLow);
+        if(mode == Overlaps
+           && *lowTimeTrim != d->m_dataVectors.constBegin())
+        {
+            *lowTimeTrim--;
+        }
+        axis.setLowerLimit(lowTimeTrim->key());
+
+        *highTimeTrim = d->m_dataVectors.upperBound(trimHigh);
+        if(mode == Overlaps
+           && *highTimeTrim != d->m_dataVectors.constEnd())
+        {
+            *highTimeTrim++;
+        }
+
+        for(QMap<QDateTime, double*>::const_iterator it = *lowTimeTrim;
+            it != *highTimeTrim;
+            ++it)
+        {
+            *dimensionCount++;
+            axis.setUpperLimit(it.key());
+        }
+        axis.setValueCount(*dimensionCount);
+        axes->append(axis);
+    }
+    else {
+        qDebug() << "Subset invalid.";
+        calculateTimeLimits(0, lowTimeTrim, highTimeTrim, dimensionCount, axes, mode);
+    }
 }
 
 void DataLayer::calculateLonLimits(DimensionSubset *subset, 
