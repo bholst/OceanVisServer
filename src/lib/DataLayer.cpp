@@ -213,6 +213,7 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
     
     DimensionSubset *lonSubset = 0;
     DimensionSubset *latSubset = 0;
+    DimensionSubset *heightSubset = 0;
     QMap<Dimension,DimensionSlice> dimensionSlices;
     QMap<Dimension,DimensionTrim> dimensionTrims;
     for(int i = 0; i < subsets.size(); ++i) {
@@ -224,6 +225,9 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
                 break;
             case Lat:
                 latSubset = subset;
+                break;
+            case Height:
+                heightSubset = subset;
                 break;
         }
 
@@ -331,52 +335,8 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
     int lowHeightTrim = 0; // The first latitude value which will be in the returned matrix.
     int highHeightTrim = 0; // The first latitude value which will not be in the returned matrix.
 
-    if(heightSliceIt != dimensionSlices.end()) {
-        int slicePoint = round(
-            heightSliceIt->slicePoint().toDouble() / d->m_geometry.heightDimension());
-        lowHeightTrim = slicePoint;
-        highHeightTrim = slicePoint + 1;
-        dimensionCount[3] = 1;
-    }
-    else if(latTrimIt != dimensionTrims.end()) {
-        CoordinateAxis axis(Height);
-        if(d->m_geometry.heightDimension() >= 0) {
-            lowHeightTrim = std::ceil(
-                heightTrimIt->trimLow().toDouble() / d->m_geometry.heightDimension());
-            highHeightTrim = std::floor(
-                heightTrimIt->trimHigh().toDouble() / d->m_geometry.heightDimension()) + 1;
-            axis.setLowerLimit(lowHeightTrim * d->m_geometry.heightDimension());
-            axis.setUpperLimit(highHeightTrim * d->m_geometry.heightDimension());
-        }
-        else {
-            lowHeightTrim = std::ceil(
-                heightTrimIt->trimHigh().toDouble() / d->m_geometry.heightDimension());
-            highHeightTrim = std::floor(
-                heightTrimIt->trimLow().toDouble() / d->m_geometry.heightDimension()) + 1;
-            axis.setLowerLimit(highHeightTrim * d->m_geometry.heightDimension());
-            axis.setUpperLimit(lowHeightTrim * d->m_geometry.heightDimension());
-        }
-        dimensionCount[3] = highHeightTrim - lowHeightTrim;
-        axis.setValueCount(dimensionCount[3]);
-        axes.append(axis);
-    }
-    else {
-        lowHeightTrim = 0;
-        highHeightTrim = d->m_geometry.maxLayerCount();
-        dimensionCount[3] = highHeightTrim;
-
-        CoordinateAxis axis(Height);
-        if(d->m_geometry.heightDimension() >= 0) {
-            axis.setLowerLimit(0.0);
-            axis.setUpperLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
-        }
-        else {
-            axis.setLowerLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
-            axis.setUpperLimit(0.0);
-        }
-        axis.setValueCount(dimensionCount[3]);
-        axes.append(axis);
-    }
+    calculateHeightLimits(heightSubset, &lowHeightTrim, &highHeightTrim, &axes, mode);
+    dimensionCount[3] = highHeightTrim - lowHeightTrim;
 
     qDebug() << "Low height trim:" << lowHeightTrim;
     qDebug() << "High height trim:" << highHeightTrim;
