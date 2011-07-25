@@ -31,6 +31,7 @@
 #include "GridCoverage.h"
 #include "RequestParser.h"
 #include "ResponseWriter.h"
+#include "CoordinateAxis.h"
 
 // Self
 #include "OceanVisServer.h"
@@ -248,15 +249,25 @@ void OceanVisServer::handleGetMap(QTcpSocket *socket, GetMap *getMap)
     QPainter painter(&imageResult);
     
     QList<DimensionSubset *> dimensionSubsets = getMap->dimensionSubsets();
+    BoundingBox boundingBox = getMap->boundingBox();
+    CoordinateAxis xAxis(Lon), yAxis(Lat);
+    xAxis.setLowerLimit(boundingBox.lonMin());
+    xAxis.setUpperLimit(boundingBox.lonMax());
+    xAxis.setValueCount(getMap->width());
+    yAxis.setLowerLimit(boundingBox.latMin());
+    yAxis.setUpperLimit(boundingBox.latMax());
+    yAxis.setValueCount(getMap->height());
+
     qDebug() << "Number of subset things:" << dimensionSubsets.length();
     for(int i = 0; i < selectedLayers.size(); ++i) {
-        GridCoverage *matrix = selectedLayers.at(i)->dataSubset(dimensionSubsets);
+        GridCoverage *matrix = selectedLayers.at(i)->dataSubset(dimensionSubsets, DataLayer::Overlaps);
         if(!matrix) {
             // TODO: Still the wrong behavior.
             return;
         }
         
-        QImage image = matrix->toImage(QSize(getMap->width(), getMap->height()), true);
+        QImage image = matrix->toImage(xAxis, yAxis, true);
+        image.save("/home/bastian/test.png");
         painter.drawImage(0, 0, image);
         
         delete matrix;

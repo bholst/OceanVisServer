@@ -48,6 +48,8 @@ public:
     QImage toImage(bool transparent = false) const;
     QImage toImage(const QSize& size, bool transparent = false) const;
     QImage toImage(const QMap<Dimension, int>& sizes, bool transparent = false) const;
+    
+    QImage toImage(CoordinateAxis xAxis, CoordinateAxis yAxis, bool transparent = false) const;
 
 private:
     Q_DISABLE_COPY(GridCoverage)

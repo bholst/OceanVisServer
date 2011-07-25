@@ -9,6 +9,7 @@
 #include <QtCore/QDebug>
 #include <QtGui/QImage>
 #include <QtGui/QColor>
+#include <QtGui/QTransform>
 #include <QtCore/QSize>
 
 // Project
@@ -214,3 +215,51 @@ QImage GridCoverage::toImage(const QMap<Dimension, int>& sizes, bool transparent
     
     return toImage(size, transparent);
 }
+
+QImage GridCoverage::toImage(CoordinateAxis xAxis, CoordinateAxis yAxis, bool transparent) const
+{
+    if(d->m_axes.length() != 2) {
+        return QImage();
+    }
+    
+    if(d->m_axes.at(0).dimension() == Time
+       || d->m_axes.at(1).dimension() == Time)
+    {
+        qDebug() << "Exact scaling currently not supported for the time axis.";
+        return QImage();
+    }
+    
+    if(d->m_axes.at(0).dimension() != xAxis.dimension()) {
+        qDebug() << "Wrong dimension of given x-axis";
+        return QImage();
+    }
+    if(d->m_axes.at(1).dimension() != yAxis.dimension()) {
+        qDebug() << "Wrong dimension of given y-axis";
+        return QImage();
+    }
+
+    QImage originalImage = toImage(transparent);
+    
+    QTransform transform;
+    qreal translateX = (xAxis.lowerLimit().toReal() - d->m_axes.at(0).lowerLimit().toReal())
+                       / (d->m_axes.at(0).upperLimit().toReal() - d->m_axes.at(0).lowerLimit().toReal())
+                       * (qreal) d->m_axes.at(0).valueCount();
+    qreal translateY = (d->m_axes.at(1).upperLimit().toReal() - yAxis.upperLimit().toReal())
+                       / (d->m_axes.at(1).upperLimit().toReal() - d->m_axes.at(1).lowerLimit().toReal())
+                       * (qreal) d->m_axes.at(1).valueCount();
+    qDebug() << "translate(" << translateX << "," << translateY << ")";
+    transform.translate(translateX, translateY);
+    
+    qreal scaleX = ((qreal) xAxis.valueCount() / (qreal) d->m_axes.at(0).valueCount())
+                   * ((d->m_axes.at(0).upperLimit().toReal() - d->m_axes.at(0).lowerLimit().toReal()) / (xAxis.upperLimit().toReal() - xAxis.lowerLimit().toReal()));
+    
+    qreal scaleY = ((qreal) yAxis.valueCount() / (qreal) d->m_axes.at(1).valueCount())
+                   * ((d->m_axes.at(1).upperLimit().toReal() - d->m_axes.at(1).lowerLimit().toReal()) / (yAxis.upperLimit().toReal() - yAxis.lowerLimit().toReal()));
+
+    qDebug() << "scale(" << scaleX << "," << scaleY << ")";
+    transform.scale(scaleX, scaleY);
+    
+    return originalImage.transformed(transform).copy(0, 0, xAxis.valueCount(), yAxis.valueCount());
+}
+    
+    
