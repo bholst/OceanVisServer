@@ -13,6 +13,7 @@
 #include <QtCore/QSize>
 
 // Project
+#include "ColorMap.h"
 #include "CoordinateAxis.h"
 
 // Self
@@ -156,6 +157,42 @@ QImage GridCoverage::toImage(bool transparent) const
     qDebug() << "Creating image (minValue =" << d->m_minValue << ", maxValue =" << d->m_maxValue;
     double span = d->m_maxValue - d->m_minValue;
 
+    ColorMap colorMap;
+//     colorMap.addColor(QColor(255, 0, 0, 0));
+//     colorMap.addColor(QColor(255, 0, 0, 255));
+    QColor c;
+    c.setHsv(240, 255, 189, 255);
+    colorMap.addColor(c);
+    c.setHsv(240, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(224, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(208, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(195, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(180, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(159, 189, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(120, 123, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(80, 189, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(60, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(44, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(15, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(0, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(0, 255, 189, 255);
+    colorMap.addColor(c);
+    c.setHsv(0, 255, 132, 255);
+    colorMap.addColor(c);
+    colorMap.setInterpolationSpec(QColor::Hsv);
+    
     int width = d->m_axes[0].valueCount();
     int height = d->m_axes[1].valueCount();
     QImage result(width, height, QImage::Format_ARGB32);
@@ -182,7 +219,7 @@ QImage GridCoverage::toImage(bool transparent) const
 //                 color.setHsvF(1.0, relative, 1.0);
                 color.setRgbF(1.0, 0, 0);
             
-                result.setPixel(x, height - y - 1, qRgba(color.red(), color.green(), color.blue(), relative * 255));
+                result.setPixel(x, height - y - 1, colorMap.color(relative).rgba());
             }
         }
     }

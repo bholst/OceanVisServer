@@ -194,6 +194,8 @@ void ConfigurationParser::readFiles(DataLayer *layer)
     int end = 0;
     int digits = 0;
     QString scheme;
+    int skip = 0;
+    int startIndex = 0;
     
     while(!atEnd()) {
         readNext();
@@ -218,6 +220,12 @@ void ConfigurationParser::readFiles(DataLayer *layer)
             else if(name() == "scheme") {
                 QXmlStreamAttributes att = attributes();
                 digits = att.value("digits").toString().toInt();
+                if(att.hasAttribute("skip")) {
+                    skip = att.value("skip").toString().toInt();
+                }
+                if(att.hasAttribute("start")) {
+                    startIndex = att.value("start").toString().toInt();
+                }
                 scheme = readCharacters();
             }
             else {
@@ -231,7 +239,7 @@ void ConfigurationParser::readFiles(DataLayer *layer)
         int count = end - start;
         qint64 diffMSecs = spanMSecs / (count + 1);
         
-        for(int i = 0; i < count; ++i) {
+        for(int i = startIndex; i < count; i += 1 + skip) {
             QDateTime fileTime = startDate.addMSecs(diffMSecs * i);
             QString fileName = scheme.arg(start + i, digits, 10, QChar('0'));
             
