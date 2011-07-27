@@ -23,6 +23,7 @@
 #include "DimensionSlice.h"
 #include "DimensionTrim.h"
 #include "GridCoverage.h"
+#include "ColorMap.h"
 
 // Self
 #include "DataLayer.h"
@@ -60,6 +61,7 @@ public:
     double m_minValue;
     double m_scaleMax;
     double m_maxValue;
+    ColorMap m_defaultColorMap;
 };
 
 inline double DataLayerPrivate::value(double *dataVector, int lon, int lat, int height) const
@@ -204,6 +206,16 @@ double DataLayer::maxValue() const
     return d->m_scaleMax;
 }
 
+void DataLayer::setDefaultColorMap(const ColorMap& defaultColorMap)
+{
+    d->m_defaultColorMap = defaultColorMap;
+}
+
+ColorMap DataLayer::defaultColorMap() const
+{
+    return d->m_defaultColorMap;
+}
+
 GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
                                     DataLayer::CutMode mode)
 {
@@ -316,6 +328,7 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
     result->setCoordinateAxes(axes);
     result->setMaxValue(maxValue());
     result->setMinValue(minValue());
+    result->setColorMap(d->m_defaultColorMap);
     result->setName(name());
     return result;
 }

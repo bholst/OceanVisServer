@@ -13,6 +13,7 @@
 #include "global.h"
 
 class CoordinateAxis;
+class ColorMap;
 class QString;
 class QImage;
 class QSize;
@@ -42,6 +43,9 @@ public:
     
     void setName(const QString& name);
     QString name() const;
+    
+    void setColorMap(const ColorMap& colorMap);
+    ColorMap colorMap() const;
 
     QString toString() const;
 

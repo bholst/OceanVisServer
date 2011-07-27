@@ -11,11 +11,13 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
+#include <QtGui/QColor>
 
 // Project
 #include "DataLayer.h"
 #include "MapGeometry.h"
 #include "MapGeometryParser.h"
+#include "ColorMap.h"
 
 // Self
 #include "ConfigurationParser.h"
@@ -77,6 +79,9 @@ void ConfigurationParser::readMap()
             else if (name() == "layer") {
                 DataLayer *layer = readLayer();
                 m_layers.insert(layer->name(), layer);
+            }
+            else if (name() == "colorMap") {
+                readColorMap();
             }
             else {
                 readUnknownElement();
@@ -145,6 +150,40 @@ DataLayer *ConfigurationParser::readLayer()
               && name() == "layer");
 
     DataLayer *layer = new DataLayer();
+    ColorMap colorMap;
+    
+    QColor c;
+    c.setHsv(240, 255, 189, 255);
+    colorMap.addColor(c);
+    c.setHsv(240, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(224, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(208, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(195, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(180, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(159, 189, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(120, 123, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(80, 189, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(60, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(44, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(15, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(0, 255, 255, 255);
+    colorMap.addColor(c);
+    c.setHsv(0, 255, 189, 255);
+    colorMap.addColor(c);
+    c.setHsv(0, 255, 132, 255);
+    colorMap.addColor(c);
+    colorMap.setInterpolationSpec(QColor::Hsv);
 
     while(!atEnd()) {
         readNext();
@@ -174,13 +213,140 @@ DataLayer *ConfigurationParser::readLayer()
             else if(name() == "scaleMax") {
                 layer->setScaleMax(readCharacters().toDouble());
             }
+            else if(name() == "defaultColorMap") {
+                QString colorMapString = readCharacters();
+                if(m_colorMaps.contains(colorMapString)) {
+                    colorMap = m_colorMaps.value(colorMapString);
+                }
+            }
             else {
                 readUnknownElement();
             }
         }
     }
 
+    layer->setDefaultColorMap(colorMap);
     return layer;
+}
+
+void ConfigurationParser::readColorMap()
+{
+    Q_ASSERT(isStartElement()
+             && name() == "colorMap");
+    
+    ColorMap colorMap;
+    QString mapName = attributes().value("name").toString();
+    
+    while(!atEnd()) {
+        readNext();
+        
+        if(isEndElement()) {
+            break;
+        }
+
+        if(isStartElement()) {
+            QString n = name().toString();
+            if(name() == "color") {
+                colorMap.addColor(readColor());
+            }
+            else if(name() == "interpolationSpec") {
+                QString intSpec = readCharacters();
+                if(intSpec == "rgb") {
+                    colorMap.setInterpolationSpec(QColor::Rgb);
+                }
+                else if(intSpec == "hsv") {
+                    colorMap.setInterpolationSpec(QColor::Hsv);
+                }
+                else if(intSpec == "cmyk") {
+                    colorMap.setInterpolationSpec(QColor::Cmyk);
+                }
+                else if(intSpec == "hsl") {
+                    colorMap.setInterpolationSpec(QColor::Hsl);
+                }
+            }
+            else {
+                readUnknownElement();
+            }
+        }
+    }
+    
+    m_colorMaps.insert(mapName, colorMap);
+}
+
+QColor ConfigurationParser::readColor()
+{
+    Q_ASSERT(isStartElement()
+             && name() == "color");
+
+    QColor::Spec spec = QColor::Rgb;
+    QXmlStreamAttributes colorAtt = attributes();
+    if(colorAtt.hasAttribute("spec")) {
+        QString specString = colorAtt.value("spec").toString();
+        if(specString == "rgb") {
+            spec = QColor::Rgb;
+        }
+        else if(specString == "hsv") {
+            spec = QColor::Hsv;
+        }
+        else if(specString == "cmyk") {
+            spec = QColor::Cmyk;
+        }
+        else if(specString == "hsl") {
+            spec = QColor::Hsl;
+        }
+    }
+    
+    QString colorStr = readCharacters();
+    QStringList colorStrings = colorStr.split(',', QString::SkipEmptyParts);
+    QList<int> colorValues;
+    foreach(QString colorString, colorStrings) {
+        colorValues.append(colorString.toInt());
+    }
+    QColor color;
+    
+    if(colorValues.size() == 3) {
+        switch(spec) {
+            case QColor::Rgb:
+                color.setRgb(colorValues[0], colorValues[1], colorValues[2]);
+                break;
+            case QColor::Hsv:
+                color.setHsv(colorValues[0], colorValues[1], colorValues[2]);
+                break;
+            case QColor::Hsl:
+                color.setHsl(colorValues[0], colorValues[1], colorValues[2]);
+                break;
+            default:
+                qDebug() << "Color: Spec and number of values don't agree.";
+                break;
+        }
+    }
+    else if(colorValues.size() == 4) {
+        switch(spec) {
+            case QColor::Rgb:
+                color.setRgb(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
+                break;
+            case QColor::Hsv:
+                color.setHsv(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
+                break;
+            case QColor::Hsl:
+                color.setHsl(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
+                break;
+            case QColor::Cmyk:
+                color.setCmyk(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
+                break;
+            default:
+                qDebug() << "Color: Spec and number of values don't agree.";
+                break;
+        }
+    }
+    else if(colorValues.size() == 5 && spec == QColor::Cmyk) {
+        color.setCmyk(colorValues[0], colorValues[1], colorValues[2], colorValues[3], colorValues[4]);
+    }
+    else {
+        color.setCmyk(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
+    }
+    
+    return color;
 }
 
 void ConfigurationParser::readFiles(DataLayer *layer)

@@ -44,6 +44,7 @@ public:
     double m_maxValue;
     double m_minValue;
     QString m_name;
+    ColorMap m_colorMap;
 };
 
 void GridCoveragePrivate::inStringUntilDimension(int until,
@@ -142,6 +143,16 @@ QString GridCoverage::name() const
     return d->m_name;
 }
 
+void GridCoverage::setColorMap(const ColorMap& colorMap)
+{
+    d->m_colorMap = colorMap;
+}
+
+ColorMap GridCoverage::colorMap() const
+{
+    return d->m_colorMap;
+}
+
 QString GridCoverage::toString() const
 {
     QString result;
@@ -156,42 +167,6 @@ QImage GridCoverage::toImage(bool transparent) const
     }
     qDebug() << "Creating image (minValue =" << d->m_minValue << ", maxValue =" << d->m_maxValue;
     double span = d->m_maxValue - d->m_minValue;
-
-    ColorMap colorMap;
-//     colorMap.addColor(QColor(255, 0, 0, 0));
-//     colorMap.addColor(QColor(255, 0, 0, 255));
-    QColor c;
-    c.setHsv(240, 255, 189, 255);
-    colorMap.addColor(c);
-    c.setHsv(240, 255, 255, 255);
-    colorMap.addColor(c);
-    c.setHsv(224, 255, 255, 255);
-    colorMap.addColor(c);
-    c.setHsv(208, 255, 255, 255);
-    colorMap.addColor(c);
-    c.setHsv(195, 255, 255, 255);
-    colorMap.addColor(c);
-    c.setHsv(180, 255, 255, 255);
-    colorMap.addColor(c);
-    c.setHsv(159, 189, 255, 255);
-    colorMap.addColor(c);
-    c.setHsv(120, 123, 255, 255);
-    colorMap.addColor(c);
-    c.setHsv(80, 189, 255, 255);
-    colorMap.addColor(c);
-    c.setHsv(60, 255, 255, 255);
-    colorMap.addColor(c);
-    c.setHsv(44, 255, 255, 255);
-    colorMap.addColor(c);
-    c.setHsv(15, 255, 255, 255);
-    colorMap.addColor(c);
-    c.setHsv(0, 255, 255, 255);
-    colorMap.addColor(c);
-    c.setHsv(0, 255, 189, 255);
-    colorMap.addColor(c);
-    c.setHsv(0, 255, 132, 255);
-    colorMap.addColor(c);
-    colorMap.setInterpolationSpec(QColor::Hsv);
     
     int width = d->m_axes[0].valueCount();
     int height = d->m_axes[1].valueCount();
@@ -219,7 +194,7 @@ QImage GridCoverage::toImage(bool transparent) const
 //                 color.setHsvF(1.0, relative, 1.0);
                 color.setRgbF(1.0, 0, 0);
             
-                result.setPixel(x, height - y - 1, colorMap.color(relative).rgba());
+                result.setPixel(x, height - y - 1, d->m_colorMap.color(relative).rgba());
             }
         }
     }

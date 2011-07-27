@@ -10,6 +10,8 @@
 
 class DataLayer;
 class MapGeometry;
+class ColorMap;
+class QColor;
 
 class ConfigurationParser : public QXmlStreamReader {
 public:
@@ -25,6 +27,8 @@ public:
 private:
     void readMap();
     void readUnknownElement();
+    void readColorMap();
+    QColor readColor();
     void readFiles(DataLayer *layer);
     MapGeometry readGeometry();
     DataLayer *readLayer();
@@ -32,6 +36,7 @@ private:
 
     QString m_path;
     QHash<QString,DataLayer *> m_layers;
+    QHash<QString,ColorMap> m_colorMaps;
 };
 
 #endif

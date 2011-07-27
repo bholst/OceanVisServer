@@ -12,6 +12,7 @@ class GridCoverage;
 class DimensionSubset;
 class MapGeometry;
 class CoordinateAxis;
+class ColorMap;
 class QString;
 class QFile;
 class QDateTime;
@@ -62,6 +63,17 @@ public:
      * all values in all files.
      */
     double minValue() const;
+    
+    /**
+     * Set the default color map for this layer.
+     * This is the color map to be used if the user does not specify another color map.
+     */
+    void setDefaultColorMap(const ColorMap& defaultColorMap);
+    
+    /**
+     * Return the color map to be used for images if the user does not specify a color map.
+     */
+    ColorMap defaultColorMap() const;
 
     GridCoverage *dataSubset(QList<DimensionSubset*>& subsets, CutMode mode = Contains);
     
