@@ -26,6 +26,7 @@
 #include "RequestBase.h"
 #include "GetCoverage.h"
 #include "GetMap.h"
+#include "DescribeCoverages.h"
 #include "DimensionTrim.h"
 #include "DimensionSlice.h"
 #include "GridCoverage.h"
@@ -98,10 +99,10 @@ void OceanVisServer::readClient()
                 return;
             }
             
-            QRegExp serviceType("SERVICE=(wcs|wms)");
+            QRegExp serviceType("SERVICE=(wcs|wms|ovp)");
             serviceType.setCaseSensitivity(Qt::CaseInsensitive);
             serviceType.indexIn(urlSplit.at(1));
-            QRegExp requestType("REQUEST=(GetMap|GetCoverage)");
+            QRegExp requestType("REQUEST=(GetMap|GetCoverage|DescribeCoverages)");
             requestType.setCaseSensitivity(Qt::CaseInsensitive);
             requestType.indexIn(urlSplit.at(1));
 
@@ -117,6 +118,11 @@ void OceanVisServer::readClient()
                && QString::compare(requestType.cap(1), "GetMap", Qt::CaseInsensitive) == 0)
             {
                 request = GetMap::fromRequestString(urlSplit.at(1));
+            }
+            else if(QString::compare(serviceType.cap(1), "ovp", Qt::CaseInsensitive) == 0
+                    && QString::compare(requestType.cap(1), "DescribeCoverages", Qt::CaseInsensitive) == 0)
+            {
+                request = DescribeCoverages::fromRequestString(urlSplit.at(1));
             }
         }
         else if(tokens[0] == "POST") {
@@ -140,14 +146,24 @@ void OceanVisServer::handleRequest(QTcpSocket *socket, RequestBase *request)
     }
     GetCoverage *getCoverage = dynamic_cast<GetCoverage *>(request);
     GetMap *getMap = dynamic_cast<GetMap *>(request);
+    DescribeCoverages *describeCoverages = dynamic_cast<DescribeCoverages *>(request);
+
     if(getCoverage) {
         handleGetCoverage(socket, getCoverage);
     }
     else if(getMap) {
         handleGetMap(socket, getMap);
     }
+    else if(describeCoverages) {
+        handleDescribeCoverages(socket, describeCoverages);
+    }
     else {
         qDebug() << "Unknown request.";
+    }
+    
+    if(socket->state() == QTcpSocket::UnconnectedState) {
+        delete socket;
+        qDebug() << "Connection closed";
     }
 }
 
@@ -207,11 +223,6 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
     socket->close();
     
     delete matrix;
-    
-    if(socket->state() == QTcpSocket::UnconnectedState) {
-        delete socket;
-        qDebug() << "Connection closed";
-    }
 }
 
 void OceanVisServer::handleGetMap(QTcpSocket *socket, GetMap *getMap)
@@ -290,11 +301,30 @@ void OceanVisServer::handleGetMap(QTcpSocket *socket, GetMap *getMap)
     iw.write(imageResult);
     
     socket->close();
-    
-    if(socket->state() == QTcpSocket::UnconnectedState) {
-        delete socket;
-        qDebug() << "Connection closed";
+}
+
+void OceanVisServer::handleDescribeCoverages(QTcpSocket *socket, DescribeCoverages *describeCoverages)
+{
+    if(describeCoverages->version() != "1.0.0")
+    {
+        wrongOvpVersion(socket);
+        return;
     }
+    
+    ResponseWriter writer;
+    writer.setDevice(socket);
+    writer.writeCoverages(m_layers);
+    
+    socket->close();
+}
+
+void OceanVisServer::wrongOvpVersion(QTcpSocket *socket)
+{
+    ResponseWriter writer;
+    writer.setDevice(socket);
+    writer.writeWrongOvpVersion();
+    
+    socket->close();
 }
 
 void OceanVisServer::discardClient()

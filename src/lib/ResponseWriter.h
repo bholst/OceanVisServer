@@ -7,8 +7,14 @@
 
 // Qt
 #include <QtCore/QXmlStreamWriter>
+#include <QtCore/QHash>
 
 class GridCoverage;
+class DataLayer;
+class QString;
+class Constant;
+class CoordinateAxis;
+class QVariant;
 
 class ResponseWriter : public QXmlStreamWriter
 {
@@ -18,7 +24,16 @@ public:
     
     void write(GridCoverage *gridCoverage);
     
+    void writeWrongOvpVersion();
+    
+    void writeCoverages(const QHash<QString,DataLayer *>& layers);
+    
 private:
+    void writeServiceIdentification();
+    void writeCoverage(const QString& name, DataLayer *layer);
+    void writeConstant(const Constant& constant);
+    void writeCoordinateAxis(const CoordinateAxis& axis);
+    
     void writeBoundedBy(GridCoverage *gridCoverage);
     void writeEnvelope(GridCoverage *gridCoverage);
     void writeLowerCorner(GridCoverage *gridCoverage);
@@ -31,6 +46,9 @@ private:
     void writeRangeSet(GridCoverage *gridCoverage);
     void writeDataBlock(GridCoverage *gridCoverage);
     void writeTupleList(GridCoverage *gridCoverage);
+    
+    QString variantToString(Dimension dimension, const QVariant& variant);
+    QString dimensionToString(Dimension dimension);
 };
 
 #endif

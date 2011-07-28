@@ -11,7 +11,8 @@ class RequestBase {
 public:
     enum RequestType { 
         WCS,
-        WMS
+        WMS,
+        OVP
     };
     
     RequestBase(RequestType requestType);

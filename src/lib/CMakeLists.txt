@@ -15,6 +15,7 @@ set(OCEANVISSERVER_LIB_SRCS MapGeometry.cpp
                             RequestBase.cpp
                             GetCoverage.cpp
                             GetMap.cpp
+                            DescribeCoverages.cpp
                             RequestParser.cpp
                             ResponseWriter.cpp
                             BoundingBox.cpp

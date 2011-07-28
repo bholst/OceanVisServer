@@ -11,6 +11,7 @@
 class RequestBase;
 class DimensionTrim;
 class DimensionSlice;
+class QDateTime;
 
 class RequestParser : public QXmlStreamReader
 {

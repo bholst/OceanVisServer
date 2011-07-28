@@ -14,6 +14,7 @@ class QTcpSocket;
 class RequestBase;
 class GetCoverage;
 class GetMap;
+class DescribeCoverages;
 
 class OceanVisServer : public QTcpServer
 {
@@ -56,6 +57,18 @@ public:
      * message through the given socket.
      */
     void handleGetMap(QTcpSocket *socket, GetMap *getMap);
+    
+    /**
+     * Answer the DescribeCoverage request.
+     * Sends the Coverages
+     * message through the given socket.
+     */
+    void handleDescribeCoverages(QTcpSocket *socket, DescribeCoverages *describeCoverages);
+    
+    /**
+     * Sends a wrong version notification through the given socket.
+     */
+    void wrongOvpVersion(QTcpSocket *socket);
 
 private slots:
     void readClient();

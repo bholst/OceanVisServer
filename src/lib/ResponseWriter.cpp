@@ -5,10 +5,15 @@
 // Qt
 #include <QtCore/QStringList>
 #include <QtCore/QDateTime>
+#include <QtCore/QString>
+#include <QtCore/QList>
+#include <QtCore/QVariant>
 
 // Project
 #include "GridCoverage.h"
 #include "CoordinateAxis.h"
+#include "Constant.h"
+#include "DataLayer.h"
 
 // Self
 #include "ResponseWriter.h"
@@ -35,6 +40,125 @@ void ResponseWriter::write(GridCoverage *gridCoverage)
     writeRangeSet(gridCoverage);
     writeEndElement();
     writeEndDocument();
+}
+
+void ResponseWriter::writeWrongOvpVersion()
+{
+    setAutoFormatting(true);
+    writeStartDocument();
+    
+    writeStartElement("WrongVersion");
+    writeStartElement("description");
+    writeCharacters("The server does not support the protocol version you requested");
+    writeEndElement();
+    writeStartElement("supportedVersion");
+    writeCharacters("1.0.0");
+    writeEndElement();
+    writeEndElement();
+    writeEndDocument();
+}
+
+void ResponseWriter::writeCoverages(const QHash<QString,DataLayer *>& layers)
+{
+    setAutoFormatting(true);
+    writeStartDocument();
+    
+    writeStartElement("Coverages");
+    writeServiceIdentification();
+    
+    for(QHash<QString,DataLayer *>::const_iterator it = layers.constBegin();
+        it != layers.constEnd();
+        ++it)
+    {
+        writeCoverage(it.key(), it.value());
+    }
+    
+    writeEndElement();
+    
+    writeEndDocument();
+}
+
+void ResponseWriter::writeServiceIdentification()
+{
+    writeStartElement("ServiceIdentification");
+    
+    writeStartElement("Title");
+    writeCharacters("Ocean visualization server");
+    writeEndElement();
+    
+    writeStartElement("Abstract");
+    writeCharacters("Server developed as a bachelors project at the university of Kiel.");
+    writeEndElement();
+    
+    writeStartElement("ServiceType");
+    writeCharacters("OVP");
+    writeEndElement();
+    
+    writeStartElement("ServiceTypeVersion");
+    writeCharacters("1.0.0");
+    writeEndElement();
+    
+    writeEndElement();
+}
+
+void ResponseWriter::writeCoverage(const QString& name, DataLayer *layer)
+{
+    writeStartElement("Coverage");
+    
+    writeStartElement("CoverageId");
+    writeCharacters(name);
+    writeEndElement();
+    
+    QList<CoordinateAxis> coordinateAxes = layer->coordinateAxes();
+    foreach(CoordinateAxis axis, coordinateAxes) {
+        writeCoordinateAxis(axis);
+    }
+    
+    QList<Constant> consts = layer->constants();
+    foreach(Constant constant, consts) {
+        writeConstant(constant);
+    }
+    
+    writeEndElement();
+}
+
+void ResponseWriter::writeConstant(const Constant& constant)
+{
+    writeStartElement("Constant");
+    
+    writeStartElement("Dimension");
+    writeCharacters(dimensionToString(constant.dimension()));
+    writeEndElement();
+    
+    writeStartElement("Value");
+    writeCharacters(variantToString(constant.dimension(), constant.value()));
+    writeEndElement();
+    
+    writeEndElement();
+    writeEndElement();
+}
+
+void ResponseWriter::writeCoordinateAxis(const CoordinateAxis& axis)
+{
+    writeStartElement("CoordinateAxis");
+    
+    writeStartElement("Dimension");
+    writeCharacters(dimensionToString(axis.dimension()));
+    writeEndElement();
+    
+    writeStartElement("LowerLimit");
+    writeCharacters(variantToString(axis.dimension(), axis.lowerLimit()));
+    writeEndElement();
+    
+    writeStartElement("UpperLimit");
+    writeCharacters(variantToString(axis.dimension(), axis.upperLimit()));
+    writeEndElement();
+    
+    writeStartElement("ValueCount");
+    writeCharacters(QString::number(axis.valueCount()));
+    writeEndElement();
+    
+    writeEndElement();
 }
 
 void ResponseWriter::writeBoundedBy(GridCoverage *gridCoverage)
@@ -148,4 +272,33 @@ void ResponseWriter::writeTupleList(GridCoverage *gridCoverage)
     writeCharacters(gridCoverage->toString());
     writeEndElement();
 }
+
+QString ResponseWriter::variantToString(Dimension dimension, const QVariant& variant)
+{
+    if(dimension == Time) {
+        return variant.toDateTime().toString(Qt::ISODate);
+    }
+    else if(dimension == Lon
+            || dimension == Lat
+            || dimension == Height)
+    {
+        QString result;
+        return result.setNum(variant.toDouble());
+    }
+}
+
+QString ResponseWriter::dimensionToString(Dimension dimension)
+{
+    switch(dimension) {
+        case Time:
+            return QString("Time");
+        case Lon:
+            return QString("Lon");
+        case Lat:
+            return QString("Lat");
+        case Height:
+            return QString("Height");
+    }
+}
+
 
