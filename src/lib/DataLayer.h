@@ -74,6 +74,12 @@ public:
      * Return the color map to be used for images if the user does not specify a color map.
      */
     ColorMap defaultColorMap() const;
+    
+    /**
+     * Returns the coordinateAxes of this DataLayer which are these axes on which you
+     * can trim and slice.
+     */
+    QList<CoordinateAxis> coordinateAxes() const;
 
     GridCoverage *dataSubset(QList<DimensionSubset*>& subsets, CutMode mode = Contains);
     

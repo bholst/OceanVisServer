@@ -216,6 +216,52 @@ ColorMap DataLayer::defaultColorMap() const
     return d->m_defaultColorMap;
 }
 
+QList<CoordinateAxis> DataLayer::coordinateAxes() const
+{
+    QList<CoordinateAxis> axes;
+    
+    if(d->m_dataVectors.size() > 1) {
+        CoordinateAxis time(Time);
+        time.setLowerLimit(d->m_dataVectors.begin().key());
+        time.setUpperLimit((d->m_dataVectors.end() - 1).key());
+        time.setValueCount(d->m_dataVectors.size());
+        axes.append(time);
+    }
+    
+    if(d->m_geometry.width() > 1) {
+        CoordinateAxis lon(Lon);
+        lon.setLowerLimit(-180.0);
+        lon.setUpperLimit(+180.0);
+        lon.setValueCount(d->m_geometry.width());
+        axes.append(lon);
+    }
+    
+    if(d->m_geometry.height() > 1) {
+        CoordinateAxis lat(Lat);
+        lat.setLowerLimit(-90.0);
+        lat.setUpperLimit(+90.0);
+        lat.setValueCount(d->m_geometry.height());
+        axes.append(lat);
+    }
+    
+    if(d->m_geometry.maxLayerCount() > 1) {
+        // TODO: This is obviously wrong.
+        CoordinateAxis height(Height);
+        if(d->m_geometry.heightDimension() >= 0.0) {
+            height.setLowerLimit(0.0);
+            height.setUpperLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
+        }
+        else {
+            height.setLowerLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
+            height.setUpperLimit(0.0);
+        }
+        height.setValueCount(d->m_geometry.maxLayerCount());
+        axes.append(height);
+    }
+    
+    return axes;
+}
+
 GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
                                     DataLayer::CutMode mode)
 {
