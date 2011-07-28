@@ -10,6 +10,7 @@
 #include "DimensionTrim.h"
 #include "DimensionSlice.h"
 #include "CoordinateAxis.h"
+#include "Constant.h"
 #include "MapGeometry.h"
 #include "DataLayer.h"
 
@@ -120,11 +121,13 @@ void TestDataLayer::testCalculateLonLimitsTrim()
     int realLowLonTrim = -100;
     int realHighLonTrim = -100;
     QList<CoordinateAxis> axes;
-    m_dataLayer.calculateLonLimits(&trim, &realLowLonTrim, &realHighLonTrim, &axes, DataLayer::Contains);
+    QList<Constant> consts;
+    m_dataLayer.calculateLonLimits(&trim, &realLowLonTrim, &realHighLonTrim, &axes, &consts, DataLayer::Contains);
     
     QCOMPARE(realLowLonTrim, lowLonTrimContains);
     QCOMPARE(realHighLonTrim, highLonTrimContains);
     QCOMPARE(axes.size(), 1);
+    QCOMPARE(consts.size(), 0);
     QCOMPARE(axes.at(0).lowerLimit().toDouble(), lowerLimitContains);
     QCOMPARE(axes.at(0).upperLimit().toDouble(), upperLimitContains);
     
@@ -132,10 +135,11 @@ void TestDataLayer::testCalculateLonLimitsTrim()
     realHighLonTrim = -100;
     axes.clear();
     
-    m_dataLayer.calculateLonLimits(&trim, &realLowLonTrim, &realHighLonTrim, &axes, DataLayer::Overlaps);
+    m_dataLayer.calculateLonLimits(&trim, &realLowLonTrim, &realHighLonTrim, &axes, &consts, DataLayer::Overlaps);
     QCOMPARE(realLowLonTrim, lowLonTrimOverlaps);
     QCOMPARE(realHighLonTrim, highLonTrimOverlaps);
     QCOMPARE(axes.size(), 1);
+    QCOMPARE(consts.size(), 0);
     QCOMPARE(axes.at(0).lowerLimit().toDouble(), lowerLimitOverlaps);
     QCOMPARE(axes.at(0).upperLimit().toDouble(), upperLimitOverlaps);
 }
@@ -145,11 +149,12 @@ void TestDataLayer::testCalculateLonLimitsSlice_data()
     QTest::addColumn<double>("slicePoint");
     QTest::addColumn<int>("lowLonTrim");
     QTest::addColumn<int>("highLonTrim");
+    QTest::addColumn<double>("constant");
 
-    QTest::newRow("middle") << 0.0 << 2 << 3;
-    QTest::newRow("left") << -180.0 << 0 << 1;
-    QTest::newRow("right") << 180.0 << 4 << 5;
-    QTest::newRow("centerLeft") << -45.0 << 1 << 2;
+    QTest::newRow("middle") << 0.0 << 2 << 3 << 45.0;
+    QTest::newRow("left") << -180.0 << 0 << 1 << -135.0;
+    QTest::newRow("right") << 180.0 << 4 << 5 << 225.0;
+    QTest::newRow("centerLeft") << -45.0 << 1 << 2 << -45.0;
 }
 
 void TestDataLayer::testCalculateLonLimitsSlice()
@@ -157,6 +162,7 @@ void TestDataLayer::testCalculateLonLimitsSlice()
     QFETCH(double, slicePoint);
     QFETCH(int, lowLonTrim);
     QFETCH(int, highLonTrim);
+    QFETCH(double, constant);
     
     DimensionSlice slice(Lon);
     slice.setSlicePoint(slicePoint);
@@ -164,19 +170,25 @@ void TestDataLayer::testCalculateLonLimitsSlice()
     int realLowLonTrim = -100;
     int realHighLonTrim = -100;
     QList<CoordinateAxis> axes;
-    m_dataLayer.calculateLonLimits(&slice, &realLowLonTrim, &realHighLonTrim, &axes, DataLayer::Contains);
+    QList<Constant> consts;
+    m_dataLayer.calculateLonLimits(&slice, &realLowLonTrim, &realHighLonTrim, &axes, &consts, DataLayer::Contains);
     
     QCOMPARE(realLowLonTrim, lowLonTrim);
     QCOMPARE(realHighLonTrim, highLonTrim);
     QCOMPARE(axes.size(), 0);
+    QCOMPARE(consts.size(), 1);
+    QCOMPARE(consts.at(0).value().toDouble(), constant);
     
     realLowLonTrim = -100;
     realHighLonTrim = -100;
+    consts.clear();
     
-    m_dataLayer.calculateLonLimits(&slice, &realLowLonTrim, &realHighLonTrim, &axes, DataLayer::Overlaps);
+    m_dataLayer.calculateLonLimits(&slice, &realLowLonTrim, &realHighLonTrim, &axes, &consts, DataLayer::Overlaps);
     QCOMPARE(realLowLonTrim, lowLonTrim);
     QCOMPARE(realHighLonTrim, highLonTrim);
     QCOMPARE(axes.size(), 0);
+    QCOMPARE(consts.size(), 1);
+    QCOMPARE(consts.at(0).value().toDouble(), constant);
 }
 
 void TestDataLayer::testCalculateLonLimitsNull()
@@ -184,22 +196,25 @@ void TestDataLayer::testCalculateLonLimitsNull()
     int realLowLonTrim = -100;
     int realHighLonTrim = -100;
     QList<CoordinateAxis> axes;
+    QList<Constant> consts;
     
-    m_dataLayer.calculateLonLimits(0, &realLowLonTrim, &realHighLonTrim, &axes, DataLayer::Contains);
+    m_dataLayer.calculateLonLimits(0, &realLowLonTrim, &realHighLonTrim, &axes, &consts, DataLayer::Contains);
     QCOMPARE(realLowLonTrim, 0);
     QCOMPARE(realHighLonTrim, 4);
     QCOMPARE(axes.size(), 1);
     QCOMPARE(axes.at(0).lowerLimit().toDouble(), -180.0);
     QCOMPARE(axes.at(0).upperLimit().toDouble(), 180.0);
+    QCOMPARE(consts.size(), 0);
     realLowLonTrim = -100;
     realHighLonTrim = -100;
     
-    m_dataLayer.calculateLonLimits(0, &realLowLonTrim, &realHighLonTrim, &axes, DataLayer::Overlaps);
+    m_dataLayer.calculateLonLimits(0, &realLowLonTrim, &realHighLonTrim, &axes, &consts, DataLayer::Overlaps);
     QCOMPARE(realLowLonTrim, 0);
     QCOMPARE(realHighLonTrim, 4);
     QCOMPARE(axes.size(), 2);
     QCOMPARE(axes.at(1).lowerLimit().toDouble(), -180.0);
     QCOMPARE(axes.at(1).upperLimit().toDouble(), 180.0);
+    QCOMPARE(consts.size(), 0);
 }
 
 void TestDataLayer::testCalculateLatLimitsTrim_data()
@@ -244,24 +259,27 @@ void TestDataLayer::testCalculateLatLimitsTrim()
     int realLowLatTrim = -100;
     int realHighLatTrim = -100;
     QList<CoordinateAxis> axes;
-    m_dataLayer.calculateLatLimits(&trim, &realLowLatTrim, &realHighLatTrim, &axes, DataLayer::Contains);
+    QList<Constant> consts;
+    m_dataLayer.calculateLatLimits(&trim, &realLowLatTrim, &realHighLatTrim, &axes, &consts, DataLayer::Contains);
     
     QCOMPARE(realLowLatTrim, lowLatTrimContains);
     QCOMPARE(realHighLatTrim, highLatTrimContains);
     QCOMPARE(axes.size(), 1);
     QCOMPARE(axes.at(0).lowerLimit().toDouble(), lowerLimitContains);
     QCOMPARE(axes.at(0).upperLimit().toDouble(), upperLimitContains);
+    QCOMPARE(consts.size(), 0);
     
     realLowLatTrim = -100;
     realHighLatTrim = -100;
     axes.clear();
     
-    m_dataLayer.calculateLatLimits(&trim, &realLowLatTrim, &realHighLatTrim, &axes, DataLayer::Overlaps);
+    m_dataLayer.calculateLatLimits(&trim, &realLowLatTrim, &realHighLatTrim, &axes, &consts, DataLayer::Overlaps);
     QCOMPARE(realLowLatTrim, lowLatTrimOverlaps);
     QCOMPARE(realHighLatTrim, highLatTrimOverlaps);
     QCOMPARE(axes.size(), 1);
     QCOMPARE(axes.at(0).lowerLimit().toDouble(), lowerLimitOverlaps);
     QCOMPARE(axes.at(0).upperLimit().toDouble(), upperLimitOverlaps);
+    QCOMPARE(consts.size(), 0);
 }
 
 void TestDataLayer::testCalculateLatLimitsSlice_data()
@@ -269,11 +287,12 @@ void TestDataLayer::testCalculateLatLimitsSlice_data()
     QTest::addColumn<double>("slicePoint");
     QTest::addColumn<int>("lowLatTrim");
     QTest::addColumn<int>("highLatTrim");
+    QTest::addColumn<double>("constant");
 
-    QTest::newRow("middle") << 0.0 << 1 << 2;
-    QTest::newRow("left") << -90.0 << 0 << 1;
-    QTest::newRow("right") << 90.0 << 2 << 3;
-    QTest::newRow("centerLeft") << -45.0 << 0 << 1;
+    QTest::newRow("middle") << 0.0 << 1 << 2 << 45.0;
+    QTest::newRow("left") << -90.0 << 0 << 1 << -45.0;
+    QTest::newRow("right") << 90.0 << 2 << 3 << 135.0;
+    QTest::newRow("centerLeft") << -45.0 << 0 << 1 << -45.0;
 }
 
 void TestDataLayer::testCalculateLatLimitsSlice()
@@ -281,6 +300,7 @@ void TestDataLayer::testCalculateLatLimitsSlice()
     QFETCH(double, slicePoint);
     QFETCH(int, lowLatTrim);
     QFETCH(int, highLatTrim);
+    QFETCH(double, constant);
     
     DimensionSlice slice(Lat);
     slice.setSlicePoint(slicePoint);
@@ -288,19 +308,25 @@ void TestDataLayer::testCalculateLatLimitsSlice()
     int realLowLatTrim = -100;
     int realHighLatTrim = -100;
     QList<CoordinateAxis> axes;
-    m_dataLayer.calculateLatLimits(&slice, &realLowLatTrim, &realHighLatTrim, &axes, DataLayer::Contains);
+    QList<Constant> consts;
+    m_dataLayer.calculateLatLimits(&slice, &realLowLatTrim, &realHighLatTrim, &axes, &consts, DataLayer::Contains);
     
     QCOMPARE(realLowLatTrim, lowLatTrim);
     QCOMPARE(realHighLatTrim, highLatTrim);
     QCOMPARE(axes.size(), 0);
+    QCOMPARE(consts.size(), 1);
+    QCOMPARE(consts.at(0).value().toDouble(), constant);
     
     realLowLatTrim = -100;
     realHighLatTrim = -100;
+    consts.clear();
     
-    m_dataLayer.calculateLatLimits(&slice, &realLowLatTrim, &realHighLatTrim, &axes, DataLayer::Overlaps);
+    m_dataLayer.calculateLatLimits(&slice, &realLowLatTrim, &realHighLatTrim, &axes, &consts, DataLayer::Overlaps);
     QCOMPARE(realLowLatTrim, lowLatTrim);
     QCOMPARE(realHighLatTrim, highLatTrim);
     QCOMPARE(axes.size(), 0);
+    QCOMPARE(consts.size(), 1);
+    QCOMPARE(consts.at(0).value().toDouble(), constant);
 }
 
 void TestDataLayer::testCalculateLatLimitsNull()
@@ -308,22 +334,25 @@ void TestDataLayer::testCalculateLatLimitsNull()
     int realLowLatTrim = -100;
     int realHighLatTrim = -100;
     QList<CoordinateAxis> axes;
+    QList<Constant> consts;
     
-    m_dataLayer.calculateLatLimits(0, &realLowLatTrim, &realHighLatTrim, &axes, DataLayer::Contains);
+    m_dataLayer.calculateLatLimits(0, &realLowLatTrim, &realHighLatTrim, &axes, &consts, DataLayer::Contains);
     QCOMPARE(realLowLatTrim, 0);
     QCOMPARE(realHighLatTrim, 2);
     QCOMPARE(axes.size(), 1);
     QCOMPARE(axes.at(0).lowerLimit().toDouble(), -90.0);
     QCOMPARE(axes.at(0).upperLimit().toDouble(), 90.0);
+    QCOMPARE(consts.size(), 0);
     realLowLatTrim = -100;
     realHighLatTrim = -100;
     
-    m_dataLayer.calculateLatLimits(0, &realLowLatTrim, &realHighLatTrim, &axes, DataLayer::Overlaps);
+    m_dataLayer.calculateLatLimits(0, &realLowLatTrim, &realHighLatTrim, &axes, &consts, DataLayer::Overlaps);
     QCOMPARE(realLowLatTrim, 0);
     QCOMPARE(realHighLatTrim, 2);
     QCOMPARE(axes.size(), 2);
     QCOMPARE(axes.at(1).lowerLimit().toDouble(), -90.0);
     QCOMPARE(axes.at(1).upperLimit().toDouble(), 90.0);
+    QCOMPARE(consts.size(), 0);
 }
 
 void TestDataLayer::testCalculateHeightLimitsTrim_data()
@@ -374,24 +403,27 @@ void TestDataLayer::testCalculateHeightLimitsTrim()
     int realLowHeightTrim = -100;
     int realHighHeightTrim = -100;
     QList<CoordinateAxis> axes;
-    m_dataLayer.calculateHeightLimits(&trim, &realLowHeightTrim, &realHighHeightTrim, &axes, DataLayer::Contains);
+    QList<Constant> consts;
+    m_dataLayer.calculateHeightLimits(&trim, &realLowHeightTrim, &realHighHeightTrim, &axes, &consts, DataLayer::Contains);
     
     QCOMPARE(realLowHeightTrim, lowHeightTrimContains);
     QCOMPARE(realHighHeightTrim, highHeightTrimContains);
     QCOMPARE(axes.size(), 1);
     QCOMPARE(axes.at(0).lowerLimit().toDouble(), lowerLimitContains);
     QCOMPARE(axes.at(0).upperLimit().toDouble(), upperLimitContains);
+    QCOMPARE(consts.size(), 0);
     
     realLowHeightTrim = -100;
     realHighHeightTrim = -100;
     axes.clear();
     
-    m_dataLayer.calculateHeightLimits(&trim, &realLowHeightTrim, &realHighHeightTrim, &axes, DataLayer::Overlaps);
+    m_dataLayer.calculateHeightLimits(&trim, &realLowHeightTrim, &realHighHeightTrim, &axes, &consts, DataLayer::Overlaps);
     QCOMPARE(realLowHeightTrim, lowHeightTrimOverlaps);
     QCOMPARE(realHighHeightTrim, highHeightTrimOverlaps);
     QCOMPARE(axes.size(), 1);
     QCOMPARE(axes.at(0).lowerLimit().toDouble(), lowerLimitOverlaps);
     QCOMPARE(axes.at(0).upperLimit().toDouble(), upperLimitOverlaps);
+    QCOMPARE(consts.size(), 0);
 }
 
 void TestDataLayer::testCalculateHeightLimitsSlice_data()
@@ -400,13 +432,14 @@ void TestDataLayer::testCalculateHeightLimitsSlice_data()
     QTest::addColumn<double>("slicePoint");
     QTest::addColumn<int>("lowHeightTrim");
     QTest::addColumn<int>("highHeightTrim");
+    QTest::addColumn<double>("constant");
 
-    QTest::newRow("firstBorderPos") << 1.0 << 0.0 << 0 << 1;
-    QTest::newRow("firstBorderNeg") << -1.0 << 0.0 << 0 << 1;
-    QTest::newRow("first") << -10.0 << -5.0 << 0 << 1;
-    QTest::newRow("last") << -10.0 << -55.0 << 5 << 6;
-    QTest::newRow("lastBorderPos") << 10.0 << 60.0 << 6 << 7;
-    QTest::newRow("lastBorderNeg") << -10.0 << -60.0 << 6 << 7;
+    QTest::newRow("firstBorderPos") << 1.0 << 0.0 << 0 << 1 << 0.5;
+    QTest::newRow("firstBorderNeg") << -1.0 << 0.0 << 0 << 1 << -0.5;
+    QTest::newRow("first") << -10.0 << -5.0 << 0 << 1 << -5.0;
+    QTest::newRow("last") << -10.0 << -55.0 << 5 << 6 << -55.0;
+    QTest::newRow("lastBorderPos") << 10.0 << 60.0 << 6 << 7 << 65.0;
+    QTest::newRow("lastBorderNeg") << -10.0 << -60.0 << 6 << 7 << -65.0;
 }
 
 void TestDataLayer::testCalculateHeightLimitsSlice()
@@ -415,6 +448,7 @@ void TestDataLayer::testCalculateHeightLimitsSlice()
     QFETCH(double, slicePoint);
     QFETCH(int, lowHeightTrim);
     QFETCH(int, highHeightTrim);
+    QFETCH(double, constant);
     
     m_geometry.setHeightDimension(heightDimension);
     m_dataLayer.setGeometry(m_geometry);
@@ -425,19 +459,25 @@ void TestDataLayer::testCalculateHeightLimitsSlice()
     int realLowHeightTrim = -100;
     int realHighHeightTrim = -100;
     QList<CoordinateAxis> axes;
-    m_dataLayer.calculateHeightLimits(&slice, &realLowHeightTrim, &realHighHeightTrim, &axes, DataLayer::Contains);
+    QList<Constant> consts;
+    m_dataLayer.calculateHeightLimits(&slice, &realLowHeightTrim, &realHighHeightTrim, &axes, &consts, DataLayer::Contains);
     
     QCOMPARE(realLowHeightTrim, lowHeightTrim);
     QCOMPARE(realHighHeightTrim, highHeightTrim);
     QCOMPARE(axes.size(), 0);
+    QCOMPARE(consts.size(), 1);
+    QCOMPARE(consts.at(0).value().toDouble(), constant);
     
     realLowHeightTrim = -100;
     realHighHeightTrim = -100;
+    consts.clear();
     
-    m_dataLayer.calculateHeightLimits(&slice, &realLowHeightTrim, &realHighHeightTrim, &axes, DataLayer::Overlaps);
+    m_dataLayer.calculateHeightLimits(&slice, &realLowHeightTrim, &realHighHeightTrim, &axes, &consts, DataLayer::Overlaps);
     QCOMPARE(realLowHeightTrim, lowHeightTrim);
     QCOMPARE(realHighHeightTrim, highHeightTrim);
     QCOMPARE(axes.size(), 0);
+    QCOMPARE(consts.size(), 1);
+    QCOMPARE(consts.at(0).value().toDouble(), constant);
 }
 
 void TestDataLayer::testCalculateHeightLimitsNull_data()
@@ -464,22 +504,25 @@ void TestDataLayer::testCalculateHeightLimitsNull()
     int realLowHeightTrim = -100;
     int realHighHeightTrim = -100;
     QList<CoordinateAxis> axes;
+    QList<Constant> consts;
     
-    m_dataLayer.calculateHeightLimits(0, &realLowHeightTrim, &realHighHeightTrim, &axes, DataLayer::Contains);
+    m_dataLayer.calculateHeightLimits(0, &realLowHeightTrim, &realHighHeightTrim, &axes, &consts, DataLayer::Contains);
     QCOMPARE(realLowHeightTrim, 0);
     QCOMPARE(realHighHeightTrim, 6);
     QCOMPARE(axes.size(), 1);
     QCOMPARE(axes.at(0).lowerLimit().toDouble(), lowerLimit);
     QCOMPARE(axes.at(0).upperLimit().toDouble(), upperLimit);
+    QCOMPARE(consts.size(), 0);
     realLowHeightTrim = -100;
     realHighHeightTrim = -100;
     
-    m_dataLayer.calculateHeightLimits(0, &realLowHeightTrim, &realHighHeightTrim, &axes, DataLayer::Overlaps);
+    m_dataLayer.calculateHeightLimits(0, &realLowHeightTrim, &realHighHeightTrim, &axes, &consts, DataLayer::Overlaps);
     QCOMPARE(realLowHeightTrim, 0);
     QCOMPARE(realHighHeightTrim, 6);
     QCOMPARE(axes.size(), 2);
     QCOMPARE(axes.at(1).lowerLimit().toDouble(), lowerLimit);
     QCOMPARE(axes.at(1).upperLimit().toDouble(), upperLimit);
+    QCOMPARE(consts.size(), 0);
 }
 
 QTEST_MAIN( TestDataLayer )

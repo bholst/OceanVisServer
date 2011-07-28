@@ -19,6 +19,7 @@
 // Project
 #include "MapGeometry.h"
 #include "CoordinateAxis.h"
+#include "Constant.h"
 #include "DimensionSubset.h"
 #include "DimensionSlice.h"
 #include "DimensionTrim.h"
@@ -228,18 +229,18 @@ QList<CoordinateAxis> DataLayer::coordinateAxes() const
         axes.append(time);
     }
     
-    if(d->m_geometry.width() > 1) {
+    if(d->m_geometry.width() >= 1) {
         CoordinateAxis lon(Lon);
-        lon.setLowerLimit(-180.0);
-        lon.setUpperLimit(+180.0);
+        lon.setLowerLimit(MINLON);
+        lon.setUpperLimit(MAXLON);
         lon.setValueCount(d->m_geometry.width());
         axes.append(lon);
     }
     
-    if(d->m_geometry.height() > 1) {
+    if(d->m_geometry.height() >= 1) {
         CoordinateAxis lat(Lat);
-        lat.setLowerLimit(-90.0);
-        lat.setUpperLimit(+90.0);
+        lat.setLowerLimit(MINLAT);
+        lat.setUpperLimit(MAXLAT);
         lat.setValueCount(d->m_geometry.height());
         axes.append(lat);
     }
@@ -260,6 +261,25 @@ QList<CoordinateAxis> DataLayer::coordinateAxes() const
     }
     
     return axes;
+}
+
+QList<Constant> DataLayer::constants() const
+{
+    QList<Constant> consts;
+    
+    if(d->m_dataVectors.size() == 1) {
+        Constant time(Time);
+        time.setValue(d->m_dataVectors.begin().key());
+        consts.append(time);
+    }
+    
+    if(d->m_geometry.maxLayerCount() == 1) {
+        Constant height(Height);
+        height.setValue(0.0);
+        consts.append(height);
+    }
+    
+    return consts;
 }
 
 GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
@@ -292,12 +312,13 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
         }
     }
     QList<CoordinateAxis> axes;
+    QList<Constant> consts;
 
     int dimensionCount[4] = {0, 0, 0, 0};
     QMap<QDateTime,double*>::const_iterator lowTimeTrim;
     QMap<QDateTime,double*>::const_iterator highTimeTrim;
     
-    calculateTimeLimits(timeSubset, &lowTimeTrim, &highTimeTrim, &(dimensionCount[0]), &axes, mode);
+    calculateTimeLimits(timeSubset, &lowTimeTrim, &highTimeTrim, &(dimensionCount[0]), &axes, &consts, mode);
 
     qDebug() << "Low time trim:" << lowTimeTrim.key().toString();
     if(highTimeTrim != d->m_dataVectors.constEnd()) {
@@ -307,7 +328,7 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
     int lowLonTrim = 0; // The first longitude value which will be in the returned matrix.
     int highLonTrim = 0; // The first longitude value which will not be in the returned matrix.
 
-    calculateLonLimits(lonSubset, &lowLonTrim, &highLonTrim, &axes, mode);
+    calculateLonLimits(lonSubset, &lowLonTrim, &highLonTrim, &axes, &consts, mode);
     dimensionCount[1] = highLonTrim - lowLonTrim;
 
     qDebug() << "Low lon trim:" << lowLonTrim;
@@ -317,7 +338,7 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
     int lowLatTrim = 0; // The first latitude value which will be in the returned matrix.
     int highLatTrim = 0; // The first latitude value which will not be in the returned matrix.
 
-    calculateLatLimits(latSubset, &lowLatTrim, &highLatTrim, &axes, mode);
+    calculateLatLimits(latSubset, &lowLatTrim, &highLatTrim, &axes, &consts, mode);
     dimensionCount[2] = highLatTrim - lowLatTrim;
 
     qDebug() << "Low lat trim:" << lowLatTrim;
@@ -327,7 +348,7 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
     int lowHeightTrim = 0; // The first latitude value which will be in the returned matrix.
     int highHeightTrim = 0; // The first latitude value which will not be in the returned matrix.
 
-    calculateHeightLimits(heightSubset, &lowHeightTrim, &highHeightTrim, &axes, mode);
+    calculateHeightLimits(heightSubset, &lowHeightTrim, &highHeightTrim, &axes, &consts, mode);
     dimensionCount[3] = highHeightTrim - lowHeightTrim;
 
     qDebug() << "Low height trim:" << lowHeightTrim;
@@ -372,6 +393,7 @@ GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
     GridCoverage *result = new GridCoverage();
     result->setValues(matrix);
     result->setCoordinateAxes(axes);
+    result->setConstants(consts);
     result->setMaxValue(maxValue());
     result->setMinValue(minValue());
     result->setColorMap(d->m_defaultColorMap);
@@ -383,17 +405,25 @@ void DataLayer::calculateTimeLimits(DimensionSubset *subset,
                                     QMap<QDateTime,double*>::const_iterator *lowTimeTrim, 
                                     QMap<QDateTime,double*>::const_iterator *highTimeTrim,
                                     int *dimensionCount,
-                                    QList<CoordinateAxis> *axes, CutMode mode)
+                                    QList<CoordinateAxis> *axes, QList<Constant> *consts,
+                                    CutMode mode)
 {
     if(!subset) {
         *lowTimeTrim = d->m_dataVectors.begin();
         *highTimeTrim = d->m_dataVectors.end();
         *dimensionCount = d->m_dataVectors.size();
-        CoordinateAxis axis(Time);
-        axis.setLowerLimit(lowTimeTrim->key());
-        axis.setUpperLimit((*highTimeTrim - 1).key());
-        axis.setValueCount(*dimensionCount);
-        axes->append(axis);
+        if(*dimensionCount > 1) {
+            CoordinateAxis axis(Time);
+            axis.setLowerLimit(lowTimeTrim->key());
+            axis.setUpperLimit((*highTimeTrim - 1).key());
+            axis.setValueCount(*dimensionCount);
+            axes->append(axis);
+        }
+        else {
+            Constant constant(Time);
+            constant.setValue(lowTimeTrim->key());
+            consts->append(constant);
+        }
         return;
     }
     
@@ -407,6 +437,9 @@ void DataLayer::calculateTimeLimits(DimensionSubset *subset,
         }
         *highTimeTrim = *lowTimeTrim + 1;
         *dimensionCount = 1;
+        Constant constant(Time);
+        constant.setValue(lowTimeTrim->key());
+        consts->append(constant);
     }
     else if(trim) {
         CoordinateAxis axis(Time);
@@ -440,22 +473,22 @@ void DataLayer::calculateTimeLimits(DimensionSubset *subset,
     }
     else {
         qDebug() << "Subset invalid.";
-        calculateTimeLimits(0, lowTimeTrim, highTimeTrim, dimensionCount, axes, mode);
+        calculateTimeLimits(0, lowTimeTrim, highTimeTrim, dimensionCount, axes, consts, mode);
     }
 }
 
 void DataLayer::calculateLonLimits(DimensionSubset *subset, 
                                    int *lowLonTrim, 
                                    int *highLonTrim, 
-                                   QList<CoordinateAxis> *axes, 
+                                   QList<CoordinateAxis> *axes, QList<Constant> *consts,
                                    DataLayer::CutMode mode)
 {
     if(!subset) {
         *lowLonTrim = 0;
         *highLonTrim = d->m_geometry.width();
         CoordinateAxis axis(Lon);
-        axis.setLowerLimit(-180.0);
-        axis.setUpperLimit(+180.0);
+        axis.setLowerLimit(MINLON);
+        axis.setUpperLimit(MAXLON);
         axis.setValueCount(*highLonTrim - *lowLonTrim);
         axes->append(axis);
         return;
@@ -466,13 +499,16 @@ void DataLayer::calculateLonLimits(DimensionSubset *subset,
     
     if(slice) {
         int slicePoint = std::floor(
-            (slice->slicePoint().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width());
+            (slice->slicePoint().toDouble() + MAXLON) / DELTALON * (double) d->m_geometry.width());
         *lowLonTrim = slicePoint;
         *highLonTrim = slicePoint + 1;
+        Constant constant(Lon);
+        constant.setValue((*lowLonTrim + 0.5) * DELTALON / (double) d->m_geometry.width() + MINLON);
+        consts->append(constant);
     }
     else if(trim) {
-        double lowLonTrimDouble = (trim->trimLow().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width();
-        double highLonTrimDouble = (trim->trimHigh().toDouble() + 180.0) / 360.0 * (double) d->m_geometry.width();
+        double lowLonTrimDouble = (trim->trimLow().toDouble() + MAXLON) / DELTALON * (double) d->m_geometry.width();
+        double highLonTrimDouble = (trim->trimHigh().toDouble() + MAXLON) / DELTALON * (double) d->m_geometry.width();
         if(mode == Contains) {
             *lowLonTrim = std::ceil(lowLonTrimDouble);
             *highLonTrim = std::floor(highLonTrimDouble);
@@ -483,21 +519,21 @@ void DataLayer::calculateLonLimits(DimensionSubset *subset,
         }
         
         CoordinateAxis axis(Lon);
-        axis.setLowerLimit(*lowLonTrim * 360.0 / (double) d->m_geometry.width() - 180.0);
-        axis.setUpperLimit(*highLonTrim * 360.0 / (double) d->m_geometry.width() - 180.0);
+        axis.setLowerLimit(*lowLonTrim * DELTALON / (double) d->m_geometry.width() + MINLON);
+        axis.setUpperLimit(*highLonTrim * DELTALON / (double) d->m_geometry.width() + MINLON);
         axis.setValueCount(*highLonTrim - *lowLonTrim);
         axes->append(axis);
     }
     else {
         qDebug() << "Subset invalid.";
-        calculateLonLimits(0, lowLonTrim, highLonTrim, axes, mode);
+        calculateLonLimits(0, lowLonTrim, highLonTrim, axes, consts, mode);
     }
 }
 
 void DataLayer::calculateLatLimits(DimensionSubset *subset,
                         int *lowLatTrim,
                         int *highLatTrim,
-                        QList<CoordinateAxis> *axes,
+                        QList<CoordinateAxis> *axes, QList<Constant> *consts,
                         DataLayer::CutMode mode)
 {
     if(!subset) {
@@ -505,8 +541,8 @@ void DataLayer::calculateLatLimits(DimensionSubset *subset,
         *highLatTrim = d->m_geometry.height();
 
         CoordinateAxis axis(Lat);
-        axis.setLowerLimit(-90.0);
-        axis.setUpperLimit(+90.0);
+        axis.setLowerLimit(MINLAT);
+        axis.setUpperLimit(MAXLAT);
         axis.setValueCount(*highLatTrim - *lowLatTrim);
         axes->append(axis);
         return;
@@ -517,13 +553,16 @@ void DataLayer::calculateLatLimits(DimensionSubset *subset,
         
     if(slice) {
         int slicePoint = std::floor(
-            (slice->slicePoint().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height());
+            (slice->slicePoint().toDouble() + MAXLAT) / DELTALAT * (double) d->m_geometry.height());
         *lowLatTrim = slicePoint;
         *highLatTrim = slicePoint + 1;
+        Constant constant(Lat);
+        constant.setValue((*lowLatTrim + 0.5) * DELTALAT / (double) d->m_geometry.height() + MINLAT);
+        consts->append(constant);
     }
     else if(trim) {
-        double lowLatTrimDouble = (trim->trimLow().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height();
-        double highLatTrimDouble = (trim->trimHigh().toDouble() + 90.0) / 180.0 * (double) d->m_geometry.height();
+        double lowLatTrimDouble = (trim->trimLow().toDouble() + MAXLAT) / DELTALAT * (double) d->m_geometry.height();
+        double highLatTrimDouble = (trim->trimHigh().toDouble() + MAXLAT) / DELTALAT * (double) d->m_geometry.height();
         if(mode == Contains) {
             *lowLatTrim = std::ceil(lowLatTrimDouble);
             *highLatTrim = std::floor(highLatTrimDouble);
@@ -534,34 +573,45 @@ void DataLayer::calculateLatLimits(DimensionSubset *subset,
         }
 
         CoordinateAxis axis(Lat);
-        axis.setLowerLimit(*lowLatTrim * 180.0 / (double) d->m_geometry.height() - 90.0);
-        axis.setUpperLimit(*highLatTrim * 180.0 / (double) d->m_geometry.height() - 90.0);
+        axis.setLowerLimit(*lowLatTrim * DELTALAT / (double) d->m_geometry.height() + MINLAT);
+        axis.setUpperLimit(*highLatTrim * DELTALAT / (double) d->m_geometry.height() + MINLAT);
         axis.setValueCount(*highLatTrim - *lowLatTrim);
         axes->append(axis);
     }
     else {
         qDebug() << "Subset invalid.";
-        calculateLonLimits(0, lowLatTrim, highLatTrim, axes, mode);
+        calculateLonLimits(0, lowLatTrim, highLatTrim, axes, consts, mode);
     }
 }
 
-void DataLayer::calculateHeightLimits(DimensionSubset *subset, int *lowHeightTrim, int *highHeightTrim, QList<CoordinateAxis> *axes, CutMode mode)
+void DataLayer::calculateHeightLimits(DimensionSubset *subset,
+                                      int *lowHeightTrim, int *highHeightTrim,
+                                      QList<CoordinateAxis> *axes, QList<Constant> *consts,
+                                      CutMode mode)
 {
     if(!subset) {
         *lowHeightTrim = 0;
         *highHeightTrim = d->m_geometry.maxLayerCount();
 
-        CoordinateAxis axis(Height);
-        if(d->m_geometry.heightDimension() >= 0) {
-            axis.setLowerLimit(0.0);
-            axis.setUpperLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
+        if(d->m_geometry.maxLayerCount() > 1) {
+            CoordinateAxis axis(Height);
+            if(d->m_geometry.heightDimension() >= 0) {
+                axis.setLowerLimit(0.0);
+                axis.setUpperLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
+            }
+            else {
+                axis.setLowerLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
+                axis.setUpperLimit(0.0);
+            }
+            axis.setValueCount(*highHeightTrim);
+            axes->append(axis);
         }
         else {
-            axis.setLowerLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
-            axis.setUpperLimit(0.0);
+            Constant height(Height);
+            height.setValue(0.0);
+            consts->append(height);
         }
-        axis.setValueCount(*highHeightTrim);
-        axes->append(axis);
+        
         return;
     }
     
@@ -573,6 +623,9 @@ void DataLayer::calculateHeightLimits(DimensionSubset *subset, int *lowHeightTri
             slice->slicePoint().toDouble() / d->m_geometry.heightDimension());
         *lowHeightTrim = slicePoint;
         *highHeightTrim = slicePoint + 1;
+        Constant constant(Height);
+        constant.setValue((*lowHeightTrim + 0.5) * d->m_geometry.heightDimension());
+        consts->append(constant);
     }
     else if(trim) {
         CoordinateAxis axis(Height);
@@ -610,6 +663,6 @@ void DataLayer::calculateHeightLimits(DimensionSubset *subset, int *lowHeightTri
     }
     else {
         qDebug() << "Subset invalid.";
-        calculateHeightLimits(0, lowHeightTrim, highHeightTrim, axes, mode);
+        calculateHeightLimits(0, lowHeightTrim, highHeightTrim, axes, consts, mode);
     }
 }

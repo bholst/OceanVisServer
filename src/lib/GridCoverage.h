@@ -13,6 +13,7 @@
 #include "global.h"
 
 class CoordinateAxis;
+class Constant;
 class ColorMap;
 class QString;
 class QImage;
@@ -27,6 +28,9 @@ public:
 
     void setCoordinateAxes(const QList<CoordinateAxis>& axes);
     QList<CoordinateAxis> coordinateAxes() const;
+    
+    void setConstants(const QList<Constant>& consts);
+    QList<Constant> constants() const;
 
     /**
      * Set the value vector.

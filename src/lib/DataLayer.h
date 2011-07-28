@@ -12,6 +12,7 @@ class GridCoverage;
 class DimensionSubset;
 class MapGeometry;
 class CoordinateAxis;
+class Constant;
 class ColorMap;
 class QString;
 class QFile;
@@ -80,6 +81,12 @@ public:
      * can trim and slice.
      */
     QList<CoordinateAxis> coordinateAxes() const;
+    
+    /**
+     * Returns the constants of this DataLayer which are these axes which are already 
+     * sliced in the data.
+     */
+    QList<Constant> constants() const;
 
     GridCoverage *dataSubset(QList<DimensionSubset*>& subsets, CutMode mode = Contains);
     
@@ -87,10 +94,20 @@ public:
                              QMap<QDateTime,double*>::const_iterator *lowTimeTrim, 
                              QMap<QDateTime,double*>::const_iterator *highTimeTrim,
                              int *dimensionCount,
-                             QList<CoordinateAxis> *axes, CutMode mode);
-    void calculateLonLimits(DimensionSubset *subset, int *lowLonTrim, int *highLonTrim, QList<CoordinateAxis> *axes, CutMode mode);
-    void calculateLatLimits(DimensionSubset *subset, int *lowLatTrim, int *highLatTrim, QList<CoordinateAxis> *axes, CutMode mode);
-    void calculateHeightLimits(DimensionSubset *subset, int *lowHeightTrim, int *highHeightTrim, QList<CoordinateAxis> *axes, CutMode mode);
+                             QList<CoordinateAxis> *axes, QList<Constant> *consts,
+                             CutMode mode);
+    void calculateLonLimits(DimensionSubset *subset,
+                            int *lowLonTrim, int *highLonTrim,
+                            QList<CoordinateAxis> *axes, QList<Constant> *consts,
+                            CutMode mode);
+    void calculateLatLimits(DimensionSubset *subset,
+                            int *lowLatTrim, int *highLatTrim,
+                            QList<CoordinateAxis> *axes, QList<Constant> *consts,
+                            CutMode mode);
+    void calculateHeightLimits(DimensionSubset *subset,
+                               int *lowHeightTrim, int *highHeightTrim,
+                               QList<CoordinateAxis> *axes, QList<Constant> *consts,
+                               CutMode mode);
 
 private:
     Q_DISABLE_COPY(DataLayer);

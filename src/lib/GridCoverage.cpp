@@ -15,6 +15,7 @@
 // Project
 #include "ColorMap.h"
 #include "CoordinateAxis.h"
+#include "Constant.h"
 
 // Self
 #include "GridCoverage.h"
@@ -40,6 +41,7 @@ public:
                                 QString& string) const;
 
     QList<CoordinateAxis> m_axes;
+    QList<Constant> m_consts;
     double *m_values;
     double m_maxValue;
     double m_minValue;
@@ -100,6 +102,16 @@ void GridCoverage::setCoordinateAxes(const QList<CoordinateAxis>& axes)
 QList<CoordinateAxis> GridCoverage::coordinateAxes() const
 {
     return d->m_axes;
+}
+
+void GridCoverage::setConstants(const QList<Constant>& consts)
+{
+    d->m_consts = consts;
+}
+
+QList<Constant> GridCoverage::constants() const
+{
+    return d->m_consts;
 }
 
 void GridCoverage::setValues(double *values)
