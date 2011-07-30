@@ -23,6 +23,8 @@ public:
     ~ResponseWriter();
     
     void write(GridCoverage *gridCoverage);
+
+    void write(BadSlicePosition badSlicePosition);
     
     void writeWrongOvpVersion();
     

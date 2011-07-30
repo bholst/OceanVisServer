@@ -7,6 +7,7 @@ set(OCEANVISSERVER_LIB_SRCS MapGeometry.cpp
                             DimensionSlice.cpp
                             BadDimensionTypeException.cpp
                             BadDimensionString.cpp
+                            BadSlicePosition.cpp
                             CoordinateAxis.cpp
                             Constant.cpp
                             Dimension.cpp

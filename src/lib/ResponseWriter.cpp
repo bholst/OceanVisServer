@@ -42,6 +42,38 @@ void ResponseWriter::write(GridCoverage *gridCoverage)
     writeEndDocument();
 }
 
+void ResponseWriter::write(BadSlicePosition badSlicePosition)
+{
+    setAutoFormatting(true);
+    writeStartDocument();
+    
+    writeStartElement("BadSlicePosition");
+    
+    writeStartElement("description");
+    writeCharacters(badSlicePosition.what());
+    writeEndElement();
+    
+    writeStartElement("dimension");
+    writeCharacters(dimensionToString(badSlicePosition.dimension()));
+    writeEndElement();
+    
+    writeStartElement("givenValue");
+    writeCharacters(variantToString(badSlicePosition.dimension(), badSlicePosition.givenValue()));
+    writeEndElement();
+    
+    writeStartElement("lowerLimit");
+    writeCharacters(variantToString(badSlicePosition.dimension(), badSlicePosition.lowerLimit()));
+    writeEndElement();
+    
+    writeStartElement("upperLimit");
+    writeCharacters(variantToString(badSlicePosition.dimension(), badSlicePosition.upperLimit()));
+    writeEndElement();
+    
+    writeEndElement();
+    
+    writeEndDocument();
+}
+
 void ResponseWriter::writeWrongOvpVersion()
 {
     setAutoFormatting(true);

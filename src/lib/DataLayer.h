@@ -8,6 +8,9 @@
 // Qt
 #include <QtCore/QList>
 
+// Project
+#include "BadSlicePosition.h"
+
 class GridCoverage;
 class DimensionSubset;
 class MapGeometry;
@@ -88,7 +91,7 @@ public:
      */
     QList<Constant> constants() const;
 
-    GridCoverage *dataSubset(QList<DimensionSubset*>& subsets, CutMode mode = Contains);
+    GridCoverage *dataSubset(QList<DimensionSubset*>& subsets, CutMode mode = Contains) throw (BadSlicePosition);
     
     void calculateTimeLimits(DimensionSubset *subset,
                              QMap<QDateTime,double*>::const_iterator *lowTimeTrim, 
@@ -99,15 +102,15 @@ public:
     void calculateLonLimits(DimensionSubset *subset,
                             int *lowLonTrim, int *highLonTrim,
                             QList<CoordinateAxis> *axes, QList<Constant> *consts,
-                            CutMode mode);
+                            CutMode mode) throw (BadSlicePosition);
     void calculateLatLimits(DimensionSubset *subset,
                             int *lowLatTrim, int *highLatTrim,
                             QList<CoordinateAxis> *axes, QList<Constant> *consts,
-                            CutMode mode);
+                            CutMode mode) throw (BadSlicePosition);
     void calculateHeightLimits(DimensionSubset *subset,
                                int *lowHeightTrim, int *highHeightTrim,
                                QList<CoordinateAxis> *axes, QList<Constant> *consts,
-                               CutMode mode);
+                               CutMode mode) throw (BadSlicePosition);
 
 private:
     Q_DISABLE_COPY(DataLayer);

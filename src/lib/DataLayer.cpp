@@ -285,7 +285,7 @@ QList<Constant> DataLayer::constants() const
 }
 
 GridCoverage *DataLayer::dataSubset(QList<DimensionSubset*>& subsets,
-                                    DataLayer::CutMode mode)
+                                    DataLayer::CutMode mode) throw (BadSlicePosition)
 {
     if(d->m_dataVectors.empty()) {
         return 0;
@@ -483,7 +483,7 @@ void DataLayer::calculateLonLimits(DimensionSubset *subset,
                                    int *lowLonTrim, 
                                    int *highLonTrim, 
                                    QList<CoordinateAxis> *axes, QList<Constant> *consts,
-                                   DataLayer::CutMode mode)
+                                   DataLayer::CutMode mode) throw (BadSlicePosition)
 {
     if(!subset) {
         *lowLonTrim = 0;
@@ -504,6 +504,13 @@ void DataLayer::calculateLonLimits(DimensionSubset *subset,
             (slice->slicePoint().toDouble() + MAXLON) / DELTALON * (double) d->m_geometry.width());
         *lowLonTrim = slicePoint;
         *highLonTrim = slicePoint + 1;
+        if(*lowLonTrim < 0 || *lowLonTrim >= d->m_geometry.width()) {
+            BadSlicePosition e(Lon);
+            e.setGivenValue(slice->slicePoint());
+            e.setLowerLimit(MINLON);
+            e.setUpperLimit(MAXLON);
+            throw e;
+        }
         Constant constant(Lon);
         constant.setValue((*lowLonTrim + 0.5) * DELTALON / (double) d->m_geometry.width() + MINLON);
         consts->append(constant);
@@ -536,7 +543,7 @@ void DataLayer::calculateLatLimits(DimensionSubset *subset,
                         int *lowLatTrim,
                         int *highLatTrim,
                         QList<CoordinateAxis> *axes, QList<Constant> *consts,
-                        DataLayer::CutMode mode)
+                        DataLayer::CutMode mode) throw (BadSlicePosition)
 {
     if(!subset) {
         *lowLatTrim = 0;
@@ -558,6 +565,14 @@ void DataLayer::calculateLatLimits(DimensionSubset *subset,
             (slice->slicePoint().toDouble() + MAXLAT) / DELTALAT * (double) d->m_geometry.height());
         *lowLatTrim = slicePoint;
         *highLatTrim = slicePoint + 1;
+        
+        if(*lowLatTrim < 0 || *lowLatTrim >= d->m_geometry.height()) {
+            BadSlicePosition e(Lat);
+            e.setGivenValue(slice->slicePoint());
+            e.setLowerLimit(MINLAT);
+            e.setUpperLimit(MAXLAT);
+            throw e;
+        }
         Constant constant(Lat);
         constant.setValue((*lowLatTrim + 0.5) * DELTALAT / (double) d->m_geometry.height() + MINLAT);
         consts->append(constant);
@@ -589,7 +604,7 @@ void DataLayer::calculateLatLimits(DimensionSubset *subset,
 void DataLayer::calculateHeightLimits(DimensionSubset *subset,
                                       int *lowHeightTrim, int *highHeightTrim,
                                       QList<CoordinateAxis> *axes, QList<Constant> *consts,
-                                      CutMode mode)
+                                      CutMode mode) throw (BadSlicePosition)
 {
     if(!subset) {
         *lowHeightTrim = 0;
@@ -625,6 +640,20 @@ void DataLayer::calculateHeightLimits(DimensionSubset *subset,
             slice->slicePoint().toDouble() / d->m_geometry.heightDimension());
         *lowHeightTrim = slicePoint;
         *highHeightTrim = slicePoint + 1;
+        
+        if(*lowHeightTrim < 0 || *lowHeightTrim >= d->m_geometry.maxLayerCount()) {
+            BadSlicePosition e(Height);
+            e.setGivenValue(slice->slicePoint());
+            if(d->m_geometry.heightDimension() >= 0) {
+                e.setLowerLimit(0.0);
+                e.setUpperLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
+            }
+            else {
+                e.setLowerLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
+                e.setUpperLimit(0.0);
+            }
+            throw e;
+        }
         Constant constant(Height);
         constant.setValue((*lowHeightTrim + 0.5) * d->m_geometry.heightDimension());
         consts->append(constant);

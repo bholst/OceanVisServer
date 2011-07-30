@@ -201,8 +201,24 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
     
     QList<DimensionSubset *> dimensionSubsets = getCoverage->dimensionSubsets();
     qDebug() << "Number of subset things:" << dimensionSubsets.length();
-    GridCoverage *matrix = selectedLayer->dataSubset(dimensionSubsets, getCoverage->cutMode());
+    GridCoverage *matrix = 0;
+    try {
+        matrix = selectedLayer->dataSubset(dimensionSubsets, getCoverage->cutMode());
+    } catch (BadSlicePosition e) {
+        QTextStream os(socket);
+        os.setAutoDetectUnicode(true);
+        os << "HTTP/1.0 200 Ok\r\n";
+        os << "Content-Type: text/xml; charset=\"utf-8\"\r\n"
+        "\r\n";
+        os.flush();
+        
+        ResponseWriter writer;
+        writer.setDevice(socket);
+        writer.write(e);
+    }
+    
     if(!matrix) {
+        socket->close();
         return;
     }
     
