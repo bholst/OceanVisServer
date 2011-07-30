@@ -74,7 +74,9 @@ inline double DataLayerPrivate::value(double *dataVector, int lon, int lat, int 
     }
     int layerCount = m_geometry.layerCount(lon, lat);
     assert(layerCount >= 0);
-    if(layerCount > height) {
+    if(height < layerCount
+       && height >= 0)
+    {
         return dataVector[m_geometry.start(lon, lat) + height];
     }
     else {
