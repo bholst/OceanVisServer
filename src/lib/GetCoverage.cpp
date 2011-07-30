@@ -13,10 +13,17 @@
 #include "DimensionSlice.h"
 #include "DimensionTrim.h"
 
-GetCoverage::GetCoverage()
-    : RequestBase(RequestBase::WCS),
-      m_format("text/xml")
+GetCoverage::GetCoverage(RequestBase::RequestType type)
+    : RequestBase(type),
+      m_cutMode(DataLayer::Contains)
 {
+    if(type == RequestBase::OVP) {
+        m_format = "image/png";
+    }
+    else {
+        m_format = "text/xml";
+    }
+        
 }
 
 GetCoverage::~GetCoverage()
@@ -64,6 +71,16 @@ QString GetCoverage::format() const
     return m_format;
 }
 
+void GetCoverage::setCutMode(DataLayer::CutMode mode)
+{
+    m_cutMode = mode;
+}
+
+DataLayer::CutMode GetCoverage::cutMode() const
+{
+    return m_cutMode;
+}
+
 void GetCoverage::setSize(Dimension dimension, int size)
 {
     m_sizes.insert(dimension, size);
@@ -79,10 +96,10 @@ QMap<Dimension, int> GetCoverage::sizes() const
     return m_sizes;
 }
 
-GetCoverage *GetCoverage::fromRequestString(QString request)
+GetCoverage *GetCoverage::fromRequestString(QString request, RequestBase::RequestType type)
 {
     QStringList args = request.split('&');
-    GetCoverage *getCoverage = new GetCoverage();
+    GetCoverage *getCoverage = new GetCoverage(type);
     
     foreach(QString arg, args) {
         QStringList argParts = arg.split('=');
@@ -98,7 +115,22 @@ GetCoverage *GetCoverage::fromRequestString(QString request)
             getCoverage->setCoverageId(argParts[1]);
         }
         else if(argParts[0] == "FORMAT") {
-            getCoverage->setFormat(argParts[1]);
+            if(type == RequestBase::OVP
+               && !argParts[1].startsWith("image/"))
+            {
+                qDebug() << "OVP requests only support image formats, defaulting to" << getCoverage->format();
+            }
+            else {
+                getCoverage->setFormat(argParts[1]);
+            }
+        }
+        else if(argParts[0] == "CUTMODE") {
+            if(QString::compare(argParts[1], "contains", Qt::CaseInsensitive) == 0) {
+                getCoverage->setCutMode(DataLayer::Contains);
+            }
+            else if(QString::compare(argParts[1], "overlaps", Qt::CaseInsensitive) == 0) {
+                getCoverage->setCutMode(DataLayer::Overlaps);
+            }
         }
         else if(argParts[0] == "SIZE") {
             QRegExp sizeExp("([a-zA-Z]+)\\(([0-9]+)\\)");
@@ -119,13 +151,13 @@ GetCoverage *GetCoverage::fromRequestString(QString request)
         {
             qDebug() << "Parsing subset.";
             QString arg = argParts[1];
-            QRegExp trimExp("([a-zA-Z]{1,}),http://www.opengis.net/def/crs/EPSG/0/4326\\(([-+]?[0-9]{0,}\\.?[0-9]{0,}),([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
+            QRegExp trimExp("([a-zA-Z]{1,})(|,http://www.opengis.net/def/crs/EPSG/0/4326)\\(([-+]?[0-9]{0,}\\.?[0-9]{0,}),([-+]?[0-9]{0,}\\.?[0-9]*)\\)");
             trimExp.indexIn(arg);
             if(trimExp.pos() > -1) {
                 qDebug() << "Found trim.";
                 QString axis = trimExp.cap(1);
-                QString min = trimExp.cap(2);
-                QString max = trimExp.cap(3);
+                QString min = trimExp.cap(3);
+                QString max = trimExp.cap(4);
                 
                 qDebug() << "Axis:" << axis;
                 qDebug() << "Min:" << min;
@@ -150,12 +182,12 @@ GetCoverage *GetCoverage::fromRequestString(QString request)
                 }
             }
             else {
-                QRegExp sliceExp("([a-zA-Z]{1,}),http://www.opengis.net/def/crs/EPSG/0/4326\\((\\S{1,})\\)");
+                QRegExp sliceExp("([a-zA-Z]{1,})(|,http://www.opengis.net/def/crs/EPSG/0/4326)\\((\\S{1,})\\)");
                 sliceExp.indexIn(arg);
                 if(sliceExp.pos() > -1) {
                     qDebug() << "Fount slice";
                     QString axis = sliceExp.cap(1);
-                    QString slicePointString = sliceExp.cap(2);
+                    QString slicePointString = sliceExp.cap(3);
                     
                     qDebug() << "Axis:" << axis;
                     qDebug() << "Slice point:" << slicePointString;

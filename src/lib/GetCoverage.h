@@ -14,11 +14,12 @@
 #include "global.h"
 #include "RequestBase.h"
 #include "DimensionSubset.h"
+#include "DataLayer.h"
 
 class GetCoverage : public RequestBase
 {
 public:
-    GetCoverage();
+    GetCoverage(RequestBase::RequestType type = RequestBase::OVP);
     virtual ~GetCoverage();
     
     virtual QString request() const;
@@ -55,6 +56,17 @@ public:
     QString format() const;
     
     /**
+     * Set the cut mode.
+     * Default: Contains
+     */
+    void setCutMode(DataLayer::CutMode mode);
+    
+    /**
+     * Return the cut mode.
+     */
+    DataLayer::CutMode cutMode() const;
+    
+    /**
      * Set the size of the resulting image.
      * Has no effect if the format is text/xml.
      */
@@ -64,12 +76,13 @@ public:
     
     QMap<Dimension, int> sizes() const;
     
-    static GetCoverage *fromRequestString(QString request);
+    static GetCoverage *fromRequestString(QString request, RequestBase::RequestType type = RequestBase::OVP);
     
 private:
     QList<DimensionSubset*> m_dimensionSubsets;
     QString m_coverageId;
     QString m_format;
+    DataLayer::CutMode m_cutMode;
     QMap<Dimension, int> m_sizes;
 };
 

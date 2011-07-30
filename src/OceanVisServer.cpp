@@ -112,7 +112,12 @@ void OceanVisServer::readClient()
             if(QString::compare(serviceType.cap(1), "wcs", Qt::CaseInsensitive) == 0
                && QString::compare(requestType.cap(1), "GetCoverage", Qt::CaseInsensitive) == 0)
             {
-                request = GetCoverage::fromRequestString(urlSplit.at(1));
+                request = GetCoverage::fromRequestString(urlSplit.at(1), RequestBase::WCS);
+            }
+            else if(QString::compare(serviceType.cap(1), "ovp", Qt::CaseInsensitive) == 0
+                    && QString::compare(requestType.cap(1), "GetCoverage", Qt::CaseInsensitive) == 0)
+            {
+                request = GetCoverage::fromRequestString(urlSplit.at(1), RequestBase::OVP);
             }
             else if(QString::compare(serviceType.cap(1), "wms", Qt::CaseInsensitive) == 0
                && QString::compare(requestType.cap(1), "GetMap", Qt::CaseInsensitive) == 0)
@@ -169,9 +174,17 @@ void OceanVisServer::handleRequest(QTcpSocket *socket, RequestBase *request)
 
 void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCoverage)
 {
-    if(getCoverage->version() != "2.0.0") {
+    if(getCoverage->requestType() == RequestBase::WCS
+       && getCoverage->version() != "2.0.0")
+    {
         // TODO: This is the wrong behavior.
         qDebug() << "WCS: Wrong version.";
+        return;
+    }
+    if(getCoverage->requestType() == RequestBase::OVP
+       && getCoverage->version() != "1.0.0")
+    {
+        wrongOvpVersion(socket);
         return;
     }
 
@@ -188,7 +201,7 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
     
     QList<DimensionSubset *> dimensionSubsets = getCoverage->dimensionSubsets();
     qDebug() << "Number of subset things:" << dimensionSubsets.length();
-    GridCoverage *matrix = selectedLayer->dataSubset(dimensionSubsets);
+    GridCoverage *matrix = selectedLayer->dataSubset(dimensionSubsets, getCoverage->cutMode());
     if(!matrix) {
         return;
     }
