@@ -333,6 +333,12 @@ void OceanVisServer::handleDescribeCoverages(QTcpSocket *socket, DescribeCoverag
 
 void OceanVisServer::wrongOvpVersion(QTcpSocket *socket)
 {
+    QTextStream os(socket);
+    os.setAutoDetectUnicode(true);
+    os << "HTTP/1.0 200 Ok\r\n";
+    os << "Content-Type: text/xml; charset=\"utf-8\"\r\n"
+          "\r\n";
+    os.flush();
     ResponseWriter writer;
     writer.setDevice(socket);
     writer.writeWrongOvpVersion();
