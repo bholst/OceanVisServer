@@ -1,3 +1,8 @@
+include_directories(${QT_INCLUDES}
+                    ${CMAKE_CURRENT_BINARY_DIR}
+                    ${CMAKE_CURRENT_BINARY_DIR}/../lib
+                    ${CMAKE_CURRENT_SOURCE_DIR}/../lib)
+
 oceanvis_add_test(TestMapGeometry)
 oceanvis_add_test(TestMapGeometryParser)
 oceanvis_add_test(TestDataLayer)
