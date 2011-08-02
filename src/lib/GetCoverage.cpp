@@ -12,6 +12,7 @@
 #include "GetCoverage.h"
 #include "DimensionSlice.h"
 #include "DimensionTrim.h"
+#include "ParseTime.h"
 
 GetCoverage::GetCoverage(RequestBase::RequestType type)
     : RequestBase(type),
@@ -168,8 +169,8 @@ GetCoverage *GetCoverage::fromRequestString(QString request, RequestBase::Reques
                     DimensionTrim *trim = new DimensionTrim(axis);
                     
                     if(trim->dimension() == Time) {
-                        trim->setTrimLow(RequestParser::parseTime(min));
-                        trim->setTrimHigh(RequestParser::parseTime(max));
+                        trim->setTrimLow(parseTime(min));
+                        trim->setTrimHigh(parseTime(max));
                     }
                     else {
                         trim->setTrimLow(min.toDouble());
@@ -197,7 +198,7 @@ GetCoverage *GetCoverage::fromRequestString(QString request, RequestBase::Reques
                         DimensionSlice *slice = new DimensionSlice(axis);
                         
                         if(slice->dimension() == Time) {
-                            slice->setSlicePoint(QVariant(RequestParser::parseTime(slicePointString)));
+                            slice->setSlicePoint(QVariant(parseTime(slicePointString)));
                         }
                         else {
                             slice->setSlicePoint(slicePointString.toDouble());

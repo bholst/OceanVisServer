@@ -23,8 +23,6 @@ public:
     
     RequestBase *request() const;
     
-    static QDateTime parseTime(QString time);
-    
 private:
     void readGetCoverage();
     DimensionTrim *readDimensionTrim();

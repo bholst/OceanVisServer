@@ -5,7 +5,7 @@
 // Project
 #include "DimensionTrim.h"
 #include "DimensionSlice.h"
-#include "RequestParser.h"
+#include "ParseTime.h"
 
 // Self
 #include "GetMap.h"
@@ -244,7 +244,7 @@ GetMap *GetMap::fromRequestString(QString request)
             return 0;
         }
         else if(field == "time") {
-            time = RequestParser::parseTime(value);
+            time = parseTime(value);
         }
         else if(field == "elevation") {
             elevation = value.toInt();

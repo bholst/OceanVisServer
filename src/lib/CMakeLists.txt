@@ -10,6 +10,9 @@ set(OCEANVISSERVER_LIB_SRCS MapGeometry.cpp
                             BadSlicePosition.cpp
                             CoordinateAxis.cpp
                             Constant.cpp
+                            Coverage.cpp
+                            CoveragesParser.cpp
+                            ParseTime.cpp
                             Dimension.cpp
                             GridCoverage.cpp
                             ConfigurationParser.cpp

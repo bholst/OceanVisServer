@@ -13,6 +13,7 @@
 #include "RequestBase.h"
 #include "GetCoverage.h"
 #include "global.h"
+#include "ParseTime.h"
 
 // Self
 #include "RequestParser.h"
@@ -188,7 +189,7 @@ DimensionSlice *RequestParser::readDimensionSlice()
         DimensionSlice *slice = new DimensionSlice(dimension);
         
         if(slice->dimension() == Time) {
-            slice->setSlicePoint(RequestParser::parseTime(slicePointString));
+            slice->setSlicePoint(parseTime(slicePointString));
         }
         else {
             slice->setSlicePoint(slicePointString.toDouble());
@@ -236,21 +237,4 @@ QString RequestParser::readCharacters()
     }
 
     return string;
-}
-
-QDateTime RequestParser::parseTime(QString timeString)
-{
-    QDateTime time;
-    bool success = false;
-    uint seconds = timeString.toUInt(&success);
-    if(success) {
-        qDebug() << "Found seconds.";
-        time.setTime_t(seconds);
-    }
-    else {
-        qDebug() << "ISO time.";
-        time = QDateTime::fromString(timeString, Qt::ISODate);
-    }
-    
-    return time;
 }
