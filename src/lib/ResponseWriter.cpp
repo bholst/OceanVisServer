@@ -14,6 +14,7 @@
 #include "CoordinateAxis.h"
 #include "Constant.h"
 #include "DataLayer.h"
+#include "Dimension.h"
 
 // Self
 #include "ResponseWriter.h"
@@ -304,33 +305,4 @@ void ResponseWriter::writeTupleList(GridCoverage *gridCoverage)
     writeCharacters(gridCoverage->toString());
     writeEndElement();
 }
-
-QString ResponseWriter::variantToString(Dimension dimension, const QVariant& variant)
-{
-    if(dimension == Time) {
-        return variant.toDateTime().toString(Qt::ISODate);
-    }
-    else if(dimension == Lon
-            || dimension == Lat
-            || dimension == Height)
-    {
-        QString result;
-        return result.setNum(variant.toDouble());
-    }
-}
-
-QString ResponseWriter::dimensionToString(Dimension dimension)
-{
-    switch(dimension) {
-        case Time:
-            return QString("Time");
-        case Lon:
-            return QString("Lon");
-        case Lat:
-            return QString("Lat");
-        case Height:
-            return QString("Height");
-    }
-}
-
 

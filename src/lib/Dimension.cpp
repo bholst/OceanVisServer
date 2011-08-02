@@ -2,6 +2,10 @@
 // Copyright 2011      Bastian Holst <bastianholst@gmx.de>
 //
 
+// Qt
+#include <QtCore/QDateTime>
+
+// Self
 #include "Dimension.h"
 
 void checkDimensionType(Dimension dimension, const QVariant& value) throw (BadDimensionTypeException)
@@ -52,4 +56,33 @@ Dimension dimensionFromString(QString dimension) throw (BadDimensionString)
     
     return dim;
 }
+
+QString dimensionToString(Dimension dimension)
+{
+    switch(dimension) {
+        case Time:
+            return QString("Time");
+        case Lon:
+            return QString("Lon");
+        case Lat:
+            return QString("Lat");
+        case Height:
+            return QString("Height");
+    }
+}
+
+QString variantToString(Dimension dimension, const QVariant& variant)
+{
+    if(dimension == Time) {
+        return variant.toDateTime().toString(Qt::ISODate);
+    }
+    else if(dimension == Lon
+            || dimension == Lat
+            || dimension == Height)
+    {
+        QString result;
+        return result.setNum(variant.toDouble());
+    }
+}
+
 

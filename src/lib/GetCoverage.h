@@ -78,6 +78,8 @@ public:
     
     static GetCoverage *fromRequestString(QString request, RequestBase::RequestType type = RequestBase::OVP);
     
+    QString toRequestString(const QString& url) const;
+    
 private:
     QList<DimensionSubset*> m_dimensionSubsets;
     QString m_coverageId;

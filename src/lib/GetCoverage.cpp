@@ -43,6 +43,7 @@ QList<DimensionSubset*> GetCoverage::dimensionSubsets() const
 
 void GetCoverage::setDimensionSubsets(const QList<DimensionSubset*> &dimensionSubsets)
 {
+    qDeleteAll(m_dimensionSubsets);
     m_dimensionSubsets = dimensionSubsets;
 }
 
@@ -213,5 +214,68 @@ GetCoverage *GetCoverage::fromRequestString(QString request, RequestBase::Reques
     }
     
     return getCoverage;
+}
+
+QString GetCoverage::toRequestString(const QString& url) const
+{
+    QString request = "?SERVICE=%1"
+                      "&REQUEST=GetCoverage"
+                      "&VERSION=%2"
+                      "&COVERAGEID=%3"
+                      "&FORMAT=%4"
+                      "%5" // SIZES
+                      "%6" // SUBSETS
+                      "&CUTMODE=%7";
+    
+    QString service;
+    if(requestType() == RequestBase::OVP) {
+        service = "ovp";
+    }
+    else if(requestType() == RequestBase::WCS) {
+        service = "wcs";
+    }
+    request = request.arg(service);
+    
+    request = request.arg(version());
+    request = request.arg(coverageId());
+    request = request.arg(format());
+    
+    QString sizes;
+    for(QMap<Dimension, int>::const_iterator it = m_sizes.constBegin();
+        it != m_sizes.constEnd();
+        ++it)
+    {
+        QString size("&SIZE=%1(%2)");
+        sizes += size.arg(dimensionToString(it.key())).arg(it.value());
+    }
+    request = request.arg(sizes);
+    
+    QString subsets;
+    foreach(DimensionSubset *subset, dimensionSubsets()) {
+        DimensionTrim *trim = dynamic_cast<DimensionTrim *>(subset);
+        DimensionSlice *slice = dynamic_cast<DimensionSlice *>(subset);
+        
+        if(trim) {
+            QString trimStr = "&SUBSET=%1(%2,%3)";
+            subsets += trimStr.arg(dimensionToString(trim->dimension()).toLower())
+                              .arg(variantToString(trim->dimension(), trim->trimLow()))
+                              .arg(variantToString(trim->dimension(), trim->trimHigh()));
+        }
+        else if(slice) {
+            QString sliceStr = "&SUBSET=%1(%2)";
+            subsets += sliceStr.arg(dimensionToString(slice->dimension()).toLower())
+                               .arg(variantToString(slice->dimension(), slice->slicePoint()));
+        }
+    }
+    request = request.arg(subsets);
+    
+    if(cutMode() == DataLayer::Contains) {
+        request = request.arg("contains");
+    }
+    else {
+        request = request.arg("overlaps");
+    }
+    
+    return url + request;
 }
 

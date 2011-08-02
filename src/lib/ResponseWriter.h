@@ -48,9 +48,6 @@ private:
     void writeRangeSet(GridCoverage *gridCoverage);
     void writeDataBlock(GridCoverage *gridCoverage);
     void writeTupleList(GridCoverage *gridCoverage);
-    
-    QString variantToString(Dimension dimension, const QVariant& variant);
-    QString dimensionToString(Dimension dimension);
 };
 
 #endif

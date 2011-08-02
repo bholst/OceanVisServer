@@ -5,6 +5,7 @@ include_directories(${QT_INCLUDES}
 
 set(OCEANVISCLIENT_SRCS ColorMapWidget.cpp
                         MainWindow.cpp
+                        MapWidget.cpp
                         main.cpp)
 qt4_automoc(${OCEANVISCLIENT_SRCS})
 add_executable(OceanVisClient ${OCEANVISCLIENT_SRCS})
