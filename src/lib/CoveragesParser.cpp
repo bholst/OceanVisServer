@@ -131,7 +131,12 @@ Constant CoveragesParser::readConstant()
     }
     
     Constant constant(dimension);
-    constant.setValue(value);
+    try {
+        constant.setValue(value);
+    }
+    catch (BadDimensionTypeException e) {
+        qDebug() << "ERROR, BadDimensionTypeException:" << e.what();
+    }
     return constant;
 }
 
@@ -164,10 +169,10 @@ CoordinateAxis CoveragesParser::readCoordinateAxis()
             }
             else if(name() == "UpperLimit") {
                 if(dimension == Time) {
-                    lowerLimit = parseTime(readCharacters());
+                    upperLimit = parseTime(readCharacters());
                 }
                 else {
-                    lowerLimit = readCharacters().toDouble();
+                    upperLimit = readCharacters().toDouble();
                 }
             }
             else {
@@ -177,8 +182,19 @@ CoordinateAxis CoveragesParser::readCoordinateAxis()
     }
     
     CoordinateAxis axis(dimension);
-    axis.setLowerLimit(lowerLimit);
-    axis.setUpperLimit(upperLimit);
+    try {
+        axis.setLowerLimit(lowerLimit);
+    }
+    catch (BadDimensionTypeException e) {
+        qDebug() << "ERROR, BadDimensionTypeException:" << e.what();
+    }
+    
+    try {
+        axis.setUpperLimit(upperLimit);
+    }
+    catch (BadDimensionTypeException e) {
+        qDebug() << "ERROR, BadDimensionTypeException:" << e.what();
+    }
     return axis;
 }
 
@@ -218,4 +234,9 @@ QString CoveragesParser::readCharacters()
     }
 
     return string;
+}
+
+QList<Coverage> CoveragesParser::coverages() const
+{
+    return m_coverages;
 }

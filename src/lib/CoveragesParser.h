@@ -9,9 +9,10 @@
 #include <QtCore/QXmlStreamReader>
 #include <QtCore/QList>
 
-class Coverage;
-class CoordinateAxis;
-class Constant;
+// Project
+#include "Constant.h"
+#include "CoordinateAxis.h"
+#include "Coverage.h"
 
 class CoveragesParser : public QXmlStreamReader
 {

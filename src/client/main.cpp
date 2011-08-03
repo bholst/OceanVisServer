@@ -19,7 +19,6 @@ int main(int argc, char** argv)
     app.setApplicationName("Ocean Visualization");
     
     MainWindow window;
-    window.setCoverageId("DOP");
     window.setUrl("http://127.0.0.1:8080/ovp");
     window.show();
     

@@ -8,8 +8,9 @@
 #include <QtCore/QString>
 #include <QtCore/QList>
 
-class Constant;
-class CoordinateAxis;
+// Project
+#include "Constant.h"
+#include "CoordinateAxis.h"
 
 class Coverage {
 public:

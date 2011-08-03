@@ -36,16 +36,22 @@ void checkDimensionType(Dimension dimension, const QVariant& value) throw (BadDi
 Dimension dimensionFromString(QString dimension) throw (BadDimensionString)
 {
     Dimension dim;
-    if(dimension == "time") {
+    if(QString::compare(dimension, "time", Qt::CaseInsensitive) == 0) {
         dim = Time;
     }
-    else if(dimension == "x" || dimension == "lon") {
+    else if(QString::compare(dimension, "x", Qt::CaseInsensitive) == 0
+            || QString::compare(dimension, "lon", Qt::CaseInsensitive) == 0)
+    {
         dim = Lon;
     }
-    else if(dimension == "y" || dimension == "lat") {
+    else if(QString::compare(dimension, "y", Qt::CaseInsensitive)
+            || QString::compare(dimension, "lat", Qt::CaseInsensitive))
+    {
         dim = Lat;
     }
-    else if(dimension == "height" || dimension == "z") {
+    else if(QString::compare(dimension, "height", Qt::CaseInsensitive)
+            || QString::compare(dimension, "z", Qt::CaseInsensitive) )
+    {
         dim = Height;
     }
     else {

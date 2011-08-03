@@ -7,11 +7,18 @@
 
 // Qt
 #include <QtCore/QDateTime>
+#include <QtCore/QList>
 #include <QtGui/QMainWindow>
 
+// Project
+#include "CoverageComboBox.h"
+
+class QNetworkAccessManager;
+class QNetworkReply;
 class GetCoverage;
 class QDateTime;
 class MapWidget;
+class Coverage;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -40,6 +47,7 @@ signals:
     void viewModeChanged(ViewMode viewMode);
     void urlChanged(const QString& url);
     void requestStringChanged(const QString&);
+    void coveragesChanged(const QList<Coverage>& coverages);
     
 public slots:
     void setCoverageId(const QString& coverageId);
@@ -55,6 +63,7 @@ protected:
     
 private slots:
     void updateRequestString();
+    void parseCoverages(QNetworkReply *reply);
 
 private:
     void updateRequestSubsets();
@@ -67,6 +76,7 @@ private:
     void writeSettings();
     
     MapWidget *m_mapWidget;
+    CoverageComboBox *m_coverageComboBox;
     
     GetCoverage *m_request;
     QDateTime m_time;
@@ -75,6 +85,8 @@ private:
     qreal m_height;
     ViewMode m_viewMode;
     QString m_url;
+    QNetworkAccessManager *m_manager;
+    QList<Coverage> m_coverages;
 };
 
 #endif
