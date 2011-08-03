@@ -18,6 +18,7 @@
 #include "MapWidget.h"
 #include "CoveragesParser.h"
 #include "Coverage.h"
+#include "DimensionSliders.h"
 
 // Self
 #include "MainWindow.h"
@@ -49,6 +50,12 @@ MainWindow::MainWindow()
             m_coverageComboBox, SLOT(setCoverages(const QList<Coverage>&)));
     addDockWidget(Qt::TopDockWidgetArea, coverageDockWidget);
     
+    QDockWidget *dimensionDockWidget = new QDockWidget(this);
+    m_dimensionSliders = new DimensionSliders(dimensionDockWidget);
+    dimensionDockWidget->setWidget(m_dimensionSliders);
+    addDockWidget(Qt::LeftDockWidgetArea, dimensionDockWidget);
+    m_dimensionSliders->setMainWindow(this);
+    
     createActions();
     createMenus();
     createToolBars();
@@ -74,6 +81,37 @@ const GetCoverage *MainWindow::request() const
     return m_request;
 }
 
+QList<Coverage> MainWindow::coverages() const
+{
+    return m_coverages;
+}
+
+QString MainWindow::coverageId() const
+{
+    return m_request->coverageId();
+}
+
+QDateTime MainWindow::time() const
+{
+    return m_time;
+}
+
+qreal MainWindow::lon() const
+{
+    return m_lon;
+}
+
+qreal MainWindow::lat() const
+{
+    return m_lat;
+}
+
+qreal MainWindow::height() const
+{
+    return m_height;
+}
+
+
 void MainWindow::setCoverageId(const QString& coverageId)
 {
     m_request->setCoverageId(coverageId);
@@ -84,6 +122,9 @@ void MainWindow::setCoverageId(const QString& coverageId)
 
 void MainWindow::setTime(const QDateTime& time)
 {
+    if(time == m_time)
+        return;
+    
     m_time = time;
     
     updateRequestSubsets();
@@ -92,6 +133,9 @@ void MainWindow::setTime(const QDateTime& time)
 
 void MainWindow::setLon(qreal lon)
 {
+    if(lon == m_lon)
+        return;
+
     m_lon = lon;
     
     updateRequestSubsets();
@@ -100,6 +144,9 @@ void MainWindow::setLon(qreal lon)
 
 void MainWindow::setLat(qreal lat)
 {
+    if(lat == m_lat)
+        return;
+
     m_lat = lat;
     
     updateRequestSubsets();
@@ -108,6 +155,9 @@ void MainWindow::setLat(qreal lat)
 
 void MainWindow::setHeight(qreal height)
 {
+    if(height == m_height)
+        return;
+
     m_height = height;
     
     updateRequestSubsets();

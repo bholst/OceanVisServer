@@ -6,6 +6,7 @@ include_directories(${QT_INCLUDES}
 set(OCEANVISCLIENT_UI DimensionSliders.ui)
 set(OCEANVISCLIENT_SRCS ColorMapWidget.cpp
                         CoverageComboBox.cpp
+                        DimensionSliders.cpp
                         MainWindow.cpp
                         MapWidget.cpp
                         main.cpp)

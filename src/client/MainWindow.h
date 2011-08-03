@@ -19,6 +19,7 @@ class GetCoverage;
 class QDateTime;
 class MapWidget;
 class Coverage;
+class DimensionSliders;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -37,6 +38,14 @@ public:
         LatHeight
     };
     
+    QList<Coverage> coverages() const;
+    
+    QString coverageId() const;
+    QDateTime time() const;
+    qreal lon() const;
+    qreal lat() const;
+    qreal height() const;
+    
 signals:
     void requestChanged();
     void coverageIdChanged(const QString& coverageId);
@@ -44,7 +53,7 @@ signals:
     void lonChanged(qreal lon);
     void latChanged(qreal lat);
     void heightChanged(qreal height);
-    void viewModeChanged(ViewMode viewMode);
+    void viewModeChanged(MainWindow::ViewMode viewMode);
     void urlChanged(const QString& url);
     void requestStringChanged(const QString&);
     void coveragesChanged(const QList<Coverage>& coverages);
@@ -77,6 +86,7 @@ private:
     
     MapWidget *m_mapWidget;
     CoverageComboBox *m_coverageComboBox;
+    DimensionSliders *m_dimensionSliders;
     
     GetCoverage *m_request;
     QDateTime m_time;

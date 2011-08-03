@@ -175,6 +175,9 @@ CoordinateAxis CoveragesParser::readCoordinateAxis()
                     upperLimit = readCharacters().toDouble();
                 }
             }
+            else if(name() == "ValueCount") {
+                valueCount = readCharacters().toInt();
+            }
             else {
                 readUnknownElement();
             }
