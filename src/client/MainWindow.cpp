@@ -61,6 +61,8 @@ MainWindow::MainWindow()
     connect(m_manager, SIGNAL(finished(QNetworkReply *)),
             this, SLOT(parseCoverages(QNetworkReply *)));
             
+    setMinimumWidth(640);
+    setMinimumHeight(480);
 }
 
 MainWindow::~MainWindow()
