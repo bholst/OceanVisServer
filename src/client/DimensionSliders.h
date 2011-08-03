@@ -38,7 +38,15 @@ private slots:
     void setLat(qreal lat);
     void setHeight(qreal height);
     
+    void handleChangedTimeValue(int timeValue);
+    void handleChangedLonValue(int lonValue);
+    void handleChangedLatValue(int latValue);
+    void handleChangedHeightValue(int heightValue);
+    
 private:
+    void connectSliders();
+    void disconnectSliders();
+    
     MainWindow *m_mainWindow;
     
     Ui::DimensionSliders ui;

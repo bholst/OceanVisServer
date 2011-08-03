@@ -31,6 +31,8 @@ DimensionSliders::DimensionSliders(QWidget *parent)
       m_maxHeight(0.0)
 {
     ui.setupUi(this);
+    
+    connectSliders();
 }
 
 DimensionSliders::~DimensionSliders()
@@ -112,6 +114,7 @@ void DimensionSliders::updateLimits(const QString& coverageId)
         }
     }
     
+    disconnectSliders();
     ui.timeSlider->setMinimum(0);
     ui.timeSlider->setMaximum(m_valueCountTime - 1);
     ui.lonSlider->setMinimum(0);
@@ -120,6 +123,7 @@ void DimensionSliders::updateLimits(const QString& coverageId)
     ui.latSlider->setMaximum(m_valueCountLat - 1);
     ui.heightSlider->setMinimum(0);
     ui.heightSlider->setMaximum(m_valueCountHeight - 1);
+    connectSliders();
     
     setTime(m_mainWindow->time());
     setLon(m_mainWindow->lon());
@@ -148,7 +152,10 @@ void DimensionSliders::setTime(const QDateTime& time)
         return;
     }
     
+    disconnectSliders();
     ui.timeSlider->setValue(timeIndex);
+    connectSliders();
+    
     emit timeChanged(time);
 }
 
@@ -165,7 +172,10 @@ void DimensionSliders::setLon(qreal lon)
         return;
     }
     
+    disconnectSliders();
     ui.lonSlider->setValue(lonIndex);
+    connectSliders();
+
     emit lonChanged(lon);
 }
 
@@ -182,7 +192,10 @@ void DimensionSliders::setLat(qreal lat)
         return;
     }
     
+    disconnectSliders();
     ui.latSlider->setValue(latIndex);
+    connectSliders();
+    
     emit latChanged(lat);
 }
 
@@ -199,8 +212,85 @@ void DimensionSliders::setHeight(qreal height)
         return;
     }
     
+    disconnectSliders();
     ui.heightSlider->setValue(heightIndex);
+    connectSliders();
+    
     emit heightChanged(height);
+}
+
+void DimensionSliders::handleChangedTimeValue(int timeValue)
+{
+    uint minTimeSeconds = m_minTime.toTime_t();
+    uint maxTimeSeconds = m_maxTime.toTime_t();
+    
+    if(minTimeSeconds == maxTimeSeconds || m_valueCountTime == 0) {
+        return;
+    }
+    
+    qreal timeScale = (qreal) (maxTimeSeconds - minTimeSeconds) / (qreal) m_valueCountTime;
+    
+    QDateTime time;
+    time.setTime_t(minTimeSeconds + timeScale * timeValue);
+    
+    emit timeChanged(time);
+}
+
+void DimensionSliders::handleChangedLonValue(int lonValue)
+{
+    if(m_minLon == m_maxLon || m_valueCountLon == 0) {
+        return;
+    }
+    
+    qreal lonScale = (m_maxLon - m_minLon) / (qreal) m_valueCountLon;
+    
+    emit lonChanged(m_minLon + lonScale * lonValue);
+}
+
+void DimensionSliders::handleChangedLatValue(int latValue)
+{
+    if(m_minLat == m_maxLat || m_valueCountLat == 0) {
+        return;
+    }
+    
+    qreal latScale = (m_maxLat - m_minLat) / (qreal) m_valueCountLat;
+    
+    emit latChanged(m_minLat + latScale * latValue);
+}
+
+void DimensionSliders::handleChangedHeightValue(int heightValue)
+{
+    if(m_minHeight == m_maxHeight || m_valueCountHeight == 0) {
+        return;
+    }
+    
+    qreal heightScale = (m_maxHeight - m_minHeight) / (qreal) m_valueCountHeight;
+    
+    emit heightChanged(m_minHeight + heightScale * heightValue);
+}
+
+void DimensionSliders::connectSliders()
+{
+    connect(ui.timeSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(handleChangedTimeValue(int)));
+    connect(ui.lonSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(handleChangedLonValue(int)));
+    connect(ui.latSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(handleChangedLatValue(int)));
+    connect(ui.heightSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(handleChangedHeightValue(int)));
+}
+
+void DimensionSliders::disconnectSliders()
+{
+    disconnect(ui.timeSlider, SIGNAL(valueChanged(int)),
+               this, SLOT(handleChangedTimeValue(int)));
+    disconnect(ui.lonSlider, SIGNAL(valueChanged(int)),
+               this, SLOT(handleChangedLonValue(int)));
+    disconnect(ui.latSlider, SIGNAL(valueChanged(int)),
+               this, SLOT(handleChangedLatValue(int)));
+    disconnect(ui.heightSlider, SIGNAL(valueChanged(int)),
+               this, SLOT(handleChangedHeightValue(int)));
 }
 
 #include "DimensionSliders.moc"
