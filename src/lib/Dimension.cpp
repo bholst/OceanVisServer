@@ -44,13 +44,13 @@ Dimension dimensionFromString(QString dimension) throw (BadDimensionString)
     {
         dim = Lon;
     }
-    else if(QString::compare(dimension, "y", Qt::CaseInsensitive)
-            || QString::compare(dimension, "lat", Qt::CaseInsensitive))
+    else if(QString::compare(dimension, "y", Qt::CaseInsensitive) == 0
+            || QString::compare(dimension, "lat", Qt::CaseInsensitive) == 0)
     {
         dim = Lat;
     }
-    else if(QString::compare(dimension, "height", Qt::CaseInsensitive)
-            || QString::compare(dimension, "z", Qt::CaseInsensitive) )
+    else if(QString::compare(dimension, "height", Qt::CaseInsensitive) == 0
+            || QString::compare(dimension, "z", Qt::CaseInsensitive) == 0)
     {
         dim = Height;
     }
