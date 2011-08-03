@@ -154,14 +154,53 @@ void DimensionSliders::setTime(const QDateTime& time)
 
 void DimensionSliders::setLon(qreal lon)
 {
+    if(m_minLon == m_maxLon) {
+        return;
+    }
+    
+    qreal lonScale = (qreal) m_valueCountLon / (m_maxLon - m_minLon);
+    int lonIndex = std::floor((lon - m_minLon) * lonScale);
+    
+    if(lonIndex < 0 || lonIndex == ui.lonSlider->value()) {
+        return;
+    }
+    
+    ui.lonSlider->setValue(lonIndex);
+    emit lonChanged(lon);
 }
 
 void DimensionSliders::setLat(qreal lat)
 {
+    if(m_minLon == m_maxLat) {
+        return;
+    }
+    
+    qreal latScale = (qreal) m_valueCountLat / (m_maxLat - m_minLat);
+    int latIndex = std::floor((lat - m_minLat) * latScale);
+    
+    if(latIndex < 0 || latIndex == ui.latSlider->value()) {
+        return;
+    }
+    
+    ui.latSlider->setValue(latIndex);
+    emit latChanged(lat);
 }
 
 void DimensionSliders::setHeight(qreal height)
 {
+    if(m_minHeight == m_maxHeight) {
+        return;
+    }
+    
+    qreal heightScale = (qreal) m_valueCountHeight / (m_maxHeight - m_minHeight);
+    int heightIndex = std::floor((height - m_minHeight) * heightScale);
+    
+    if(heightIndex < 0 || heightIndex == ui.heightSlider->value()) {
+        return;
+    }
+    
+    ui.heightSlider->setValue(heightIndex);
+    emit heightChanged(height);
 }
 
 #include "DimensionSliders.moc"

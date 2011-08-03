@@ -157,7 +157,10 @@ CoordinateAxis CoveragesParser::readCoordinateAxis()
 
         if(isStartElement()) {
             if(name() == "Dimension") {
-                dimension = dimensionFromString(readCharacters());
+                QString dimensionString = readCharacters();
+                dimension = dimensionFromString(dimensionString);
+                qDebug() << "Dimension:" << dimensionToString(dimension);
+                qDebug() << "String:" << dimensionString;
             }
             else if(name() == "LowerLimit") {
                 if(dimension == Time) {
@@ -177,6 +180,7 @@ CoordinateAxis CoveragesParser::readCoordinateAxis()
             }
             else if(name() == "ValueCount") {
                 valueCount = readCharacters().toInt();
+                qDebug() << "ValueCount:" << valueCount;
             }
             else {
                 readUnknownElement();
