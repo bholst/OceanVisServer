@@ -198,6 +198,7 @@ CoordinateAxis CoveragesParser::readCoordinateAxis()
     catch (BadDimensionTypeException e) {
         qDebug() << "ERROR, BadDimensionTypeException:" << e.what();
     }
+    axis.setValueCount(valueCount);
     return axis;
 }
 
