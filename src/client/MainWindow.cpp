@@ -9,7 +9,9 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 #include <QtCore/QUrl>
+#include <QtGui/QStatusBar>
 #include <QtGui/QDockWidget>
+#include <QtGui/QLabel>
 
 // Project
 #include "GetCoverage.h"
@@ -35,12 +37,14 @@ MainWindow::MainWindow()
     m_request->setVersion("1.0.0");
     updateRequestSubsets();
     
-    // GUI
+    //// GUI
+    // MapWidget
     m_mapWidget = new MapWidget();
     setCentralWidget(m_mapWidget);
     connect(this, SIGNAL(requestStringChanged(const QString&)),
             m_mapWidget, SLOT(setUrl(const QString&)));
     
+    // CoverageComboBox
     QDockWidget *coverageDockWidget = new QDockWidget(this);
     m_coverageComboBox = new CoverageComboBox(coverageDockWidget);
     coverageDockWidget->setWidget(m_coverageComboBox);
@@ -50,11 +54,27 @@ MainWindow::MainWindow()
             m_coverageComboBox, SLOT(setCoverages(const QList<Coverage>&)));
     addDockWidget(Qt::TopDockWidgetArea, coverageDockWidget);
     
+    // DimensionSliders
     QDockWidget *dimensionDockWidget = new QDockWidget(this);
     m_dimensionSliders = new DimensionSliders(dimensionDockWidget);
     dimensionDockWidget->setWidget(m_dimensionSliders);
     addDockWidget(Qt::LeftDockWidgetArea, dimensionDockWidget);
     m_dimensionSliders->setMainWindow(this);
+    
+    // StatusBar
+    m_statusLabel = new QLabel(statusBar());
+    statusBar()->addWidget(m_statusLabel);
+    connect(this, SIGNAL(timeChanged(const QDateTime&)),
+            this, SLOT(updateStatusBar()));
+    connect(this, SIGNAL(lonChanged(qreal)),
+            this, SLOT(updateStatusBar()));
+    connect(this, SIGNAL(latChanged(qreal)),
+            this, SLOT(updateStatusBar()));
+    connect(this, SIGNAL(heightChanged(qreal)),
+            this, SLOT(updateStatusBar()));
+    connect(this, SIGNAL(viewModeChanged(MainWindow::ViewMode)),
+            this, SLOT(updateStatusBar()));
+    updateStatusBar();
     
     createActions();
     createMenus();
@@ -195,8 +215,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::updateRequestString()
 {
-    qDebug() << "Updating request string.";
-    qDebug() << m_request->toRequestString(m_url);
     emit requestStringChanged(m_request->toRequestString(m_url));
 }
 
@@ -218,6 +236,46 @@ void MainWindow::parseCoverages(QNetworkReply *reply)
     }
 
     reply->deleteLater();
+}
+
+void MainWindow::updateStatusBar()
+{
+    QString statusString;
+    
+    switch(m_viewMode) {
+        case TimeLon:
+            statusString = tr("Lat: %1, Height: %2");
+            statusString = statusString.arg(QLocale::system().toString(m_lat));
+            statusString = statusString.arg(QLocale::system().toString(m_height));
+            break;
+        case TimeLat:
+            statusString = tr("Lon: %1, Height: %2");
+            statusString = statusString.arg(QLocale::system().toString(m_lon));
+            statusString = statusString.arg(QLocale::system().toString(m_height));
+            break;
+        case TimeHeight:
+            statusString = tr("Lon: %1, Lat: %2");
+            statusString = statusString.arg(QLocale::system().toString(m_lon));
+            statusString = statusString.arg(QLocale::system().toString(m_lat));
+            break;
+        case LonLat:
+            statusString = tr("Time: %1, Height: %2");
+            statusString = statusString.arg(QLocale::system().toString(m_time, QLocale::ShortFormat));
+            statusString = statusString.arg(QLocale::system().toString(m_height));
+            break;
+        case LonHeight:
+            statusString = tr("Time: %1, Lat: %2");
+            statusString = statusString.arg(QLocale::system().toString(m_time, QLocale::ShortFormat));
+            statusString = statusString.arg(QLocale::system().toString(m_lat));
+            break;
+        case LatHeight:
+            statusString = tr("Time: %1, Lon: %2");
+            statusString = statusString.arg(QLocale::system().toString(m_time, QLocale::ShortFormat));
+            statusString = statusString.arg(QLocale::system().toString(m_lon));
+            break;
+    }
+    
+    m_statusLabel->setText(statusString);
 }
 
 void MainWindow::updateRequestSubsets()

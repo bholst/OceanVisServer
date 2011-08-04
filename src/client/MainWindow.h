@@ -13,6 +13,7 @@
 // Project
 #include "CoverageComboBox.h"
 
+class QLabel;
 class QNetworkAccessManager;
 class QNetworkReply;
 class GetCoverage;
@@ -74,6 +75,7 @@ protected:
 private slots:
     void updateRequestString();
     void parseCoverages(QNetworkReply *reply);
+    void updateStatusBar();
 
 private:
     void updateRequestSubsets();
@@ -88,6 +90,7 @@ private:
     MapWidget *m_mapWidget;
     CoverageComboBox *m_coverageComboBox;
     DimensionSliders *m_dimensionSliders;
+    QLabel *m_statusLabel;
     
     GetCoverage *m_request;
     QDateTime m_time;
