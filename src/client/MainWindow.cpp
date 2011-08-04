@@ -111,6 +111,10 @@ qreal MainWindow::height() const
     return m_height;
 }
 
+MainWindow::ViewMode MainWindow::viewMode() const
+{
+    return m_viewMode;
+}
 
 void MainWindow::setCoverageId(const QString& coverageId)
 {

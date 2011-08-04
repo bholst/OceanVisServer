@@ -73,6 +73,7 @@ void DimensionSliders::setMainWindow(MainWindow *mainWindow)
     connect(this, SIGNAL(heightChanged(qreal)),
             m_mainWindow, SLOT(setHeight(qreal)));
     
+    updateShownSliders(mainWindow->viewMode());
     updateLimits(mainWindow->coverageId());
 }
 
@@ -133,6 +134,57 @@ void DimensionSliders::updateLimits(const QString& coverageId)
 
 void DimensionSliders::updateShownSliders(MainWindow::ViewMode viewMode)
 {
+    // Time
+    switch(viewMode) {
+        case MainWindow::LonLat:
+        case MainWindow::LonHeight:
+        case MainWindow::LatHeight:
+            ui.timeSlider->show();
+            ui.timeLabel->show();
+            break;
+        default:
+            ui.timeSlider->hide();
+            ui.timeLabel->hide();
+    }
+    
+    // Lon
+    switch(viewMode) {
+        case MainWindow::TimeLat:
+        case MainWindow::TimeHeight:
+        case MainWindow::LatHeight:
+            ui.lonSlider->show();
+            ui.lonLabel->show();
+            break;
+        default:
+            ui.lonSlider->hide();
+            ui.lonLabel->hide();
+    }
+    
+    // Lat
+    switch(viewMode) {
+        case MainWindow::TimeLon:
+        case MainWindow::TimeHeight:
+        case MainWindow::LonHeight:
+            ui.latSlider->show();
+            ui.latLabel->show();
+            break;
+        default:
+            ui.latSlider->hide();
+            ui.latLabel->hide();
+    }
+    
+    // Height
+    switch(viewMode) {
+        case MainWindow::TimeLon:
+        case MainWindow::TimeLat:
+        case MainWindow::LonLat:
+            ui.heightSlider->show();
+            ui.heightLabel->show();
+            break;
+        default:
+            ui.heightSlider->hide();
+            ui.heightLabel->hide();
+    }
 }
 
 void DimensionSliders::setTime(const QDateTime& time)

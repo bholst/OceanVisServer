@@ -45,6 +45,7 @@ public:
     qreal lon() const;
     qreal lat() const;
     qreal height() const;
+    ViewMode viewMode() const;
     
 signals:
     void requestChanged();
