@@ -1,5 +1,6 @@
 include_directories(${QT_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR})
-set(OCEANVISSERVER_LIB_SRCS MapGeometry.cpp
+set(OCEANVISSERVER_LIB_SRCS XmlStreamReader.cpp
+                            MapGeometry.cpp
                             MapGeometryParser.cpp
                             DataLayer.cpp
                             DimensionSubset.cpp

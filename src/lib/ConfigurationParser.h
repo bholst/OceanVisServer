@@ -5,15 +5,16 @@
 #ifndef CONFIGURATIONPARSER_H
 #define CONFIGURATIONPARSER_H
 
-#include <QtCore/QXmlStreamReader>
 #include <QtCore/QHash>
+
+#include "XmlStreamReader.h"
 
 class DataLayer;
 class MapGeometry;
 class ColorMap;
 class QColor;
 
-class ConfigurationParser : public QXmlStreamReader {
+class ConfigurationParser : public XmlStreamReader {
 public:
     ConfigurationParser();
     ~ConfigurationParser();
@@ -26,13 +27,10 @@ public:
     QString path() const;
 private:
     void readMap();
-    void readUnknownElement();
-    void readColorMap();
     QColor readColor();
     void readFiles(DataLayer *layer);
     MapGeometry readGeometry();
     DataLayer *readLayer();
-    QString readCharacters();
 
     QString m_path;
     QHash<QString,DataLayer *> m_layers;

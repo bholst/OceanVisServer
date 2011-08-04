@@ -6,15 +6,15 @@
 #define COVERAGESPARSER_H
 
 // Qt
-#include <QtCore/QXmlStreamReader>
 #include <QtCore/QList>
 
 // Project
+#include "XmlStreamReader.h"
 #include "Constant.h"
 #include "CoordinateAxis.h"
 #include "Coverage.h"
 
-class CoveragesParser : public QXmlStreamReader
+class CoveragesParser : public XmlStreamReader
 {
 public:
     CoveragesParser();
@@ -29,8 +29,6 @@ private:
     Coverage readCoverage();
     Constant readConstant();
     CoordinateAxis readCoordinateAxis();
-    void readUnknownElement();
-    QString readCharacters();
     
     QList<Coverage> m_coverages;
 };

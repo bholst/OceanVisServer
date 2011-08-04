@@ -10,9 +10,6 @@
 #include <QtCore/QList>
 #include <QtGui/QMainWindow>
 
-// Project
-#include "CoverageComboBox.h"
-
 class QLabel;
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -21,6 +18,10 @@ class QDateTime;
 class MapWidget;
 class Coverage;
 class DimensionSliders;
+class ViewModeComboBox;
+class CoverageComboBox;
+class ColorMapWidget;
+class ColorMap;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -59,6 +60,7 @@ signals:
     void urlChanged(const QString& url);
     void requestStringChanged(const QString&);
     void coveragesChanged(const QList<Coverage>& coverages);
+    void colorMapChanged(const ColorMap& colorMap);
     
 public slots:
     void setCoverageId(const QString& coverageId);
@@ -66,7 +68,7 @@ public slots:
     void setLon(qreal lon);
     void setLat(qreal lat);
     void setHeight(qreal height);
-    void setViewMode(ViewMode viewMode);
+    void setViewMode(MainWindow::ViewMode viewMode);
     void setUrl(const QString& url);
     
 protected:
@@ -76,6 +78,7 @@ private slots:
     void updateRequestString();
     void parseCoverages(QNetworkReply *reply);
     void updateStatusBar();
+    void emitColorMapChanged(const QString& coverageId);
 
 private:
     void updateRequestSubsets();
@@ -88,8 +91,10 @@ private:
     void writeSettings();
     
     MapWidget *m_mapWidget;
+    ViewModeComboBox *m_viewModeComboBox;
     CoverageComboBox *m_coverageComboBox;
     DimensionSliders *m_dimensionSliders;
+    ColorMapWidget *m_colorMapWidget;
     QLabel *m_statusLabel;
     
     GetCoverage *m_request;

@@ -15,6 +15,7 @@
 #include "Constant.h"
 #include "DataLayer.h"
 #include "Dimension.h"
+#include "ColorMap.h"
 
 // Self
 #include "ResponseWriter.h"
@@ -141,6 +142,8 @@ void ResponseWriter::writeCoverage(const QString& name, DataLayer *layer)
     writeStartElement("CoverageId");
     writeCharacters(name);
     writeEndElement();
+    
+    layer->defaultColorMap().writeColorMap(this);
     
     QList<CoordinateAxis> coordinateAxes = layer->coordinateAxes();
     foreach(CoordinateAxis axis, coordinateAxes) {

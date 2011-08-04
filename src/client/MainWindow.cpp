@@ -21,6 +21,10 @@
 #include "CoveragesParser.h"
 #include "Coverage.h"
 #include "DimensionSliders.h"
+#include "CoverageComboBox.h"
+#include "ViewModeComboBox.h"
+#include "ColorMapWidget.h"
+#include "ColorMap.h"
 
 // Self
 #include "MainWindow.h"
@@ -44,6 +48,17 @@ MainWindow::MainWindow()
     connect(this, SIGNAL(requestStringChanged(const QString&)),
             m_mapWidget, SLOT(setUrl(const QString&)));
     
+    // ViewModeComboBox
+    QDockWidget *viewModeDockWidget = new QDockWidget(this);
+    m_viewModeComboBox = new ViewModeComboBox(viewModeDockWidget);
+    viewModeDockWidget->setWidget(m_viewModeComboBox);
+    connect(m_viewModeComboBox, SIGNAL(currentViewModeChanged(MainWindow::ViewMode)),
+            this, SLOT(setViewMode(MainWindow::ViewMode)));
+    connect(this, SIGNAL(viewModeChanged(MainWindow::ViewMode)),
+            m_viewModeComboBox, SLOT(setViewMode(MainWindow::ViewMode)));
+    m_viewModeComboBox->setViewMode(viewMode());
+    addDockWidget(Qt::TopDockWidgetArea, viewModeDockWidget);
+    
     // CoverageComboBox
     QDockWidget *coverageDockWidget = new QDockWidget(this);
     m_coverageComboBox = new CoverageComboBox(coverageDockWidget);
@@ -60,6 +75,14 @@ MainWindow::MainWindow()
     dimensionDockWidget->setWidget(m_dimensionSliders);
     addDockWidget(Qt::LeftDockWidgetArea, dimensionDockWidget);
     m_dimensionSliders->setMainWindow(this);
+    
+    // ColorMapWidget
+    QDockWidget *colorMapDockWidget = new QDockWidget(this);
+    m_colorMapWidget = new ColorMapWidget(colorMapDockWidget);
+    colorMapDockWidget->setWidget(m_colorMapWidget);
+    addDockWidget(Qt::LeftDockWidgetArea, colorMapDockWidget);
+    connect(this, SIGNAL(colorMapChanged(const ColorMap&)),
+            m_colorMapWidget, SLOT(setColorMap(const ColorMap&)));
     
     // StatusBar
     m_statusLabel = new QLabel(statusBar());
@@ -87,6 +110,8 @@ MainWindow::MainWindow()
             this, SLOT(updateRequestString()));
     connect(m_manager, SIGNAL(finished(QNetworkReply *)),
             this, SLOT(parseCoverages(QNetworkReply *)));
+    connect(this, SIGNAL(coverageIdChanged(const QString&)),
+            this, SLOT(emitColorMapChanged(const QString&)));
             
     setMinimumWidth(640);
     setMinimumHeight(480);
@@ -276,6 +301,16 @@ void MainWindow::updateStatusBar()
     }
     
     m_statusLabel->setText(statusString);
+}
+
+void MainWindow::emitColorMapChanged(const QString& coverageId)
+{
+    foreach(Coverage coverage, m_coverages) {
+        if(coverage.coverageId() == coverageId) {
+            emit colorMapChanged(coverage.colorMap());
+            break;
+        }
+    }
 }
 
 void MainWindow::updateRequestSubsets()

@@ -81,6 +81,9 @@ Coverage CoveragesParser::readCoverage()
             if(name() == "CoverageId") {
                 coverage.setCoverageId(readCharacters());
             }
+            else if(name() == "colorMap") {
+                coverage.setColorMap(ColorMap::readColorMap(this));
+            }
             else if(name() == "Constant") {
                 constants.append(readConstant());
             }
@@ -204,44 +207,6 @@ CoordinateAxis CoveragesParser::readCoordinateAxis()
     }
     axis.setValueCount(valueCount);
     return axis;
-}
-
-
-void CoveragesParser::readUnknownElement()
-{
-    while(!atEnd()) {
-        readNext();
-
-        if(isEndElement())
-            break;
-
-        if(isStartElement())
-            readUnknownElement();
-    }
-}
-
-QString CoveragesParser::readCharacters()
-{
-    Q_ASSERT(isStartElement());
-
-    QString string;
-
-    while(!atEnd()) {
-        readNext();
-
-        if(isEndElement())
-            break;
-
-        if(isStartElement()) {
-            readUnknownElement();
-        }
-
-        if(isCharacters()) {
-            string = text().toString();
-        }
-    }
-
-    return string;
 }
 
 QList<Coverage> CoveragesParser::coverages() const

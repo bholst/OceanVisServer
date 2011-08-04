@@ -11,6 +11,7 @@
 // Project
 #include "Constant.h"
 #include "CoordinateAxis.h"
+#include "ColorMap.h"
 
 class Coverage {
 public:
@@ -26,10 +27,14 @@ public:
     void setCoordinateAxes(const QList<CoordinateAxis>& axes);
     QList<CoordinateAxis> coordinateAxes() const;
     
+    void setColorMap(const ColorMap& colorMap);
+    ColorMap colorMap() const;
+    
 private:
     QString m_coverageId;
     QList<Constant> m_constants;
     QList<CoordinateAxis> m_axes;
+    ColorMap m_colorMap;
 };
 
 #endif

@@ -11,11 +11,15 @@
 class ColorMap;
 
 class ColorMapWidget : public QWidget {
+    Q_OBJECT
+
 public:
     ColorMapWidget(QWidget * parent = 0, Qt::WindowFlags f = 0);
     
-    void setColorMap(const ColorMap& colorMap);
     ColorMap colorMap() const;
+    
+public slots:
+    void setColorMap(const ColorMap& colorMap);
     
 protected:
     void paintEvent(QPaintEvent *event);

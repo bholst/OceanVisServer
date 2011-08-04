@@ -39,3 +39,5 @@ void ColorMapWidget::paintEvent(QPaintEvent *event)
         painter.drawLine(dirtyRect.left(), j, dirtyRect.right(), j);
     }
 }
+
+#include "ColorMapWidget.moc"

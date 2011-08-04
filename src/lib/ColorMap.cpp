@@ -5,6 +5,13 @@
 // STD
 #include <cmath>
 
+// Qt
+#include <QtCore/QDebug>
+#include <QtCore/QXmlStreamWriter>
+
+// Project
+#include "XmlStreamReader.h"
+
 // Self
 #include "ColorMap.h"
 
@@ -40,6 +47,16 @@ QList<QColor> ColorMap::colors() const
 void ColorMap::addColor(const QColor& color)
 {
     m_colors.append(color);
+}
+
+void ColorMap::setName(const QString& name)
+{
+    m_name = name;
+}
+
+QString ColorMap::name() const
+{
+    return m_name;
 }
 
 QColor ColorMap::color(qreal value)
@@ -111,4 +128,186 @@ QColor ColorMap::color(qreal value)
     else {
         return Qt::black;
     }
+}
+
+ColorMap ColorMap::readColorMap(XmlStreamReader *reader)
+{
+    Q_ASSERT(reader->isStartElement()
+             && reader->name() == "colorMap");
+    
+    ColorMap colorMap;
+    colorMap.setName(reader->attributes().value("name").toString());
+    
+    while(!reader->atEnd()) {
+        reader->readNext();
+        
+        if(reader->isEndElement()) {
+            break;
+        }
+
+        if(reader->isStartElement()) {
+            if(reader->name() == "color") {
+                colorMap.addColor(readColor(reader));
+            }
+            else if(reader->name() == "interpolationSpec") {
+                QString intSpec = reader->readCharacters();
+                if(intSpec == "rgb") {
+                    colorMap.setInterpolationSpec(QColor::Rgb);
+                }
+                else if(intSpec == "hsv") {
+                    colorMap.setInterpolationSpec(QColor::Hsv);
+                }
+                else if(intSpec == "cmyk") {
+                    colorMap.setInterpolationSpec(QColor::Cmyk);
+                }
+                else if(intSpec == "hsl") {
+                    colorMap.setInterpolationSpec(QColor::Hsl);
+                }
+            }
+            else {
+                reader->readUnknownElement();
+            }
+        }
+    }
+    
+    return colorMap;
+}
+
+void ColorMap::writeColorMap(QXmlStreamWriter *writer)
+{
+    writer->writeStartElement("colorMap");
+    writer->writeAttribute("name", name());
+    
+    writer->writeStartElement("interpolationSpec");
+    switch(interpolationSpec()) {
+        case QColor::Rgb:
+            writer->writeCharacters("rgb");
+            break;
+        case QColor::Hsv:
+            writer->writeCharacters("hsv");
+            break;
+        case QColor::Cmyk:
+            writer->writeCharacters("cmyk");
+            break;
+        case QColor::Hsl:
+            writer->writeCharacters("hsl");
+            break;
+    }
+    writer->writeEndElement();
+    
+    foreach(QColor color, colors()) {
+        writeColor(color, writer);
+    }
+    
+    writer->writeEndElement();
+}
+
+QColor ColorMap::readColor(XmlStreamReader *reader)
+{
+    Q_ASSERT(reader->isStartElement()
+             && reader->name() == "color");
+
+    QColor::Spec spec = QColor::Rgb;
+    QXmlStreamAttributes colorAtt = reader->attributes();
+    if(colorAtt.hasAttribute("spec")) {
+        QString specString = colorAtt.value("spec").toString();
+        if(specString == "rgb") {
+            spec = QColor::Rgb;
+        }
+        else if(specString == "hsv") {
+            spec = QColor::Hsv;
+        }
+        else if(specString == "cmyk") {
+            spec = QColor::Cmyk;
+        }
+        else if(specString == "hsl") {
+            spec = QColor::Hsl;
+        }
+    }
+    
+    QString colorStr = reader->readCharacters();
+    QStringList colorStrings = colorStr.split(',', QString::SkipEmptyParts);
+    QList<int> colorValues;
+    foreach(QString colorString, colorStrings) {
+        colorValues.append(colorString.toInt());
+    }
+    QColor color;
+    
+    if(colorValues.size() == 3) {
+        switch(spec) {
+            case QColor::Rgb:
+                color.setRgb(colorValues[0], colorValues[1], colorValues[2]);
+                break;
+            case QColor::Hsv:
+                color.setHsv(colorValues[0], colorValues[1], colorValues[2]);
+                break;
+            case QColor::Hsl:
+                color.setHsl(colorValues[0], colorValues[1], colorValues[2]);
+                break;
+            default:
+                qDebug() << "Color: Spec and number of values don't agree.";
+                break;
+        }
+    }
+    else if(colorValues.size() == 4) {
+        switch(spec) {
+            case QColor::Rgb:
+                color.setRgb(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
+                break;
+            case QColor::Hsv:
+                color.setHsv(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
+                break;
+            case QColor::Hsl:
+                color.setHsl(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
+                break;
+            case QColor::Cmyk:
+                color.setCmyk(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
+                break;
+            default:
+                qDebug() << "Color: Spec and number of values don't agree.";
+                break;
+        }
+    }
+    else if(colorValues.size() == 5 && spec == QColor::Cmyk) {
+        color.setCmyk(colorValues[0], colorValues[1], colorValues[2], colorValues[3], colorValues[4]);
+    }
+    else {
+        color.setCmyk(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
+    }
+    
+    return color;
+}
+
+void ColorMap::writeColor(QColor color, QXmlStreamWriter *writer)
+{
+    writer->writeStartElement("color");
+    
+    switch(interpolationSpec()) {
+        case QColor::Rgb:
+            writer->writeAttribute("spec", "rgb");
+            int r, g, b, a;
+            color.getRgb(&r, &g, &b, &a);
+            writer->writeCharacters(QString("%1, %2, %3, %4").arg(r).arg(g).arg(b).arg(a));
+            break;
+        case QColor::Hsv:
+            writer->writeAttribute("spec", "hsv");
+            int h, s, v;
+            color.getHsv(&h, &s, &v, &a);
+            writer->writeCharacters(QString("%1, %2, %3, %4").arg(h).arg(s).arg(v).arg(a));
+            break;
+        case QColor::Cmyk:
+            writer->writeAttribute("spec", "cmyk");
+            int c, m, y, k;
+            color.getCmyk(&c, &m, &y, &k, &a);
+            writer->writeCharacters(QString("%1, %2, %3, %4, %5").arg(c).arg(m).arg(y).arg(k).arg(a));
+            break;
+        case QColor::Hsl:
+            writer->writeAttribute("spec", "hsl");
+            int l;
+            color.getHsl(&h, &s, &l, &a);
+            writer->writeCharacters(QString("%1, %2, %3, %4").arg(h).arg(s).arg(l).arg(a));
+            break;
+    }
+    
+    writer->writeEndElement();
 }

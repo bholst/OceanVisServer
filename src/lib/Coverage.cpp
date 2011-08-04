@@ -47,3 +47,13 @@ QList<CoordinateAxis> Coverage::coordinateAxes() const
     return m_axes;
 }
 
+void Coverage::setColorMap(const ColorMap& colorMap)
+{
+    m_colorMap = colorMap;
+}
+
+ColorMap Coverage::colorMap() const
+{
+    return m_colorMap;
+}
+
