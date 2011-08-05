@@ -23,6 +23,8 @@ public:
     
 public slots:
     void setUrl(const QString& url);
+    void setXAxis(const QString& string, const QString& min, const QString& max);
+    void setYAxis(const QString& string, const QString& min, const QString& max);
     
 protected:
     void paintEvent(QPaintEvent *event);
@@ -38,6 +40,14 @@ private:
     unsigned long long m_downloadId;
     unsigned long long m_shownId;
     QMap<QString, unsigned long long> m_ids;
+    
+    QString m_xAxisString;
+    QString m_xAxisMin;
+    QString m_xAxisMax;
+    
+    QString m_yAxisString;
+    QString m_yAxisMin;
+    QString m_yAxisMax;
 };
 
 #endif
