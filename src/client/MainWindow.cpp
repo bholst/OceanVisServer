@@ -47,6 +47,10 @@ MainWindow::MainWindow()
     setCentralWidget(m_mapWidget);
     connect(this, SIGNAL(requestStringChanged(const QString&)),
             m_mapWidget, SLOT(setUrl(const QString&)));
+    connect(this, SIGNAL(xAxisChanged(const QString&, const QString&, const QString&)),
+            m_mapWidget, SLOT(setXAxis(const QString&, const QString&, const QString&)));
+    connect(this, SIGNAL(yAxisChanged(const QString&, const QString&, const QString&)),
+            m_mapWidget, SLOT(setYAxis(const QString&, const QString&, const QString&)));
     
     // ViewModeComboBox
     QDockWidget *viewModeDockWidget = new QDockWidget(this);
@@ -112,6 +116,11 @@ MainWindow::MainWindow()
             this, SLOT(parseCoverages(QNetworkReply *)));
     connect(this, SIGNAL(coverageIdChanged(const QString&)),
             this, SLOT(emitColorMapChanged(const QString&)));
+    connect(this, SIGNAL(coverageIdChanged(const QString&)),
+            this, SLOT(emitAxesChanged()));
+    connect(this, SIGNAL(viewModeChanged(MainWindow::ViewMode)),
+            this, SLOT(emitAxesChanged()));
+    emitAxesChanged();
             
     setMinimumWidth(640);
     setMinimumHeight(480);
@@ -311,6 +320,72 @@ void MainWindow::emitColorMapChanged(const QString& coverageId)
             break;
         }
     }
+}
+
+void MainWindow::emitAxesChanged()
+{
+    CoordinateAxis timeAxis(Time);
+    CoordinateAxis lonAxis(Lon);
+    CoordinateAxis latAxis(Lat);
+    CoordinateAxis heightAxis(Height);
+    
+    foreach(Coverage coverage, m_coverages) {
+        if(coverage.coverageId() == m_request->coverageId()) {
+            foreach(CoordinateAxis axis, coverage.coordinateAxes()) {
+                switch(axis.dimension()) {
+                    case Time:
+                        timeAxis = axis;
+                        break;
+                    case Lon:
+                        lonAxis = axis;
+                        break;
+                    case Lat:
+                        latAxis = axis;
+                        break;
+                    case Height:
+                        heightAxis = axis;
+                        break;
+                }
+            }
+        }
+    }
+    
+    CoordinateAxis xAxis(Lon);
+    CoordinateAxis yAxis(Lat);
+    
+    switch(m_viewMode) {
+        case TimeLon:
+            xAxis = timeAxis;
+            yAxis = lonAxis;
+            break;
+        case TimeLat:
+            xAxis = timeAxis;
+            yAxis = latAxis;
+            break;
+        case TimeHeight:
+            xAxis = timeAxis;
+            yAxis = heightAxis;
+            break;
+        case LonLat:
+            xAxis = lonAxis;
+            yAxis = latAxis;
+            break;
+        case LonHeight:
+            xAxis = lonAxis;
+            yAxis = heightAxis;
+            break;
+        case LatHeight:
+            xAxis = latAxis;
+            yAxis = heightAxis;
+            break;
+    }
+    
+    emit xAxisChanged(dimensionToString(xAxis.dimension()),
+                      variantToString(xAxis.dimension(), xAxis.lowerLimit()).replace('T', ' '),
+                      variantToString(xAxis.dimension(), xAxis.upperLimit()).replace('T', ' '));
+    emit yAxisChanged(dimensionToString(yAxis.dimension()),
+                      variantToString(yAxis.dimension(), yAxis.lowerLimit()),
+                      variantToString(yAxis.dimension(), yAxis.upperLimit()));
 }
 
 void MainWindow::updateRequestSubsets()

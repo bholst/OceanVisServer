@@ -61,6 +61,8 @@ signals:
     void requestStringChanged(const QString&);
     void coveragesChanged(const QList<Coverage>& coverages);
     void colorMapChanged(const ColorMap& colorMap);
+    void xAxisChanged(const QString& name, const QString& min, const QString& max);
+    void yAxisChanged(const QString& name, const QString& min, const QString& max);
     
 public slots:
     void setCoverageId(const QString& coverageId);
@@ -79,6 +81,7 @@ private slots:
     void parseCoverages(QNetworkReply *reply);
     void updateStatusBar();
     void emitColorMapChanged(const QString& coverageId);
+    void emitAxesChanged();
 
 private:
     void updateRequestSubsets();
