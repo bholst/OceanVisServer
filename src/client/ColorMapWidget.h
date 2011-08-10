@@ -20,12 +20,16 @@ public:
     
 public slots:
     void setColorMap(const ColorMap& colorMap);
+    void setMinValue(double minValue);
+    void setMaxValue(double maxValue);
     
 protected:
     void paintEvent(QPaintEvent *event);
     
 private:
     ColorMap m_colorMap;
+    double m_minValue;
+    double m_maxValue;
 };
 
 #endif

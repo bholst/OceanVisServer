@@ -143,6 +143,14 @@ void ResponseWriter::writeCoverage(const QString& name, DataLayer *layer)
     writeCharacters(name);
     writeEndElement();
     
+    writeStartElement("minValue");
+    writeCharacters(QString::number(layer->minValue()));
+    writeEndElement();
+    
+    writeStartElement("maxValue");
+    writeCharacters(QString::number(layer->maxValue()));
+    writeEndElement();
+    
     layer->defaultColorMap().writeColorMap(this);
     
     QList<CoordinateAxis> coordinateAxes = layer->coordinateAxes();

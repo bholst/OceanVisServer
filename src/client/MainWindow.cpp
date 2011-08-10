@@ -87,6 +87,10 @@ MainWindow::MainWindow()
     addDockWidget(Qt::LeftDockWidgetArea, colorMapDockWidget);
     connect(this, SIGNAL(colorMapChanged(const ColorMap&)),
             m_colorMapWidget, SLOT(setColorMap(const ColorMap&)));
+    connect(this, SIGNAL(minValueChanged(double)),
+            m_colorMapWidget, SLOT(setMinValue(double)));
+    connect(this, SIGNAL(maxValueChanged(double)),
+            m_colorMapWidget, SLOT(setMaxValue(double)));
     
     // StatusBar
     m_statusLabel = new QLabel(statusBar());
@@ -121,6 +125,9 @@ MainWindow::MainWindow()
     connect(this, SIGNAL(viewModeChanged(MainWindow::ViewMode)),
             this, SLOT(emitAxesChanged()));
     emitAxesChanged();
+    connect(this, SIGNAL(coverageIdChanged(const QString&)),
+            this, SLOT(emitValuesChanged()));
+    emitValuesChanged();
             
     setMinimumWidth(640);
     setMinimumHeight(480);
@@ -386,6 +393,17 @@ void MainWindow::emitAxesChanged()
     emit yAxisChanged(dimensionToString(yAxis.dimension()),
                       variantToString(yAxis.dimension(), yAxis.lowerLimit()),
                       variantToString(yAxis.dimension(), yAxis.upperLimit()));
+}
+
+void MainWindow::emitValuesChanged()
+{
+    foreach(Coverage coverage, m_coverages) {
+        if(coverage.coverageId() == m_request->coverageId()) {
+            emit minValueChanged(coverage.minValue());
+            emit maxValueChanged(coverage.maxValue());
+            break;
+        }
+    }
 }
 
 void MainWindow::updateRequestSubsets()

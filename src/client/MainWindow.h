@@ -63,6 +63,8 @@ signals:
     void colorMapChanged(const ColorMap& colorMap);
     void xAxisChanged(const QString& name, const QString& min, const QString& max);
     void yAxisChanged(const QString& name, const QString& min, const QString& max);
+    void minValueChanged(double minValue);
+    void maxValueChanged(double maxValue);
     
 public slots:
     void setCoverageId(const QString& coverageId);
@@ -82,6 +84,7 @@ private slots:
     void updateStatusBar();
     void emitColorMapChanged(const QString& coverageId);
     void emitAxesChanged();
+    void emitValuesChanged();
 
 private:
     void updateRequestSubsets();

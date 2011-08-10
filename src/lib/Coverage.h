@@ -30,11 +30,19 @@ public:
     void setColorMap(const ColorMap& colorMap);
     ColorMap colorMap() const;
     
+    void setMaxValue(double maxValue);
+    double maxValue() const;
+    
+    void setMinValue(double minValue);
+    double minValue() const;
+    
 private:
     QString m_coverageId;
     QList<Constant> m_constants;
     QList<CoordinateAxis> m_axes;
     ColorMap m_colorMap;
+    float m_minValue;
+    float m_maxValue;
 };
 
 #endif

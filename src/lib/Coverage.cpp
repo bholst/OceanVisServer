@@ -10,6 +10,8 @@
 #include "Coverage.h"
 
 Coverage::Coverage()
+    : m_minValue(0.0),
+      m_maxValue(0.0)
 {
 }
 
@@ -56,4 +58,25 @@ ColorMap Coverage::colorMap() const
 {
     return m_colorMap;
 }
+
+void Coverage::setMaxValue(double maxValue)
+{
+    m_maxValue = maxValue;
+}
+
+double Coverage::maxValue() const
+{
+    return m_maxValue;
+}
+
+void Coverage::setMinValue(double minValue)
+{
+    m_minValue = minValue;
+}
+
+double Coverage::minValue() const
+{
+    return m_minValue;
+}
+
 

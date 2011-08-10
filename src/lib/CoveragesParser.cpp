@@ -81,6 +81,12 @@ Coverage CoveragesParser::readCoverage()
             if(name() == "CoverageId") {
                 coverage.setCoverageId(readCharacters());
             }
+            else if(name() == "minValue") {
+                coverage.setMinValue(readCharacters().toDouble());
+            }
+            else if(name() == "maxValue") {
+                coverage.setMaxValue(readCharacters().toDouble());
+            }
             else if(name() == "colorMap") {
                 coverage.setColorMap(ColorMap::readColorMap(this));
             }
