@@ -14,8 +14,8 @@ set(OCEANVISCLIENT_SRCS ColorMapWidget.cpp
 qt4_wrap_ui(OCEANVISCLIENT_SRCS ${OCEANVISCLIENT_UI})
 qt4_automoc(${OCEANVISCLIENT_SRCS})
 
-add_executable(OceanVisClient ${OCEANVISCLIENT_SRCS})
-target_link_libraries(OceanVisClient ${QT_QTCORE_LIBRARY}
+add_executable(oceanvisclient ${OCEANVISCLIENT_SRCS})
+target_link_libraries(oceanvisclient ${QT_QTCORE_LIBRARY}
                                      ${QT_QTGUI_LIBRARY}
                                      ${QT_QTNETWORK_LIBRARY}
                                      oceanvis)
