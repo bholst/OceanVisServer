@@ -29,12 +29,13 @@ private:
     void readMap();
     QColor readColor();
     void readFiles(DataLayer *layer);
-    MapGeometry readGeometry();
+    void readGeometry();
     DataLayer *readLayer();
 
     QString m_path;
     QHash<QString,DataLayer *> m_layers;
     QHash<QString,ColorMap> m_colorMaps;
+    QHash<QString,MapGeometry> m_geometries;
 };
 
 #endif

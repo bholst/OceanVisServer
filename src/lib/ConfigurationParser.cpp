@@ -11,6 +11,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
+#include <QtCore/QString>
 #include <QtGui/QColor>
 
 // Project
@@ -50,8 +51,12 @@ void ConfigurationParser::read()
         readNext();
 
         if(isStartElement()) {
-            if(name() == "map")
+            if(name() == "map") {
                 readMap();
+            }
+            else {
+                readUnknownElement();
+            }
         }
     }
 
@@ -64,8 +69,6 @@ void ConfigurationParser::readMap()
     Q_ASSERT(isStartElement()
               && name() == "map");
 
-    MapGeometry geometry;
-
     while(!atEnd()) {
         readNext();
 
@@ -74,11 +77,13 @@ void ConfigurationParser::readMap()
 
         if(isStartElement()) {
             if(name() == "geometry") {
-                geometry = readGeometry();
+                readGeometry();
             }
             else if (name() == "layer") {
                 DataLayer *layer = readLayer();
-                m_layers.insert(layer->name(), layer);
+                if(layer) {
+                    m_layers.insert(layer->name(), layer);
+                }
             }
             else if (name() == "colorMap") {
                 ColorMap colorMap = ColorMap::readColorMap(this);
@@ -89,19 +94,16 @@ void ConfigurationParser::readMap()
             }
         }
     }
-
-    foreach(DataLayer *layer, m_layers) {
-        layer->setGeometry(geometry);
-    }
 }
 
-MapGeometry ConfigurationParser::readGeometry()
+void ConfigurationParser::readGeometry()
 {
     Q_ASSERT(isStartElement()
               && name() == "geometry");
 
     QString path;
     double heightDimension = 1.0;
+    QString geometryName = attributes().value("name").toString();
 
     while(!atEnd()) {
         readNext();
@@ -129,7 +131,7 @@ MapGeometry ConfigurationParser::readGeometry()
     
     MapGeometry geometry = parser.mapGeometry();
     geometry.setHeightDimension(heightDimension);
-    return geometry;
+    m_geometries.insert(geometryName, geometry);
 }
 
 DataLayer *ConfigurationParser::readLayer()
@@ -194,6 +196,19 @@ DataLayer *ConfigurationParser::readLayer()
             else if(name() == "name") {
                 layer->setName(readCharacters());
                 qDebug() << "Name:" << layer->name();
+            }
+            else if(name() == "geometry") {
+                QString geometryName = readCharacters();
+                
+                QHash<QString,MapGeometry>::iterator it = m_geometries.find(geometryName);
+                if(it != m_geometries.end()) {
+                    layer->setGeometry(it.value());
+                }
+                else {
+                    delete layer;
+                    qDebug() << "Geometry not found.";
+                    return 0;
+                }
             }
             else if(name() == "scaleMin") {
                 layer->setScaleMin(readCharacters().toDouble());

@@ -179,7 +179,6 @@ void ResponseWriter::writeConstant(const Constant& constant)
     writeEndElement();
     
     writeEndElement();
-    writeEndElement();
 }
 
 void ResponseWriter::writeCoordinateAxis(const CoordinateAxis& axis)
