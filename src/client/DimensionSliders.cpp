@@ -6,6 +6,7 @@
 #include <cmath>
 
 // Qt
+#include <QtCore/QDebug>
 #include <QtCore/QList>
 
 // Project
@@ -46,7 +47,9 @@ MainWindow *DimensionSliders::mainWindow()
 
 void DimensionSliders::setMainWindow(MainWindow *mainWindow)
 {
-    disconnect(m_mainWindow, 0, this, 0);
+    if(m_mainWindow) {
+        disconnect(m_mainWindow, 0, this, 0);
+    }
     
     m_mainWindow = mainWindow;
     
@@ -335,6 +338,10 @@ void DimensionSliders::connectSliders()
 
 void DimensionSliders::disconnectSliders()
 {
+    if(!ui.timeSlider) {
+        return;
+    }
+    
     disconnect(ui.timeSlider, SIGNAL(valueChanged(int)),
                this, SLOT(handleChangedTimeValue(int)));
     disconnect(ui.lonSlider, SIGNAL(valueChanged(int)),
