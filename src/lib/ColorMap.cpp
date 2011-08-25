@@ -64,10 +64,12 @@ QColor ColorMap::color(qreal value)
     if(m_colors.size() == 0) {
         return Qt::black;
     }
+    else if(m_colors.size() == 1) {
+        return m_colors[0];
+    }
     
     // Find out between which two colors our color will be
-    qreal widthPerColor = 1.0 / ((qreal) m_colors.size() - 1.0);
-    qreal colorIndex = value / widthPerColor;
+    qreal colorIndex = value * ((qreal) m_colors.size() - 1.0);
     
     int lowerIndex = std::max(0, std::min((int) std::floor(colorIndex), m_colors.size() - 1));
     int upperIndex = std::max(0, std::min((int) std::ceil(colorIndex), m_colors.size() - 1));
@@ -92,6 +94,16 @@ QColor ColorMap::color(qreal value)
         qreal h1, h2, s1, s2, v1, v2, a1, a2;
         m_colors[lowerIndex].getHsvF(&h1, &s1, &v1, &a1);
         m_colors[upperIndex].getHsvF(&h2, &s2, &v2, &a2);
+        if(h1 == -1.0 && h2 == -1.0) {
+            h1 = 0.0;
+            h2 = 0.0;
+        }
+        else if(h1 == -1.0) {
+            h1 = h2;
+        }
+        else if(h2 == -1.0) {
+            h2 = h1;
+        }
         
         QColor resultingColor;
         resultingColor.setHsvF(nRemainingFraction * h1 + remainingFraction * h2,
@@ -117,9 +129,19 @@ QColor ColorMap::color(qreal value)
         qreal h1, h2, s1, s2, l1, l2, a1, a2;
         m_colors[lowerIndex].getHslF(&h1, &s1, &l1, &a1);
         m_colors[upperIndex].getHslF(&h2, &s2, &l2, &a2);
+        if(h1 == -1.0 && h2 == -1.0) {
+            h1 = 0.0;
+            h2 = 0.0;
+        }
+        else if(h1 == -1.0) {
+            h1 = h2;
+        }
+        else if(h2 == -1.0) {
+            h2 = h1;
+        }
         
         QColor resultingColor;
-        resultingColor.setHsvF(nRemainingFraction * h1 + remainingFraction * h2,
+        resultingColor.setHslF(nRemainingFraction * h1 + remainingFraction * h2,
                                nRemainingFraction * s1 + remainingFraction * s2,
                                nRemainingFraction * l1 + remainingFraction * l2,
                                nRemainingFraction * a1 + remainingFraction * a2);

@@ -8,6 +8,7 @@
 #include <QtCore/QString>
 #include <QtCore/QList>
 #include <QtCore/QVariant>
+#include <QtCore/QDebug>
 
 // Project
 #include "GridCoverage.h"
@@ -154,11 +155,13 @@ void ResponseWriter::writeCoverage(const QString& name, DataLayer *layer)
     layer->defaultColorMap().writeColorMap(this);
     
     QList<CoordinateAxis> coordinateAxes = layer->coordinateAxes();
+    qDebug() << "Number of coordinate axes:" << coordinateAxes.size();
     foreach(CoordinateAxis axis, coordinateAxes) {
         writeCoordinateAxis(axis);
     }
     
     QList<Constant> consts = layer->constants();
+    qDebug() << "Number of constants:" << consts.size();
     foreach(Constant constant, consts) {
         writeConstant(constant);
     }
