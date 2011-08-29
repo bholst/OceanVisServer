@@ -246,7 +246,6 @@ void ConfigurationParser::readFiles(DataLayer *layer)
     int digits = 0;
     QString scheme;
     int skip = 0;
-    int startIndex = 0;
     
     while(!atEnd()) {
         readNext();
@@ -274,9 +273,6 @@ void ConfigurationParser::readFiles(DataLayer *layer)
                 if(att.hasAttribute("skip")) {
                     skip = att.value("skip").toString().toInt();
                 }
-                if(att.hasAttribute("start")) {
-                    startIndex = att.value("start").toString().toInt();
-                }
                 scheme = readCharacters();
             }
             else {
@@ -288,11 +284,12 @@ void ConfigurationParser::readFiles(DataLayer *layer)
     if(startDate.isValid() && endDate.isValid()) {
         qint64 spanMSecs = endDate.toMSecsSinceEpoch() - startDate.toMSecsSinceEpoch();
         int count = end - start;
-        qint64 diffMSecs = spanMSecs / (count + 1);
+        qint64 diffMSecs = spanMSecs / count;
         
-        for(int i = startIndex; i < count; i += 1 + skip) {
-            QDateTime fileTime = startDate.addMSecs(diffMSecs * i);
-            QString fileName = scheme.arg(start + i, digits, 10, QChar('0'));
+        for(int i = start; i < end; i += 1 + skip) {
+            QDateTime fileTime = startDate.addMSecs(diffMSecs * (i - start));
+            qDebug() << "Time [" << i << "]:" << fileTime.toString();
+            QString fileName = scheme.arg(i, digits, 10, QChar('0'));
             
             layer->setFileName(fileTime, fileName);
         }

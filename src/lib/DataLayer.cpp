@@ -126,10 +126,8 @@ void DataLayer::setFileName(const QDateTime& dateTime, const QString& fileName)
         QDataStream stream(file);
         qint32 magicNumber;
         stream >> magicNumber;
-        qDebug() << "The magic number is:" << magicNumber;
         int fileLength;
         stream >> fileLength;
-        qDebug() << "The length is:" << fileLength;
 
         double *dataVector = new double[fileLength];
         bool error = false;
