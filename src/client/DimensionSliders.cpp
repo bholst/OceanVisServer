@@ -286,7 +286,7 @@ void DimensionSliders::handleChangedLonValue(int lonValue)
     
     qreal lonScale = (m_maxLon - m_minLon) / (qreal) m_valueCountLon;
     
-    emit lonChanged(m_minLon + lonScale * lonValue);
+    emit lonChanged(m_minLon + lonScale * (lonValue + 0.5));
 }
 
 void DimensionSliders::handleChangedLatValue(int latValue)
@@ -297,7 +297,7 @@ void DimensionSliders::handleChangedLatValue(int latValue)
     
     qreal latScale = (m_maxLat - m_minLat) / (qreal) m_valueCountLat;
     
-    emit latChanged(m_minLat + latScale * latValue);
+    emit latChanged(m_minLat + latScale * (latValue + 0.5));
 }
 
 void DimensionSliders::handleChangedHeightValue(int heightValue)
@@ -308,7 +308,7 @@ void DimensionSliders::handleChangedHeightValue(int heightValue)
     
     qreal heightScale = (m_maxHeight - m_minHeight) / (qreal) m_valueCountHeight;
     
-    emit heightChanged(m_minHeight + heightScale * heightValue);
+    emit heightChanged(m_minHeight + heightScale * (heightValue + 0.5));
 }
 
 void DimensionSliders::connectSliders()

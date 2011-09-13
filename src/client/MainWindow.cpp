@@ -285,32 +285,32 @@ void MainWindow::updateStatusBar()
     
     switch(m_viewMode) {
         case TimeLon:
-            statusString = tr("Lat: %1, Height: %2");
+            statusString = tr("Lat: %1; Height: %2");
             statusString = statusString.arg(QLocale::system().toString(m_lat));
             statusString = statusString.arg(QLocale::system().toString(m_height));
             break;
         case TimeLat:
-            statusString = tr("Lon: %1, Height: %2");
+            statusString = tr("Lon: %1; Height: %2");
             statusString = statusString.arg(QLocale::system().toString(m_lon));
             statusString = statusString.arg(QLocale::system().toString(m_height));
             break;
         case TimeHeight:
-            statusString = tr("Lon: %1, Lat: %2");
+            statusString = tr("Lon: %1; Lat: %2");
             statusString = statusString.arg(QLocale::system().toString(m_lon));
             statusString = statusString.arg(QLocale::system().toString(m_lat));
             break;
         case LonLat:
-            statusString = tr("Time: %1, Height: %2");
+            statusString = tr("Time: %1; Height: %2");
             statusString = statusString.arg(QLocale::system().toString(m_time, QLocale::ShortFormat));
             statusString = statusString.arg(QLocale::system().toString(m_height));
             break;
         case LonHeight:
-            statusString = tr("Time: %1, Lat: %2");
+            statusString = tr("Time: %1; Lat: %2");
             statusString = statusString.arg(QLocale::system().toString(m_time, QLocale::ShortFormat));
             statusString = statusString.arg(QLocale::system().toString(m_lat));
             break;
         case LatHeight:
-            statusString = tr("Time: %1, Lon: %2");
+            statusString = tr("Time: %1; Lon: %2");
             statusString = statusString.arg(QLocale::system().toString(m_time, QLocale::ShortFormat));
             statusString = statusString.arg(QLocale::system().toString(m_lon));
             break;
