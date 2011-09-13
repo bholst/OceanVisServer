@@ -30,7 +30,7 @@ signals:
     void heightChanged(qreal height);
     
 private slots:
-    void updateLimits(const QString& coverageId);
+    void updateLimits();
     void updateShownSliders(MainWindow::ViewMode viewMode);
     
     void setTime(const QDateTime& time);
@@ -43,9 +43,19 @@ private slots:
     void handleChangedLatValue(int latValue);
     void handleChangedHeightValue(int heightValue);
     
+    void setCoverageId(const QString& coverageId);
+    
 private:
     void connectSliders();
     void disconnectSliders();
+    
+    void showTimeSlider(bool show);
+    void showLonSlider(bool show);
+    void showLatSlider(bool show);
+    void showHeightSlider(bool show);
+    
+    QList<CoordinateAxis> coordinateAxes() const;
+    bool axisAvailable(Dimension dimension) const;
     
     MainWindow *m_mainWindow;
     
@@ -62,6 +72,7 @@ private:
     float m_minHeight;
     float m_maxHeight;
     int m_valueCountHeight;
+    QString m_coverageId;
 };
 
 #endif

@@ -54,7 +54,7 @@ void DimensionSliders::setMainWindow(MainWindow *mainWindow)
     m_mainWindow = mainWindow;
     
     connect(m_mainWindow, SIGNAL(coverageIdChanged(const QString&)),
-            this, SLOT(updateLimits(const QString&)));
+            this, SLOT(setCoverageId(const QString&)));
     connect(m_mainWindow, SIGNAL(viewModeChanged(MainWindow::ViewMode)),
             this, SLOT(updateShownSliders(MainWindow::ViewMode)));
     
@@ -77,44 +77,39 @@ void DimensionSliders::setMainWindow(MainWindow *mainWindow)
             m_mainWindow, SLOT(setHeight(qreal)));
     
     updateShownSliders(mainWindow->viewMode());
-    updateLimits(mainWindow->coverageId());
+    setCoverageId(mainWindow->coverageId());
+    updateLimits();
 }
 
-void DimensionSliders::updateLimits(const QString& coverageId)
+void DimensionSliders::updateLimits()
 {
-    QList<Coverage> coverages = m_mainWindow->coverages();
-    
     m_valueCountTime = 0;
     m_valueCountLon = 0;
     m_valueCountLat = 0;
     m_valueCountHeight = 0;
     
-    foreach(Coverage coverage, coverages) {
-        if(coverage.coverageId() == coverageId) {
-            foreach(CoordinateAxis axis, coverage.coordinateAxes()) {
-                switch(axis.dimension()) {
-                    case Time:
-                        m_minTime = axis.lowerLimit().toDateTime();
-                        m_maxTime = axis.upperLimit().toDateTime();
-                        m_valueCountTime = axis.valueCount();
-                        break;
-                    case Lon:
-                        m_minLon = axis.lowerLimit().toDouble();
-                        m_maxLon = axis.upperLimit().toDouble();
-                        m_valueCountLon = axis.valueCount();
-                        break;
-                    case Lat:
-                        m_minLat = axis.lowerLimit().toDouble();
-                        m_maxLat = axis.upperLimit().toDouble();
-                        m_valueCountLat = axis.valueCount();
-                        break;
-                    case Height:
-                        m_minHeight = axis.lowerLimit().toDouble();
-                        m_maxHeight = axis.upperLimit().toDouble();
-                        m_valueCountHeight = axis.valueCount();
-                        break;
-                }
-            }
+    foreach(CoordinateAxis axis, coordinateAxes()) {
+        switch(axis.dimension()) {
+            case Time:
+                m_minTime = axis.lowerLimit().toDateTime();
+                m_maxTime = axis.upperLimit().toDateTime();
+                m_valueCountTime = axis.valueCount();
+                break;
+            case Lon:
+                m_minLon = axis.lowerLimit().toDouble();
+                m_maxLon = axis.upperLimit().toDouble();
+                m_valueCountLon = axis.valueCount();
+                break;
+            case Lat:
+                m_minLat = axis.lowerLimit().toDouble();
+                m_maxLat = axis.upperLimit().toDouble();
+                m_valueCountLat = axis.valueCount();
+                break;
+            case Height:
+                m_minHeight = axis.lowerLimit().toDouble();
+                m_maxHeight = axis.upperLimit().toDouble();
+                m_valueCountHeight = axis.valueCount();
+                break;
         }
     }
     
@@ -142,12 +137,10 @@ void DimensionSliders::updateShownSliders(MainWindow::ViewMode viewMode)
         case MainWindow::LonLat:
         case MainWindow::LonHeight:
         case MainWindow::LatHeight:
-            ui.timeSlider->show();
-            ui.timeLabel->show();
+            showTimeSlider(true);
             break;
         default:
-            ui.timeSlider->hide();
-            ui.timeLabel->hide();
+            showTimeSlider(false);
     }
     
     // Lon
@@ -155,12 +148,10 @@ void DimensionSliders::updateShownSliders(MainWindow::ViewMode viewMode)
         case MainWindow::TimeLat:
         case MainWindow::TimeHeight:
         case MainWindow::LatHeight:
-            ui.lonSlider->show();
-            ui.lonLabel->show();
+            showLonSlider(true);
             break;
         default:
-            ui.lonSlider->hide();
-            ui.lonLabel->hide();
+            showLonSlider(false);
     }
     
     // Lat
@@ -168,12 +159,10 @@ void DimensionSliders::updateShownSliders(MainWindow::ViewMode viewMode)
         case MainWindow::TimeLon:
         case MainWindow::TimeHeight:
         case MainWindow::LonHeight:
-            ui.latSlider->show();
-            ui.latLabel->show();
+            showLatSlider(true);
             break;
         default:
-            ui.latSlider->hide();
-            ui.latLabel->hide();
+            showLatSlider(false);
     }
     
     // Height
@@ -181,12 +170,10 @@ void DimensionSliders::updateShownSliders(MainWindow::ViewMode viewMode)
         case MainWindow::TimeLon:
         case MainWindow::TimeLat:
         case MainWindow::LonLat:
-            ui.heightSlider->show();
-            ui.heightLabel->show();
+            showHeightSlider(true);
             break;
         default:
-            ui.heightSlider->hide();
-            ui.heightLabel->hide();
+            showHeightSlider(false);
     }
 }
 
@@ -350,6 +337,85 @@ void DimensionSliders::disconnectSliders()
                this, SLOT(handleChangedLatValue(int)));
     disconnect(ui.heightSlider, SIGNAL(valueChanged(int)),
                this, SLOT(handleChangedHeightValue(int)));
+}
+
+void DimensionSliders::setCoverageId(const QString& coverageId)
+{
+    m_coverageId = coverageId;
+    updateLimits();
+    updateShownSliders(m_mainWindow->viewMode());
+}
+
+void DimensionSliders::showTimeSlider(bool show)
+{
+    if(show && axisAvailable(Time)) {
+        ui.timeSlider->show();
+        ui.timeLabel->show();
+    }
+    else {
+        ui.timeSlider->hide();
+        ui.timeLabel->hide();
+    }
+}
+
+void DimensionSliders::showLonSlider(bool show)
+{
+    if(show && axisAvailable(Lon)) {
+        ui.lonSlider->show();
+        ui.lonLabel->show();
+    }
+    else {
+        ui.lonSlider->hide();
+        ui.lonLabel->hide();
+    }
+}
+
+void DimensionSliders::showLatSlider(bool show)
+{
+    if(show && axisAvailable(Lat)) {
+        ui.latSlider->show();
+        ui.latLabel->show();
+    }
+    else {
+        ui.latSlider->hide();
+        ui.latLabel->hide();
+    }
+}
+
+void DimensionSliders::showHeightSlider(bool show)
+{
+    if(show && axisAvailable(Height)) {
+        ui.heightSlider->show();
+        ui.heightLabel->show();
+    }
+    else {
+        ui.heightSlider->hide();
+        ui.heightLabel->hide();
+    }
+}
+
+QList<CoordinateAxis> DimensionSliders::coordinateAxes() const
+{
+    QList<Coverage> coverages = m_mainWindow->coverages();
+    
+    foreach(Coverage coverage, coverages) {
+        if(coverage.coverageId() == m_coverageId) {
+            return coverage.coordinateAxes();
+        }
+    }
+    
+    return QList<CoordinateAxis>();
+}
+
+bool DimensionSliders::axisAvailable(Dimension dimension) const
+{
+    foreach(CoordinateAxis axis, coordinateAxes()) {
+        if(axis.dimension() == dimension) {
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 #include "DimensionSliders.moc"
