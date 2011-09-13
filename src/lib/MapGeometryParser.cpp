@@ -35,6 +35,11 @@ void MapGeometryParser::setTextStream(QTextStream *textStream)
 {
     m_textStream = textStream;
 }
+
+void MapGeometryParser::setLayerSizesPath(const QString& layerSizesPath)
+{
+    m_layerSizesPath = layerSizesPath;
+}
     
 QTextStream *MapGeometryParser::textStream() const
 {
@@ -103,5 +108,31 @@ MapGeometry MapGeometryParser::mapGeometry() const
     geometry.setWidth(width);
     geometry.setHeight(height);
     geometry.setLayerCounts(sizes);
+    
+    if(!m_layerSizesPath.isEmpty()) {
+        QFile *file = new QFile(m_layerSizesPath);
+        if(!file->open(QIODevice::ReadOnly)) {
+            qDebug() << "ERROR" << file->error() << ": File" << m_layerSizesPath << "cannot be opened.";
+        }
+        else {
+            QList<double> layerSizes;
+            QDataStream stream(file);
+            double layerSize = 0.0;
+            while(!stream.atEnd()) {
+                stream >> layerSize;
+                layerSizes.append(layerSize);
+            }
+            
+            if(layerSizes.size() == geometry.maxLayerCount()) {
+                qDebug() << "Successfully read" << layerSizes.size() << "depths";
+                geometry.setLayerSizes(layerSizes);
+            }
+            else {
+                qDebug() << "Depths given, but the number of depths is not correct";
+                qDebug() << "Given" << layerSizes.size() << ", needed" << geometry.maxLayerCount();
+            }
+        }
+    }
+    
     return geometry;
 }

@@ -20,6 +20,8 @@ public:
     void setFile(QFile *file);
     void setTextStream(QTextStream *textStream);
     
+    void setLayerSizesPath(const QString& layerSizesPath);
+    
     QTextStream *textStream() const;
     
     MapGeometry mapGeometry() const;
@@ -28,6 +30,7 @@ private:
     void parse();
     
     QTextStream *m_textStream;
+    QString m_layerSizesPath;
 };
 
 #endif
