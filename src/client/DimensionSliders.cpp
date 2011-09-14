@@ -23,13 +23,11 @@ DimensionSliders::DimensionSliders(QWidget *parent)
       m_valueCountTime(0),
       m_valueCountLon(0),
       m_valueCountLat(0),
-      m_valueCountHeight(0),
       m_minLon(0.0),
       m_maxLon(0.0),
       m_minLat(0.0),
       m_maxLat(0.0),
-      m_minHeight(0.0),
-      m_maxHeight(0.0)
+      m_heightAxis(Height)
 {
     ui.setupUi(this);
     
@@ -86,7 +84,6 @@ void DimensionSliders::updateLimits()
     m_valueCountTime = 0;
     m_valueCountLon = 0;
     m_valueCountLat = 0;
-    m_valueCountHeight = 0;
     
     foreach(CoordinateAxis axis, coordinateAxes()) {
         switch(axis.dimension()) {
@@ -106,9 +103,7 @@ void DimensionSliders::updateLimits()
                 m_valueCountLat = axis.valueCount();
                 break;
             case Height:
-                m_minHeight = axis.lowerLimit().toDouble();
-                m_maxHeight = axis.upperLimit().toDouble();
-                m_valueCountHeight = axis.valueCount();
+                m_heightAxis = axis;
                 break;
         }
     }
@@ -121,7 +116,7 @@ void DimensionSliders::updateLimits()
     ui.latSlider->setMinimum(0);
     ui.latSlider->setMaximum(m_valueCountLat - 1);
     ui.heightSlider->setMinimum(0);
-    ui.heightSlider->setMaximum(m_valueCountHeight - 1);
+    ui.heightSlider->setMaximum(m_heightAxis.valueCount() - 1);
     connectSliders();
     
     setTime(m_mainWindow->time());
@@ -243,21 +238,51 @@ void DimensionSliders::setLat(qreal lat)
 
 void DimensionSliders::setHeight(qreal height)
 {
-    if(m_minHeight == m_maxHeight) {
-        return;
+    int heightIndex = 0;
+    QList<QVariant> heightValues = m_heightAxis.values();
+    int valueCountHeight = m_heightAxis.valueCount();
+    double minHeight = m_heightAxis.lowerLimit().toDouble();
+    double maxHeight = m_heightAxis.upperLimit().toDouble();
+    
+    if(height < minHeight || height >= maxHeight) {
+        heightIndex = valueCountHeight - 1;
+    }
+    else if(!heightValues.isEmpty()) {
+        for(int i = 0; i <= valueCountHeight; ++i) {
+            QVariant heightValue = heightValues[i];
+            double heightDouble = heightValue.toDouble();
+            
+            if(heightDouble > height) {
+                heightIndex = i - 1;
+                break;
+            }
+        }
+    }
+    else {
+        int valueCountHeight = m_heightAxis.valueCount();
+        
+        if(minHeight == maxHeight) {
+            return;
+        }
+        
+        qreal heightScale = (qreal) valueCountHeight / (maxHeight - minHeight);
+        heightIndex = std::floor((height - minHeight) * heightScale);
+        
+        if(heightIndex < 0 || heightIndex == ui.heightSlider->value()) {
+            return;
+        }
+        
+        disconnectSliders();
+        ui.heightSlider->setValue(heightIndex);
+        connectSliders();
+        
+        emit heightChanged(height);
     }
     
-    qreal heightScale = (qreal) m_valueCountHeight / (m_maxHeight - m_minHeight);
-    int heightIndex = std::floor((height - m_minHeight) * heightScale);
-    
-    if(heightIndex < 0 || heightIndex == ui.heightSlider->value()) {
-        return;
+    if(heightIndex != ui.heightSlider->value()) {
+        ui.heightSlider->setValue(heightIndex);
     }
-    
-    disconnectSliders();
-    ui.heightSlider->setValue(heightIndex);
-    connectSliders();
-    
+        
     emit heightChanged(height);
 }
 
@@ -300,15 +325,25 @@ void DimensionSliders::handleChangedLatValue(int latValue)
     emit latChanged(m_minLat + latScale * (latValue + 0.5));
 }
 
-void DimensionSliders::handleChangedHeightValue(int heightValue)
+void DimensionSliders::handleChangedHeightValue(int heightIndex)
 {
-    if(m_minHeight == m_maxHeight || m_valueCountHeight == 0) {
+    double minHeight = m_heightAxis.lowerLimit().toDouble();
+    double maxHeight = m_heightAxis.upperLimit().toDouble();
+    double valueCountHeight = m_heightAxis.valueCount();
+    if(minHeight == maxHeight || valueCountHeight == 0) {
         return;
     }
     
-    qreal heightScale = (m_maxHeight - m_minHeight) / (qreal) m_valueCountHeight;
+    QList<QVariant> heightValues = m_heightAxis.values();
     
-    emit heightChanged(m_minHeight + heightScale * (heightValue + 0.5));
+    if(!heightValues.isEmpty()) {
+        emit heightChanged((heightValues[heightIndex].toDouble() + heightValues[heightIndex + 1].toDouble()) / 2);
+    }
+    else {
+        qreal heightScale = (maxHeight - minHeight) / (qreal) valueCountHeight;
+        
+        emit heightChanged(minHeight + heightScale * (heightIndex + 0.5));
+    }
 }
 
 void DimensionSliders::connectSliders()

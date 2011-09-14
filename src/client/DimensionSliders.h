@@ -69,9 +69,7 @@ private:
     float m_minLat;
     float m_maxLat;
     int m_valueCountLat;
-    float m_minHeight;
-    float m_maxHeight;
-    int m_valueCountHeight;
+    CoordinateAxis m_heightAxis;
     QString m_coverageId;
 };
 

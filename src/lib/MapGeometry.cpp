@@ -214,11 +214,21 @@ QList<QVariant> MapGeometry::heightValues() const
     }
     
     QList<QVariant> heightValues;
-    foreach(double layerStart, d->m_layerStarts) {
-        heightValues.append(d->m_heightDimension * layerStart);
+    if(d->m_heightDimension < 0.0) {
+        heightValues.append((d->m_layerStarts.last() + d->m_layerSizes.last()) * d->m_heightDimension);
+        for(int layer = d->m_maxLayerCount - 1; layer >= 0; --layer) {
+            double layerStart = d->m_layerStarts[layer];
+            heightValues.append(d->m_heightDimension * layerStart);
+        }
+    }
+    else {
+        for(int layer = 0; layer < d->m_maxLayerCount; ++layer) {
+            double layerStart = d->m_layerStarts[layer];
+            heightValues.append(d->m_heightDimension * layerStart);
+        }
+        heightValues.append((d->m_layerStarts.last() + d->m_layerSizes.last()) * d->m_heightDimension);
     }
     
-    heightValues.append(d->m_layerStarts.last() + d->m_layerSizes.last());
     return heightValues;
 }
 

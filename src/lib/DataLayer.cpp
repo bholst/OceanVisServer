@@ -246,7 +246,6 @@ QList<CoordinateAxis> DataLayer::coordinateAxes() const
     }
     
     if(d->m_geometry.maxLayerCount() > 1) {
-        // TODO: This is obviously wrong.
         CoordinateAxis height(Height);
         
         height.setLowerLimit(d->m_geometry.lowerHeightLimit());
@@ -671,6 +670,7 @@ void DataLayer::calculateHeightLimits(DimensionSubset *subset,
 
         CoordinateAxis axis(Height);
         if(!layerStarts.isEmpty()) {
+            // FIXME: CutMode not handled, TEST!
             double heightDimension = d->m_geometry.heightDimension();
             double firstTrim, secondTrim;
             if(heightDimension >= 0.0) {
