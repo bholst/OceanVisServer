@@ -47,6 +47,7 @@ public:
     
     void setLayerSizes(const QList<double>& layerSizes);
     QList<double> layerSizes() const;
+    QList<double> layerStarts() const;
     double lowerHeightLimit() const;
     double upperHeightLimit() const;
     QList<QVariant> heightValues() const;

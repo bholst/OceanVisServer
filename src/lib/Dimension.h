@@ -17,6 +17,7 @@ void checkDimensionType(Dimension dimension, const QVariant& value) throw (BadDi
 Dimension dimensionFromString(QString dimension) throw (BadDimensionString);
 QString dimensionToString(Dimension dimension);
     
+QVariant variantFromString(Dimension dimension, const QString& string);
 QString variantToString(Dimension dimension, const QVariant& variant);
 
 #endif

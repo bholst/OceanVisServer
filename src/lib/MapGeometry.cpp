@@ -187,6 +187,11 @@ QList<double> MapGeometry::layerSizes() const
     return d->m_layerSizes;
 }
 
+QList<double> MapGeometry::layerStarts() const
+{
+    return d->m_layerStarts;
+}
+
 double MapGeometry::lowerHeightLimit() const
 {
     if(d->m_heightDimension < 0.0) {
@@ -210,7 +215,7 @@ QList<QVariant> MapGeometry::heightValues() const
     
     QList<QVariant> heightValues;
     foreach(double layerStart, d->m_layerStarts) {
-        heightValues.append(layerStart);
+        heightValues.append(d->m_heightDimension * layerStart);
     }
     
     heightValues.append(d->m_layerStarts.last() + d->m_layerSizes.last());

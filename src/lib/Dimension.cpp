@@ -4,6 +4,7 @@
 
 // Qt
 #include <QtCore/QDateTime>
+#include <QtCore/QVariant>
 
 // Self
 #include "Dimension.h"
@@ -75,6 +76,19 @@ QString dimensionToString(Dimension dimension)
         case Height:
             return QString("Height");
     }
+}
+
+QVariant variantFromString(Dimension dimension, const QString& string)
+{
+    QVariant variant;
+    if(dimension == Time) {
+        variant = QDateTime::fromString(string, Qt::ISODate);
+    }
+    else if(dimension == Lon || dimension == Lat || dimension == Height) {
+        variant = string.toDouble();
+    }
+    
+    return variant;
 }
 
 QString variantToString(Dimension dimension, const QVariant& variant)

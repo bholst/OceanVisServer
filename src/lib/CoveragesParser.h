@@ -14,6 +14,8 @@
 #include "CoordinateAxis.h"
 #include "Coverage.h"
 
+class QVariant;
+
 class CoveragesParser : public XmlStreamReader
 {
 public:
@@ -29,6 +31,8 @@ private:
     Coverage readCoverage();
     Constant readConstant();
     CoordinateAxis readCoordinateAxis();
+    QList<QVariant> readValues(Dimension dimension);
+    QVariant readValue(Dimension dimension);
     
     QList<Coverage> m_coverages;
 };

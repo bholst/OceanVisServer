@@ -156,6 +156,7 @@ CoordinateAxis CoveragesParser::readCoordinateAxis()
     
     Dimension dimension = Lon;
     QVariant lowerLimit, upperLimit;
+    QList<QVariant> values;
     int valueCount = 0;
     
     while(!atEnd()) {
@@ -191,6 +192,9 @@ CoordinateAxis CoveragesParser::readCoordinateAxis()
                 valueCount = readCharacters().toInt();
                 qDebug() << "ValueCount:" << valueCount;
             }
+            else if(name() == "Values") {
+                values = readValues(dimension);
+            }
             else {
                 readUnknownElement();
             }
@@ -212,7 +216,42 @@ CoordinateAxis CoveragesParser::readCoordinateAxis()
         qDebug() << "ERROR, BadDimensionTypeException:" << e.what();
     }
     axis.setValueCount(valueCount);
+    axis.setValues(values);
     return axis;
+}
+
+QList<QVariant> CoveragesParser::readValues(Dimension dimension)
+{
+    Q_ASSERT(isStartElement()
+             && name() == "Values");
+    
+    QList<QVariant> values;
+    
+    while(!atEnd()) {
+        readNext();
+
+        if(isEndElement())
+            break;
+
+        if(isStartElement()) {
+            if(name() == "Value") {
+                values.append(readValue(dimension));
+            }
+            else {
+                readUnknownElement();
+            }
+        }
+    }
+    
+    return values;
+}
+
+QVariant CoveragesParser::readValue(Dimension dimension)
+{
+    Q_ASSERT(isStartElement()
+             && name() == "Value");
+    
+    return variantFromString(dimension, readCharacters());
 }
 
 QList<Coverage> CoveragesParser::coverages() const
