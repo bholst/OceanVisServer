@@ -26,6 +26,7 @@ public:
         : m_dimension(other.m_dimension),
           m_lowerLimit(other.m_lowerLimit),
           m_upperLimit(other.m_upperLimit),
+          m_values(other.m_values),
           m_valueCount(other.m_valueCount),
           ref(1)
     {
@@ -43,6 +44,7 @@ public:
         m_dimension = other.m_dimension;
         m_lowerLimit = other.m_lowerLimit;
         m_upperLimit = other.m_upperLimit;
+        m_values = other.m_values;
         m_valueCount = other.m_valueCount;
         ref = other.ref;
         return *this;
@@ -53,12 +55,14 @@ public:
         return m_dimension == other.m_dimension
                && m_lowerLimit == other.m_lowerLimit
                && m_upperLimit == other.m_upperLimit
+               && m_values == other.m_values
                && m_valueCount == other.m_valueCount;
     }
 
     Dimension m_dimension;
     QVariant m_lowerLimit;
     QVariant m_upperLimit;
+    QList<QVariant> m_values;
     int m_valueCount;
     QAtomicInt ref;
 };
@@ -107,6 +111,20 @@ void CoordinateAxis::setUpperLimit(const QVariant& upperLimit) throw (BadDimensi
 QVariant CoordinateAxis::upperLimit() const
 {
     return d->m_upperLimit;
+}
+
+void CoordinateAxis::setValues(const QList<QVariant>& values) throw (BadDimensionTypeException)
+{
+    foreach(QVariant value, values) {
+        checkDimensionType(d->m_dimension, value);
+    }
+    detach();
+    d->m_values = values;
+}
+
+QList<QVariant> CoordinateAxis::values() const
+{
+    return d->m_values;
 }
 
 void CoordinateAxis::setValueCount(int valueCount)

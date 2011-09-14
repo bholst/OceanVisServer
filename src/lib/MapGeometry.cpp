@@ -7,6 +7,7 @@
 
 // Qt
 #include <QtCore/QDebug>
+#include <QtCore/QVariant>
 #include <QtCore/QAtomicInt>
 
 // Self
@@ -184,6 +185,51 @@ void MapGeometry::setLayerSizes(const QList<double>& layerSizes)
 QList<double> MapGeometry::layerSizes() const
 {
     return d->m_layerSizes;
+}
+
+double MapGeometry::lowerHeightLimit() const
+{
+    if(d->m_heightDimension < 0.0) {
+        if(d->m_layerSizes.isEmpty()) {
+            return d->m_heightDimension * maxLayerCount();
+        }
+        
+        double lastEnd = d->m_layerStarts.last() + d->m_layerSizes.last();
+        return d->m_heightDimension * lastEnd;
+    }
+    else {
+        return 0.0;
+    }
+}
+
+QList<QVariant> MapGeometry::heightValues() const
+{
+    if(d->m_layerSizes.isEmpty()) {
+        return QList<QVariant>();
+    }
+    
+    QList<QVariant> heightValues;
+    foreach(double layerStart, d->m_layerStarts) {
+        heightValues.append(layerStart);
+    }
+    
+    heightValues.append(d->m_layerStarts.last() + d->m_layerSizes.last());
+    return heightValues;
+}
+
+double MapGeometry::upperHeightLimit() const
+{
+    if(d->m_heightDimension < 0.0) {
+        return 0.0;
+    }
+    else {
+        if(d->m_layerSizes.isEmpty()) {
+            return d->m_heightDimension * maxLayerCount();
+        }
+        
+        double lastEnd = d->m_layerStarts.last() + d->m_layerSizes.last();
+        return d->m_heightDimension * lastEnd;
+    }
 }
 
 MapGeometry& MapGeometry::operator=( const MapGeometry &other )

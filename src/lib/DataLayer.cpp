@@ -248,15 +248,11 @@ QList<CoordinateAxis> DataLayer::coordinateAxes() const
     if(d->m_geometry.maxLayerCount() > 1) {
         // TODO: This is obviously wrong.
         CoordinateAxis height(Height);
-        if(d->m_geometry.heightDimension() >= 0.0) {
-            height.setLowerLimit(0.0);
-            height.setUpperLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
-        }
-        else {
-            height.setLowerLimit(d->m_geometry.maxLayerCount() * d->m_geometry.heightDimension());
-            height.setUpperLimit(0.0);
-        }
+        
+        height.setLowerLimit(d->m_geometry.lowerHeightLimit());
+        height.setUpperLimit(d->m_geometry.upperHeightLimit());
         height.setValueCount(d->m_geometry.maxLayerCount());
+        height.setValues(d->m_geometry.heightValues());
         axes.append(height);
     }
     

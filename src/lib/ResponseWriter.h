@@ -35,6 +35,7 @@ private:
     void writeCoverage(const QString& name, DataLayer *layer);
     void writeConstant(const Constant& constant);
     void writeCoordinateAxis(const CoordinateAxis& axis);
+    void writeValues(Dimension dimension, const QList<QVariant>& values);
     
     void writeBoundedBy(GridCoverage *gridCoverage);
     void writeEnvelope(GridCoverage *gridCoverage);

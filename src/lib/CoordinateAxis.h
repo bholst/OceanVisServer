@@ -69,6 +69,9 @@ public:
      * on this axis but not for higher ones.
      */
     QVariant upperLimit() const;
+    
+    void setValues(const QList<QVariant>& values) throw (BadDimensionTypeException);
+    QList<QVariant> values() const;
 
     /**
      * Set the number of points on this axis.

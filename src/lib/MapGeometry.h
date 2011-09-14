@@ -5,6 +5,10 @@
 #ifndef MAPGEOMETRY_H
 #define MAPGEOMETRY_H
 
+#include<QtCore/QList>
+
+class QVariant;
+
 class MapGeometryPrivate;
 
 class MapGeometry {
@@ -43,6 +47,9 @@ public:
     
     void setLayerSizes(const QList<double>& layerSizes);
     QList<double> layerSizes() const;
+    double lowerHeightLimit() const;
+    double upperHeightLimit() const;
+    QList<QVariant> heightValues() const;
 
     MapGeometry& operator=( const MapGeometry &other );
 

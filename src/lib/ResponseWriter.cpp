@@ -204,6 +204,27 @@ void ResponseWriter::writeCoordinateAxis(const CoordinateAxis& axis)
     writeCharacters(QString::number(axis.valueCount()));
     writeEndElement();
     
+    writeValues(axis.dimension(), axis.values());
+    
+    writeEndElement();
+}
+
+void ResponseWriter::writeValues(Dimension dimension, const QList<QVariant>& values)
+{
+    if(values.isEmpty()) {
+        return;
+    }
+    
+    writeStartElement("Values");
+    
+    foreach(QVariant value, values) {
+        writeStartElement("Value");
+        
+        writeCharacters(variantToString(dimension, value));
+        
+        writeEndElement();
+    }
+    
     writeEndElement();
 }
 
