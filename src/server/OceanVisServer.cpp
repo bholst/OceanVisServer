@@ -8,6 +8,7 @@
 // Qt
 #include <QtAlgorithms>
 #include <QtNetwork/QTcpSocket>
+#include <QtCore/QBuffer>
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 #include <QtCore/QTextStream>
@@ -16,6 +17,7 @@
 #include <QtCore/QRegExp>
 #include <QtCore/QBuffer>
 #include <QtCore/QDataStream>
+#include <QtCore/QLocale>
 #include <QtGui/QImageWriter>
 #include <QtGui/QImage>
 #include <QtGui/QPainter>
@@ -38,7 +40,8 @@
 #include "OceanVisServer.h"
 
 OceanVisServer::OceanVisServer(QObject *parent)
-    : disabled(false)
+    : disabled(false),
+      m_lastModified(QDateTime::currentDateTime().toUTC())
 {
 }
 
@@ -73,6 +76,7 @@ void OceanVisServer::resume()
 void OceanVisServer::setLayers(const QHash<QString,DataLayer *>& layers)
 {
     m_layers = layers;
+    m_lastModified = QDateTime::currentDateTime().toUTC();
 }
 
 QHash<QString,DataLayer *> OceanVisServer::layers() const
@@ -204,17 +208,16 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
     GridCoverage *matrix = 0;
     try {
         matrix = selectedLayer->dataSubset(dimensionSubsets, getCoverage->cutMode());
-    } catch (BadSlicePosition e) {
-        QTextStream os(socket);
-        os.setAutoDetectUnicode(true);
-        os << "HTTP/1.0 200 Ok\r\n";
-        os << "Content-Type: text/xml; charset=\"utf-8\"\r\n"
-        "\r\n";
-        os.flush();
+    } catch (BadSlicePosition e) {        
+        QBuffer buffer;
+        buffer.open(QIODevice::WriteOnly);
         
         ResponseWriter writer;
-        writer.setDevice(socket);
+        writer.setDevice(&buffer);
         writer.write(e);
+        buffer.close();
+        
+        sendHtmlOkData(socket, buffer.buffer(), "text/xml; charset=\"utf-8\"");
     }
     
     if(!matrix) {
@@ -222,31 +225,29 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
         return;
     }
     
-    QTextStream os(socket);
-    os.setAutoDetectUnicode(true);
-    os << "HTTP/1.0 200 Ok\r\n";
-    
     if(getCoverage->format() == "text/xml") {
-        os << "Content-Type: text/xml; charset=\"utf-8\"\r\n"
-              "\r\n";
-        os.flush();
-        
+        QBuffer buffer;
+        buffer.open(QIODevice::WriteOnly);
         ResponseWriter writer;
-        writer.setDevice(socket);
+        writer.setDevice(&buffer);
         writer.write(matrix);
+        buffer.close();
+        
+        sendHtmlOkData(socket, buffer.buffer(), "text/xml; charset=\"utf-8\"");
     }
     else if(getCoverage->format().startsWith("image/")) {
-        qDebug() << "Got image";
         QString format = getCoverage->format().remove(0,6);
-        qDebug() << "The format is" << format;
-        os << "Content-Type: image/" + format + "\r\n"
-           << "\r\n";
-        os.flush();
-        qDebug() << "Hej an image";
+        qDebug() << "Got image, the format is" << format;
+        
+        QBuffer buffer;
+        buffer.open(QIODevice::WriteOnly);
         QImageWriter iw;
-        iw.setDevice(socket);
+        iw.setDevice(&buffer);
         iw.setFormat(format.toAscii());
         iw.write(matrix->toImage(getCoverage->sizes()));
+        buffer.close();
+        
+        sendHtmlOkData(socket, buffer.buffer(), "image/" + format);
     }
      
     socket->close();
@@ -313,21 +314,18 @@ void OceanVisServer::handleGetMap(QTcpSocket *socket, GetMap *getMap)
         delete matrix;
     }
     
-    QTextStream os(socket);
-    os.setAutoDetectUnicode(true);
-    os << "HTTP/1.0 200 Ok\r\n";
-    
-    qDebug() << "Got image";
     QString format = getMap->format().remove(0,6);
-    qDebug() << "The format is" << format;
-    os << "Content-Type: image/" + format + "\r\n"
-       << "\r\n";
-    os.flush();
+    qDebug() << "Got image, the format is" << format;
     
+    QBuffer buffer;
+    buffer.open(QIODevice::WriteOnly);
     QImageWriter iw;
-    iw.setDevice(socket);
+    iw.setDevice(&buffer);
     iw.setFormat(format.toAscii());
     iw.write(imageResult);
+    buffer.close();
+    
+    sendHtmlOkData(socket, buffer.buffer(), "image/" + format);
     
     socket->close();
 }
@@ -340,31 +338,29 @@ void OceanVisServer::handleDescribeCoverages(QTcpSocket *socket, DescribeCoverag
         return;
     }
     
-    QTextStream os(socket);
-    os.setAutoDetectUnicode(true);
-    os << "HTTP/1.0 200 Ok\r\n";
-    os << "Content-Type: text/xml; charset=\"utf-8\"\r\n"
-          "\r\n";
-    os.flush();
-    
+    QBuffer buffer;
+    buffer.open(QIODevice::WriteOnly);
     ResponseWriter writer;
-    writer.setDevice(socket);
+    writer.setDevice(&buffer);
     writer.writeCoverages(m_layers);
+    buffer.close();
+    
+    sendHtmlOkData(socket, buffer.buffer(), "text/xml; charset=\"utf-8\"");
     
     socket->close();
 }
 
 void OceanVisServer::wrongOvpVersion(QTcpSocket *socket)
 {
-    QTextStream os(socket);
-    os.setAutoDetectUnicode(true);
-    os << "HTTP/1.0 200 Ok\r\n";
-    os << "Content-Type: text/xml; charset=\"utf-8\"\r\n"
-          "\r\n";
-    os.flush();
+    QBuffer buffer;
+    buffer.open(QIODevice::WriteOnly);
+    
     ResponseWriter writer;
-    writer.setDevice(socket);
+    writer.setDevice(&buffer);
     writer.writeWrongOvpVersion();
+    buffer.close();
+    
+    sendHtmlOkData(socket, buffer.buffer(), "text/xml; charset=\"utf-8\"");
     
     socket->close();
 }
@@ -375,6 +371,36 @@ void OceanVisServer::discardClient()
     socket->deleteLater();
 
     qDebug() << "Connection closed";
+}
+
+void OceanVisServer::sendHtmlOkData(QTcpSocket *socket,
+                                    QByteArray data,
+                                    QString contentType)
+{
+    sendHtmlOkHeader(socket, data.size(), contentType);
+    socket->write(data);
+}
+
+void OceanVisServer::sendHtmlOkHeader(QTcpSocket *socket,
+                                      int contentLength,
+                                      QString contentType)
+{
+    QLocale locale(QLocale::C);
+    
+    QTextStream os(socket);
+    os.setAutoDetectUnicode(true);
+    os << "HTTP/1.1 200 Ok\r\n";
+    os << "Connection: close\r\n";
+    os << "Date: " << locale.toString(QDateTime::currentDateTime().toUTC(),
+                                      "ddd, dd MMM yyyy hh:mm:ss 'GMT'") << "\r\n";
+    os << "Accept-Ranges: none\r\n";
+    os << "Server: OceanVisServer/1.0.0\r\n";
+    os << "Content-Length: " << QString::number(contentLength) << "\r\n";
+    os << "Content-Type: " << contentType << "\r\n";
+    os << "Last-Modified: " << locale.toString(m_lastModified,
+                                               "ddd, dd MMM yyyy hh:mm:ss 'GMT'") << "\r\n";
+    os << "\r\n";
+    os.flush();
 }
 
 #include "OceanVisServer.moc"

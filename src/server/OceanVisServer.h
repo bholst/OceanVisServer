@@ -75,8 +75,16 @@ private slots:
     void discardClient();
 
 private:
+    void sendHtmlOkData(QTcpSocket *socket,
+                        QByteArray data,
+                        QString contentType);
+    void sendHtmlOkHeader(QTcpSocket *socket,
+                          int contentLength,
+                          QString contentType);
+    
     bool disabled;
     QHash<QString,DataLayer *> m_layers;
+    QDateTime m_lastModified;
 };
 
 #endif
