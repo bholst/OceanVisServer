@@ -10,7 +10,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QDateTime>
 #include <QtGui/QImage>
-#include <QCoreApplication>
+#include <QApplication>
 
 // Project
 #include "DataLayer.h"
@@ -20,7 +20,7 @@
 
 int main(int argc, char** argv)
 {
-    QCoreApplication app(argc, argv);
+    QApplication app(argc, argv);
     QHash<QString,DataLayer *> layers;
 
     if(argc >= 2) {
