@@ -9,6 +9,7 @@
 #include <QtCore/QList>
 #include <QtCore/QVariant>
 #include <QtCore/QDebug>
+#include <QtGui/QImageWriter>
 
 // Project
 #include "GridCoverage.h"
@@ -132,6 +133,21 @@ void ResponseWriter::writeServiceIdentification()
     writeStartElement("ServiceTypeVersion");
     writeCharacters("1.0.0");
     writeEndElement();
+    
+    writeSupportedImageFormats();
+    
+    writeEndElement();
+}
+
+void ResponseWriter::writeSupportedImageFormats()
+{
+    writeStartElement("SupportedImageFormats");
+    
+    foreach(QByteArray format, QImageWriter::supportedImageFormats()) {
+        writeStartElement("Format");
+        writeCharacters("image/" + format);
+        writeEndElement();
+    }
     
     writeEndElement();
 }

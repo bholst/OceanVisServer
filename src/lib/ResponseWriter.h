@@ -32,6 +32,7 @@ public:
     
 private:
     void writeServiceIdentification();
+    void writeSupportedImageFormats();
     void writeCoverage(const QString& name, DataLayer *layer);
     void writeConstant(const Constant& constant);
     void writeCoordinateAxis(const CoordinateAxis& axis);
