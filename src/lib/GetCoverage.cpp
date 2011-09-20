@@ -110,13 +110,13 @@ GetCoverage *GetCoverage::fromRequestString(QString request, RequestBase::Reques
             continue;
         }
         
-        else if(argParts[0] == "VERSION") {
+        else if(QString::compare(argParts[0], "VERSION", Qt::CaseInsensitive) == 0) {
             getCoverage->setVersion(argParts[1]);
         }
-        else if(argParts[0] == "COVERAGEID") {
+        else if(QString::compare(argParts[0], "COVERAGEID", Qt::CaseInsensitive) == 0) {
             getCoverage->setCoverageId(argParts[1]);
         }
-        else if(argParts[0] == "FORMAT") {
+        else if(QString::compare(argParts[0], "FORMAT", Qt::CaseInsensitive) == 0) {
             if(type == RequestBase::OVP
                && !argParts[1].startsWith("image/"))
             {
@@ -126,7 +126,7 @@ GetCoverage *GetCoverage::fromRequestString(QString request, RequestBase::Reques
                 getCoverage->setFormat(argParts[1]);
             }
         }
-        else if(argParts[0] == "CUTMODE") {
+        else if(QString::compare(argParts[0], "CUTMODE", Qt::CaseInsensitive) == 0) {
             if(QString::compare(argParts[1], "contains", Qt::CaseInsensitive) == 0) {
                 getCoverage->setCutMode(DataLayer::Contains);
             }
@@ -134,7 +134,7 @@ GetCoverage *GetCoverage::fromRequestString(QString request, RequestBase::Reques
                 getCoverage->setCutMode(DataLayer::Overlaps);
             }
         }
-        else if(argParts[0] == "SIZE") {
+        else if(QString::compare(argParts[0], "SIZE", Qt::CaseInsensitive) == 0) {
             QRegExp sizeExp("([a-zA-Z]+)\\(([0-9]+)\\)");
             sizeExp.indexIn(argParts[1]);
             if(sizeExp.pos() > -1) {
@@ -147,9 +147,9 @@ GetCoverage *GetCoverage::fromRequestString(QString request, RequestBase::Reques
                 }
             }
         }
-        else if(argParts[0] == "SUBSET"
-            || argParts[0] == "TRIM"
-            || argParts[0] == "SLICE")
+        else if(QString::compare(argParts[0], "SUBSET", Qt::CaseInsensitive) == 0
+            || QString::compare(argParts[0], "TRIM", Qt::CaseInsensitive) == 0
+            || QString::compare(argParts[0], "SLICE", Qt::CaseInsensitive) == 0)
         {
             qDebug() << "Parsing subset.";
             QString arg = argParts[1];
