@@ -28,9 +28,12 @@ public:
     
     void writeWrongOvpVersion();
     
+    void writeBadCoverageId(const QString& givenCoverageId, const QHash<QString,DataLayer *>& layers);
+    
     void writeCoverages(const QHash<QString,DataLayer *>& layers);
     
 private:
+    void writeCoverageIds(const QHash<QString,DataLayer *>& layers);
     void writeServiceIdentification();
     void writeSupportedImageFormats();
     void writeCoverage(const QString& name, DataLayer *layer);

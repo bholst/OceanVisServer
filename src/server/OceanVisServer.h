@@ -66,9 +66,14 @@ public:
     void handleDescribeCoverages(QTcpSocket *socket, DescribeCoverages *describeCoverages);
     
     /**
-     * Sends a wrong version notification through the given socket.
+     * Sends a wrong version error message through the given socket.
      */
     void wrongOvpVersion(QTcpSocket *socket);
+    
+    /**
+     * Sends a wrong coverageId error message through the given socket.
+     */
+    void badOvpCoverageId(QTcpSocket *socket, const QString& givenCoverageId);
 
 private slots:
     void readClient();

@@ -94,6 +94,26 @@ void ResponseWriter::writeWrongOvpVersion()
     writeEndDocument();
 }
 
+void ResponseWriter::writeBadCoverageId(const QString& givenCoverageId, const QHash<QString,DataLayer *>& layers)
+{
+    setAutoFormatting(true);
+    writeStartDocument();
+    
+    writeStartElement("BadCoverageId");
+    
+    writeStartElement("description");
+    writeCharacters("The coverage with the given id could not be found on the server.");
+    writeEndElement();
+    
+    writeStartElement("givenCoverageId");
+    writeCharacters(givenCoverageId);
+    writeEndElement();
+    
+    writeCoverageIds(layers);
+    
+    writeEndElement();
+}
+
 void ResponseWriter::writeCoverages(const QHash<QString,DataLayer *>& layers)
 {
     setAutoFormatting(true);
@@ -112,6 +132,18 @@ void ResponseWriter::writeCoverages(const QHash<QString,DataLayer *>& layers)
     writeEndElement();
     
     writeEndDocument();
+}
+
+void ResponseWriter::writeCoverageIds(const QHash<QString,DataLayer *>& layers)
+{
+    for(QHash<QString,DataLayer *>::const_iterator it = layers.constBegin();
+        it != layers.constEnd();
+        ++it)
+    {
+        writeStartElement("coverageId");
+        writeCharacters(it.key());
+        writeEndElement();
+    }
 }
 
 void ResponseWriter::writeServiceIdentification()

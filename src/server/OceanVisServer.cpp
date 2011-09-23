@@ -194,9 +194,17 @@ void OceanVisServer::handleGetCoverage(QTcpSocket *socket, GetCoverage *getCover
 
     DataLayer *selectedLayer;
     QHash<QString,DataLayer *>::const_iterator layer = m_layers.constFind(getCoverage->coverageId());
-    if(layer == m_layers.constEnd()) {
+    if(layer == m_layers.constEnd()
+       && getCoverage->requestType() == RequestBase::WCS)
+    {
         // TODO: This is the wrong behavior.
         qDebug() << "Coverage not found.";
+        return;
+    }
+    else if(layer == m_layers.constEnd()
+            && getCoverage->requestType() == RequestBase::OVP)
+    {
+        badOvpCoverageId(socket, getCoverage->coverageId());
         return;
     }
     else {
@@ -363,6 +371,19 @@ void OceanVisServer::wrongOvpVersion(QTcpSocket *socket)
     sendHtmlOkData(socket, buffer.buffer(), "text/xml; charset=\"utf-8\"");
     
     socket->close();
+}
+
+void OceanVisServer::badOvpCoverageId(QTcpSocket *socket, const QString& givenCoverageId)
+{
+    QBuffer buffer;
+    buffer.open(QIODevice::WriteOnly);
+    
+    ResponseWriter writer;
+    writer.setDevice(&buffer);
+    writer.writeBadCoverageId(givenCoverageId, m_layers);
+    buffer.close();
+    
+    sendHtmlOkData(socket, buffer.buffer(), "text/xml; charset=\"utf-8\"");
 }
 
 void OceanVisServer::discardClient()
