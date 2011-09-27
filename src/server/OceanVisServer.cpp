@@ -424,4 +424,20 @@ void OceanVisServer::sendHtmlOkHeader(QTcpSocket *socket,
     os.flush();
 }
 
+void OceanVisServer::sendHtmlBadRequest(QTcpSocket *socket)
+{
+    QLocale locale(QLocale::C);
+    
+    QTextStream os(socket);
+    os.setAutoDetectUnicode(true);
+    os << "HTTP/1.1 400 Bad Request\r\n";
+    os << "Connection: close\r\n";
+    os << "Date: " << locale.toString(QDateTime::currentDateTime().toUTC(),
+                                      "ddd, dd MMM yyyy hh:mm:ss 'GMT'") << "\r\n";
+    os << "Accept-Ranges: none\r\n";
+    os << "Server: OceanVisServer/1.0.0\r\n";
+    os << "\r\n";
+    os.flush();
+}
+
 #include "OceanVisServer.moc"

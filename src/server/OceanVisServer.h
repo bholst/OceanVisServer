@@ -86,6 +86,7 @@ private:
     void sendHtmlOkHeader(QTcpSocket *socket,
                           int contentLength,
                           QString contentType);
+    void sendHtmlBadRequest(QTcpSocket *socket);
     
     bool disabled;
     QHash<QString,DataLayer *> m_layers;
