@@ -245,7 +245,15 @@ void DimensionSliders::setHeight(qreal height)
     double maxHeight = m_heightAxis.upperLimit().toDouble();
     
     if(height < minHeight || height >= maxHeight) {
+        qDebug() << "Height to small/high";
         heightIndex = valueCountHeight - 1;
+        
+        QList<QVariant> heightValues = m_heightAxis.values();
+        int heightValuesSize = heightValues.size();
+        if(heightValuesSize >= 2) {
+            height = (heightValues.at(heightValuesSize - 2).toDouble() + heightValues.at(heightValuesSize - 1).toDouble()) / 2;
+            qDebug() << "New height =" << height;
+        }
     }
     else if(!heightValues.isEmpty()) {
         for(int i = 0; i <= valueCountHeight; ++i) {
@@ -271,12 +279,6 @@ void DimensionSliders::setHeight(qreal height)
         if(heightIndex < 0 || heightIndex == ui.heightSlider->value()) {
             return;
         }
-        
-        disconnectSliders();
-        ui.heightSlider->setValue(heightIndex);
-        connectSliders();
-        
-        emit heightChanged(height);
     }
     
     if(heightIndex != ui.heightSlider->value()) {
