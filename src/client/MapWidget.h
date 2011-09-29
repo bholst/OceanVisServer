@@ -21,10 +21,14 @@ public:
     
     QString url() const;
     
+    bool fitWindow() const;
+    
 public slots:
     void setUrl(const QString& url);
     void setXAxis(const QString& string, const QString& min, const QString& max);
     void setYAxis(const QString& string, const QString& min, const QString& max);
+    
+    void setFitWindow(bool fitWindow);
     
 protected:
     void paintEvent(QPaintEvent *event);
@@ -48,6 +52,8 @@ private:
     QString m_yAxisString;
     QString m_yAxisMin;
     QString m_yAxisMax;
+    
+    bool m_fitWindow;
 };
 
 #endif

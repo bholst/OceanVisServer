@@ -28,7 +28,8 @@ MapWidget::MapWidget(QWidget * parent, Qt::WindowFlags f)
     : QWidget(parent, f),
       m_manager(new QNetworkAccessManager(this)),
       m_downloadId(0),
-      m_shownId(0)
+      m_shownId(0),
+      m_fitWindow(false)
 {
     connect(m_manager, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(handleReply(QNetworkReply*)));
@@ -70,6 +71,17 @@ void MapWidget::setYAxis(const QString& string, const QString& min, const QStrin
     update();
 }
 
+bool MapWidget::fitWindow() const
+{
+    return m_fitWindow;
+}
+
+void MapWidget::setFitWindow(bool fitWindow)
+{
+    m_fitWindow = fitWindow;
+    update();
+}
+
 void MapWidget::paintEvent(QPaintEvent *event)
 {
     QRect imageRect(MAPWIDGET_SCALE_MARGIN,
@@ -80,18 +92,19 @@ void MapWidget::paintEvent(QPaintEvent *event)
     qreal scaleX = (qreal) m_image.width() / (qreal) imageRect.width();
     qreal scaleY = (qreal) m_image.height() / (qreal) imageRect.height();
     
-    qreal scale;
-    if(scaleX > scaleY) {
-        scale = scaleX;
-        qreal addBorderY = (imageRect.height() - m_image.height() / scale) / 2.0;
-        imageRect.setTop(imageRect.top() + addBorderY);
-        imageRect.setBottom(imageRect.bottom() - addBorderY);
-    }
-    else {
-        scale = scaleY;
-        qreal addBorderX = (imageRect.width() - m_image.width() / scale) / 2.0;
-        imageRect.setLeft(imageRect.left() + addBorderX);
-        imageRect.setRight(imageRect.right() - addBorderX);
+    if(!m_fitWindow) {
+        if(scaleX > scaleY) {
+            scaleY = scaleX;
+            qreal addBorderY = (imageRect.height() - m_image.height() / scaleX) / 2.0;
+            imageRect.setTop(imageRect.top() + addBorderY);
+            imageRect.setBottom(imageRect.bottom() - addBorderY);
+        }
+        else {
+            scaleX = scaleY;
+            qreal addBorderX = (imageRect.width() - m_image.width() / scaleY) / 2.0;
+            imageRect.setLeft(imageRect.left() + addBorderX);
+            imageRect.setRight(imageRect.right() - addBorderX);
+        }
     }
     
     QRect dirtyRect = event->rect();
@@ -106,8 +119,8 @@ void MapWidget::paintEvent(QPaintEvent *event)
             return;
         }
     
-        QRectF sourceRect((dirtyImageF.x() - imageRect.x()) * scale, (dirtyImageF.y() - imageRect.y()) * scale,
-                          dirtyImageF.width() * scale, dirtyImageF.height() * scale);
+        QRectF sourceRect((dirtyImageF.x() - imageRect.x()) * scaleX, (dirtyImageF.y() - imageRect.y()) * scaleY,
+                          dirtyImageF.width() * scaleX, dirtyImageF.height() * scaleY);
         painter.drawImage(dirtyImageF, m_image, sourceRect);
     }
     

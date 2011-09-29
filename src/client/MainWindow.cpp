@@ -12,6 +12,7 @@
 #include <QtGui/QStatusBar>
 #include <QtGui/QDockWidget>
 #include <QtGui/QLabel>
+#include <QtGui/QCheckBox>
 
 // Project
 #include "GetCoverage.h"
@@ -52,26 +53,38 @@ MainWindow::MainWindow()
     connect(this, SIGNAL(yAxisChanged(const QString&, const QString&, const QString&)),
             m_mapWidget, SLOT(setYAxis(const QString&, const QString&, const QString&)));
     
-    // ViewModeComboBox
-    QDockWidget *viewModeDockWidget = new QDockWidget(this);
-    m_viewModeComboBox = new ViewModeComboBox(viewModeDockWidget);
-    viewModeDockWidget->setWidget(m_viewModeComboBox);
+    
+    // CoverageComboBox & ViewModeComboBox & FitWindow
+    QDockWidget *selectionDockWidget = new QDockWidget(this);
+    QWidget *selectionWidget = new QWidget(this);
+    QHBoxLayout *layout = new QHBoxLayout(selectionWidget);
+    selectionWidget->setLayout(layout);
+    
+    m_coverageComboBox = new CoverageComboBox(selectionWidget);
+    layout->addWidget(m_coverageComboBox);
+    connect(m_coverageComboBox, SIGNAL(currentCoverageChanged(const QString&)),
+            this, SLOT(setCoverageId(const QString&)));
+    connect(this, SIGNAL(coveragesChanged(const QList<Coverage>&)),
+            m_coverageComboBox, SLOT(setCoverages(const QList<Coverage>&)));
+    
+    m_viewModeComboBox = new ViewModeComboBox(selectionWidget);
+    layout->addWidget(m_viewModeComboBox);
     connect(m_viewModeComboBox, SIGNAL(currentViewModeChanged(MainWindow::ViewMode)),
             this, SLOT(setViewMode(MainWindow::ViewMode)));
     connect(this, SIGNAL(viewModeChanged(MainWindow::ViewMode)),
             m_viewModeComboBox, SLOT(setViewMode(MainWindow::ViewMode)));
     m_viewModeComboBox->setViewMode(viewMode());
-    addDockWidget(Qt::TopDockWidgetArea, viewModeDockWidget);
+    
+    m_fitWindowCheckBox = new QCheckBox(selectionWidget);
+    m_fitWindowCheckBox->setText("Fit Window");
+    layout->addWidget(m_fitWindowCheckBox);
+    connect(m_fitWindowCheckBox, SIGNAL(toggled(bool)),
+            m_mapWidget, SLOT(setFitWindow(bool)));
+    
+    selectionDockWidget->setWidget(selectionWidget);
+    addDockWidget(Qt::TopDockWidgetArea, selectionDockWidget);
     
     // CoverageComboBox
-    QDockWidget *coverageDockWidget = new QDockWidget(this);
-    m_coverageComboBox = new CoverageComboBox(coverageDockWidget);
-    coverageDockWidget->setWidget(m_coverageComboBox);
-    connect(m_coverageComboBox, SIGNAL(currentCoverageChanged(const QString&)),
-            this, SLOT(setCoverageId(const QString&)));
-    connect(this, SIGNAL(coveragesChanged(const QList<Coverage>&)),
-            m_coverageComboBox, SLOT(setCoverages(const QList<Coverage>&)));
-    addDockWidget(Qt::TopDockWidgetArea, coverageDockWidget);
     
     // DimensionSliders
     QDockWidget *dimensionDockWidget = new QDockWidget(this);

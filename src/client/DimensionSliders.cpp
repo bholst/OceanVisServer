@@ -31,6 +31,8 @@ DimensionSliders::DimensionSliders(QWidget *parent)
 {
     ui.setupUi(this);
     
+    setMinimumHeight(150);
+    
     connectSliders();
 }
 

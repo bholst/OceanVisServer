@@ -22,6 +22,7 @@ class ViewModeComboBox;
 class CoverageComboBox;
 class ColorMapWidget;
 class ColorMap;
+class QCheckBox;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -99,6 +100,7 @@ private:
     MapWidget *m_mapWidget;
     ViewModeComboBox *m_viewModeComboBox;
     CoverageComboBox *m_coverageComboBox;
+    QCheckBox *m_fitWindowCheckBox;
     DimensionSliders *m_dimensionSliders;
     ColorMapWidget *m_colorMapWidget;
     QLabel *m_statusLabel;
